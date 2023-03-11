@@ -1,0 +1,40 @@
+* {
+    transition: background 250ms linear, color 250ms linear;
+}
+
+Screen {
+    layers: base overlay notes notifications;
+}
+
+Body {
+    width: 100%;
+    layout: grid;
+    grid-size: 6 1;
+    grid-gutter: 1;
+}
+
+Editor {
+    column-span: 6;
+}
+
+Editor.-with-sidebar {
+    column-span: 4;
+}
+
+Editor.-diff {
+    column-span: 3;
+}
+
+Editor.-diff.-with-sidebar {
+    column-span: 2;
+}
+
+Sidebar {
+    overflow: auto;
+    margin-top: 0;
+    column-span: 3;
+    }
+
+Sidebar.-diff {
+    column-span: 2;
+}
