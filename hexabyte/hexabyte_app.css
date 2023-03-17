@@ -2,7 +2,7 @@
     transition: background 250ms linear, color 250ms linear;
 }
 
-Screen {
+Workbench {
     layers: base overlay notes notifications;
 }
 
@@ -17,24 +17,24 @@ Editor {
     column-span: 6;
 }
 
-Editor.-with-sidebar {
-    column-span: 4;
-}
-
 Editor.-diff {
     column-span: 3;
 }
 
-Editor.-diff.-with-sidebar {
-    column-span: 2;
-}
-
-Sidebar {
-    overflow: auto;
-    margin-top: 0;
-    column-span: 3;
+#sidebar {
+    layer: overlay;
+    margin: 0 0;
+    dock: right;
+    width: 33%;
+    overflow: hidden;
     }
 
-Sidebar.-diff {
-    column-span: 2;
+Tabs {
+    dock: top;
+}
+
+#sidebar ContentSwitcher {
+    margin: 1 1;
+    width: 100%;
+    height: 100%;
 }

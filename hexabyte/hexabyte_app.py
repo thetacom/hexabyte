@@ -4,7 +4,7 @@ from typing import Optional
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container
+from textual.containers import Container, Horizontal
 from textual.reactive import reactive
 from textual.widgets import (
     ContentSwitcher,
@@ -13,24 +13,10 @@ from textual.widgets import (
     Placeholder,
 )
 
-from .app_mode import AppMode
+from .config import Config
 from .data_model import DataModel
-
-
-class Window(Container):
-    """The main window container."""
-
-
-class Body(Container):
-    """The main body container."""
-
-
-class Editor(Placeholder):
-    """An editor container."""
-
-
-class Sidebar(ContentSwitcher):
-    """The tabbed sidebar container."""
+from .enum.app_mode import AppMode
+from .workbench.workbench import Workbench
 
 
 class HexabyteApp(App):
@@ -46,6 +32,7 @@ class HexabyteApp(App):
 
     def __init__(
         self,
+        config: Config,
         filename1: Path,
         filename2: Optional[Path],
         **kwargs,
@@ -54,6 +41,7 @@ class HexabyteApp(App):
 
         If two filenames are specified, app will open in diff mode.
         """
+        self.config = config
         self.models = [DataModel(filename1)]
         if filename2:
             self._mode = AppMode.DIFF
@@ -61,30 +49,7 @@ class HexabyteApp(App):
         else:
             self._mode = AppMode.NORMAL
         super().__init__(**kwargs)
-        sidebar_tabs = [
-            Placeholder(name="Info"),
-            Placeholder(name="Ascii"),
-        ]
-        if self.mode == AppMode.DIFF:
-            self.sidebar = Sidebar(*sidebar_tabs, classes="-diff")
-        else:
-            self.sidebar = Sidebar(*sidebar_tabs)
-        if len(self.models) > 1:
-            editor1 = Editor(name="Editor1", classes="-diff")
-            editor2 = Editor(name="Editor2", classes="-diff")
-            editors = [editor1, editor2]
-        else:
-            editor1 = Editor(name="Editor1")
-            editors = [editor1]
-        body = Body(
-            *editors,
-            self.sidebar,
-        )
-        self.window = Window(
-            Header(show_clock=True),
-            body,
-            Footer(),
-        )
+        self.workbench = Workbench(self.mode, self.models)
 
     @property
     def mode(self) -> AppMode:
@@ -93,19 +58,8 @@ class HexabyteApp(App):
 
     def compose(self) -> ComposeResult:
         """Compose main screen."""
-        yield self.window
-
-    show_sidebar: reactive[bool] = reactive(True)
-
-    async def watch_show_sidebar(self, _: bool) -> None:
-        """Toggle sidebar view visibility if show_info flag changes."""
-        self.sidebar.display = not self.sidebar.display
-        editors = self.window.query(Editor)
-        if self.sidebar.display:
-            editors.add_class("-with-sidebar")
-        else:
-            editors.remove_class("-with-sidebar")
+        yield self.workbench
 
     async def action_toggle_sidebar(self) -> None:
         """Toggle visibility of sidebar."""
-        self.show_sidebar = not self.show_sidebar
+        self.workbench.show_sidebar = not self.workbench.show_sidebar
