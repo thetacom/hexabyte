@@ -28,6 +28,7 @@ class HexabyteApp(App):
         Binding("ctrl+c,ctrl+q", "app.quit", "Quit", show=True),
         Binding("ctrl+d", "toggle_dark", "Toggle Dark Mode", show=True),
         Binding("ctrl+b", "toggle_sidebar", "Toggle Sidebar", show=True),
+        Binding("ctrl+g", "move_sidebar", "Move Sidebar", show=True),
     ]
 
     def __init__(
@@ -63,3 +64,10 @@ class HexabyteApp(App):
     async def action_toggle_sidebar(self) -> None:
         """Toggle visibility of sidebar."""
         self.workbench.show_sidebar = not self.workbench.show_sidebar
+
+    async def action_move_sidebar(self) -> None:
+        """Switch sidebar side."""
+        if self.workbench.sidebar_side == "right":
+            self.workbench.sidebar_side = "left"
+        else:
+            self.workbench.sidebar_side = "right"

@@ -24,7 +24,6 @@ Editor.-diff {
 #sidebar {
     layer: overlay;
     margin: 0 0;
-    dock: right;
     width: 33%;
     overflow: hidden;
     }

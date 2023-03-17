@@ -39,6 +39,7 @@ class Workbench(Vertical):
             self.editors = [editor1]
 
     show_sidebar: reactive[bool] = reactive(True)
+    sidebar_side: reactive[str] = reactive("left")
 
     def compose(self) -> ComposeResult:
         """Compose sidebar widgets."""
@@ -50,6 +51,10 @@ class Workbench(Vertical):
             yield self.sidebar
         yield Footer()
 
-    async def watch_show_sidebar(self, _: bool) -> None:
+    async def watch_show_sidebar(self, visibility: bool) -> None:
         """Toggle sidebar view visibility if show_sidebar flag changes."""
-        self.sidebar.display = not self.sidebar.display
+        self.sidebar.display = visibility
+
+    async def watch_sidebar_side(self, side: str) -> None:
+        """Toggle sidebar view visibility if show_sidebar flag changes."""
+        self.sidebar.styles.dock = side
