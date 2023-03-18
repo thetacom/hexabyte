@@ -16,6 +16,7 @@ from textual.widgets import (
 from .config import Config
 from .data_model import DataModel
 from .enum.app_mode import AppMode
+from .workbench.editor import Editor
 from .workbench.workbench import Workbench
 
 
@@ -28,7 +29,6 @@ class HexabyteApp(App):
         Binding("ctrl+c,ctrl+q", "app.quit", "Quit", show=True),
         Binding("ctrl+d", "toggle_dark", "Toggle Dark Mode", show=True),
         Binding("ctrl+b", "toggle_sidebar", "Toggle Sidebar", show=True),
-        Binding("ctrl+g", "move_sidebar", "Move Sidebar", show=True),
     ]
 
     def __init__(
@@ -50,7 +50,22 @@ class HexabyteApp(App):
         else:
             self._mode = AppMode.NORMAL
         super().__init__(**kwargs)
-        self.workbench = Workbench(self.mode, self.models)
+
+        # Create an editors
+        left_editor = Editor(id="left_editor", classes="dual")
+        right_editor = Editor(id="right_editor", classes="dual")
+        if self._mode is AppMode.NORMAL:
+            # TODO: Assign same file to both editors
+            # Set left view to hex
+            # Set right view to ascii
+            pass
+        elif self._mode is AppMode.DIFF:
+            if len(self.models) != 2:
+                raise ValueError("Two files must be loaded for diff mode.")
+            # TODO: Assign file1 to left editor, assign file2 to right editor
+            # Set the view of both editors to hex
+
+        self.workbench = Workbench(left_editor, right_editor)
 
     @property
     def mode(self) -> AppMode:
@@ -64,10 +79,3 @@ class HexabyteApp(App):
     async def action_toggle_sidebar(self) -> None:
         """Toggle visibility of sidebar."""
         self.workbench.show_sidebar = not self.workbench.show_sidebar
-
-    async def action_move_sidebar(self) -> None:
-        """Switch sidebar side."""
-        if self.workbench.sidebar_side == "right":
-            self.workbench.sidebar_side = "left"
-        else:
-            self.workbench.sidebar_side = "right"

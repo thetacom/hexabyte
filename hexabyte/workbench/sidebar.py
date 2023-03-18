@@ -1,7 +1,7 @@
 """The Workbench Sidebar Module."""
 
 from textual.app import ComposeResult
-from textual.containers import Container, Horizontal
+from textual.containers import Vertical
 from textual.widgets import (
     ContentSwitcher,
     Placeholder,
@@ -10,19 +10,22 @@ from textual.widgets import (
 )
 
 
-class Sidebar(Container):
+class Sidebar(Vertical):
     """The tabbed sidebar container."""
 
     def compose(self) -> ComposeResult:
         """Compose sidebar tabs."""
-        with Horizontal():
-            yield Tabs(
-                Tab("Info", id=f"{self.id}-info"),
-                Tab("Ascii", id=f"{self.id}-ascii"),
+        yield Tabs(
+            Tab("Info", id=f"{self.id}-info"),
+            Tab("Structures", id=f"{self.id}-structures"),
+            Tab("Entropy", id=f"{self.id}-entropy"),
+        )
+        with ContentSwitcher(initial=f"{self.id}-info-pane"):
+            yield Placeholder("Info", id=f"{self.id}-info-pane", classes="pane")
+            yield Placeholder("Structures", id=f"{self.id}-structures-pane", classes="pane")
+            yield Placeholder(
+                "Entropy", id=f"{self.id}-entropy-pane", classes="pane"
             )
-        with ContentSwitcher():
-            yield Placeholder("Info", id=f"{self.id}-info-pane")
-            yield Placeholder("Ascii", id=f"{self.id}-ascii-pane")
 
     def on_mount(self) -> None:
         """Prepare sidebar contents."""

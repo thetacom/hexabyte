@@ -14,26 +14,35 @@ Body {
 }
 
 Editor {
+    layer: base;
     column-span: 6;
 }
 
-Editor.-diff {
+Editor.with-sidebar {
+    column-span: 4;
+}
+
+Editor.dual {
     column-span: 3;
 }
 
-#sidebar {
-    layer: overlay;
-    margin: 0 0;
-    width: 33%;
-    overflow: hidden;
-    }
+Editor.dual.with-sidebar {
+    column-span: 2;
+}
 
-Tabs {
+Sidebar {
+    layer: base;
+    column-span: 2;
+    height: 100%;
+}
+
+Sidebar Tabs {
     dock: top;
 }
 
-#sidebar ContentSwitcher {
-    margin: 1 1;
+Sidebar ContentSwitcher {
     width: 100%;
     height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
