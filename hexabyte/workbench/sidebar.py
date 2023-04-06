@@ -2,16 +2,16 @@
 
 from textual.app import ComposeResult
 from textual.containers import Vertical
-from textual.widgets import (
-    ContentSwitcher,
-    Placeholder,
-    Tabs,
-    Tab,
-)
+from textual.reactive import reactive
+from textual.widgets import ContentSwitcher, Placeholder, Tab, Tabs
+
+from .editor import Editor
 
 
 class Sidebar(Vertical):
     """The tabbed sidebar container."""
+
+    active_editor: reactive[Editor | None] = reactive(None)
 
     def compose(self) -> ComposeResult:
         """Compose sidebar tabs."""
@@ -23,9 +23,7 @@ class Sidebar(Vertical):
         with ContentSwitcher(initial=f"{self.id}-info-pane"):
             yield Placeholder("Info", id=f"{self.id}-info-pane", classes="pane")
             yield Placeholder("Structures", id=f"{self.id}-structures-pane", classes="pane")
-            yield Placeholder(
-                "Entropy", id=f"{self.id}-entropy-pane", classes="pane"
-            )
+            yield Placeholder("Entropy", id=f"{self.id}-entropy-pane", classes="pane")
 
     def on_mount(self) -> None:
         """Prepare sidebar contents."""

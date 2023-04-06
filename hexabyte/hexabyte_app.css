@@ -6,7 +6,7 @@ Workbench {
     layers: base overlay notes notifications;
 }
 
-Body {
+#body {
     width: 100%;
     layout: grid;
     grid-size: 6 1;
@@ -16,6 +16,7 @@ Body {
 Editor {
     layer: base;
     column-span: 6;
+    height: 100%;
 }
 
 Editor.with-sidebar {
@@ -28,6 +29,7 @@ Editor.dual {
 
 Editor.dual.with-sidebar {
     column-span: 2;
+    height: 100%;
 }
 
 Sidebar {

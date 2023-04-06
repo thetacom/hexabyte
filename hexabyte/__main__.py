@@ -4,7 +4,7 @@ from pathlib import Path
 from click import Path as ClickPath
 from click import argument, command, option
 
-from hexabyte.config import DEFAULT_CONFIG_FILEPATH, Config
+from hexabyte.config import CONFIG_FILENAME, DEFAULT_CONFIG_PATH, Config
 from hexabyte.hexabyte_app import HexabyteApp
 
 
@@ -14,7 +14,7 @@ from hexabyte.hexabyte_app import HexabyteApp
     "--config",
     "config_filename",
     type=ClickPath(exists=False, path_type=Path),
-    default=DEFAULT_CONFIG_FILEPATH,
+    default=DEFAULT_CONFIG_PATH / CONFIG_FILENAME,
     show_default=True,
 )
 @argument("filename1", type=ClickPath(exists=True, path_type=Path))

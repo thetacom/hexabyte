@@ -1,21 +1,13 @@
 """Hexabyte Appplication Class."""
 from pathlib import Path
-from typing import Optional
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container, Horizontal
-from textual.reactive import reactive
-from textual.widgets import (
-    ContentSwitcher,
-    Footer,
-    Header,
-    Placeholder,
-)
 
 from .config import Config
-from .data_model import DataModel
+from .constants import DIFF_MODEL_COUNT
 from .enum.app_mode import AppMode
+from .models.data_model import DataModel
 from .workbench.editor import Editor
 from .workbench.workbench import Workbench
 
@@ -35,7 +27,7 @@ class HexabyteApp(App):
         self,
         config: Config,
         filename1: Path,
-        filename2: Optional[Path],
+        filename2: Path | None,
         **kwargs,
     ) -> None:
         """Initialize Application.
@@ -52,20 +44,16 @@ class HexabyteApp(App):
         super().__init__(**kwargs)
 
         # Create an editors
-        left_editor = Editor(id="left_editor", classes="dual")
-        right_editor = Editor(id="right_editor", classes="dual")
         if self._mode is AppMode.NORMAL:
-            # TODO: Assign same file to both editors
-            # Set left view to hex
-            # Set right view to ascii
-            pass
-        elif self._mode is AppMode.DIFF:
-            if len(self.models) != 2:
+            left_editor = Editor(self.models[0], classes="dual")
+            right_editor = Editor(self.models[0], classes="dual")
+        else:
+            if len(self.models) != DIFF_MODEL_COUNT:
                 raise ValueError("Two files must be loaded for diff mode.")
-            # TODO: Assign file1 to left editor, assign file2 to right editor
-            # Set the view of both editors to hex
+            left_editor = Editor(self.models[0], classes="dual")
+            right_editor = Editor(self.models[1], classes="dual")
 
-        self.workbench = Workbench(left_editor, right_editor)
+        self.workbench = Workbench(self._mode, left_editor, right_editor)
 
     @property
     def mode(self) -> AppMode:
