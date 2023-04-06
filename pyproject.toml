@@ -56,8 +56,9 @@ build-backend = "poetry.core.masonry.api"
 hexabyte = "hexabyte.__main__:main"
 
 [tool.bandit]
-targets = ["hexabyte"]
-skips   = []
+targets      = ["hexabyte"]
+skips        = []
+exclude_dirs = ["tests"]
 
 [tool.black]
 line-length    = 120
@@ -86,7 +87,7 @@ testpaths  = ["tests"]
 [tool.pylint.main]
 # exit-zero =
 fail-under              = 10
-ignore                  = ["CVS", ".venv"]
+ignore                  = ["CVS", ".venv", "tests"]
 ignore-patterns         = ["^\\.#"]
 jobs                    = 0
 limit-inference-results = 100
