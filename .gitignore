@@ -1,6 +1,8 @@
 # Program artifacts
 *.log
 *.ipynb
+tests/data/test.data
+reports
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -130,3 +132,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ruff Linter cache
+.ruff_cache
