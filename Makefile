@@ -40,7 +40,7 @@ mypy: .venv
 
 pycodestyle: .venv
 	@echo "*****Pycodestyle*****"
-	@pycodestyle --max-line-length=80 $(SRC_DIR)
+	@pycodestyle --max-line-length=120 $(SRC_DIR)
 
 pydocstyle: .venv
 	@echo "*****Pydocstyle*****"
