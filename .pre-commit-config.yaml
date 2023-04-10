@@ -54,6 +54,14 @@ repos:
       types-toml>=0.10.8.5,
     ]
 
+- repo: https://github.com/python-poetry/poetry
+  rev: 1.4.2
+  hooks:
+  - id: poetry-check
+  - id: poetry-lock
+  - id: poetry-export
+    args: ["-f", "requirements.txt", "-o", "requirements.txt"]
+
 - repo: https://github.com/DanielNoord/pydocstringformatter
   rev: v0.7.3
   hooks:
