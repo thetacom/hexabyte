@@ -2,6 +2,7 @@
 from collections.abc import Iterable
 from enum import Enum
 from math import ceil
+from string import printable
 
 from rich.console import Console, ConsoleOptions
 from rich.jupyter import JupyterMixin
@@ -9,14 +10,9 @@ from rich.measure import Measurement
 from rich.padding import Padding, PaddingDimensions
 from rich.segment import Segment, Segments
 from rich.text import Text
+from textual.geometry import Size
 
-TokenType = tuple[str, ...]
-
-
-NUMBERS_COLUMN_DEFAULT_PADDING = 2
-
-
-ByteViewPosition = tuple[int, int]
+NUMBERS_COLUMN_DEFAULT_PADDING = 3
 
 
 class ByteView(JupyterMixin):
@@ -29,41 +25,52 @@ class ByteView(JupyterMixin):
         column_size (int, optional): Number of bytes per column. Defaults to 4
         offsets (bool, optional): Show line offsets. Defaults to False.
         hex_offsets (bool, optional): Use hexadecimal line offsets. Defaults to True.
-        start_line (int, optional): Starting number for line numbers. Defaults to 1.
+        start_offset (int, optional): Starting number for line offsets. Defaults to 0.
+        padding (PaddingDimensions, optional): Specifies padding. Defaults to 0.
+        cursor_visible (bool, optional): Display cursor. Defaults to True.
     """
 
-    class Mode(Enum):
-        """ByteView Modes.
+    class ViewMode(Enum):
+        """ByteView Views.
 
         Value represents the number of character per byte.
         """
 
-        HEX = 2
-        BIN = 8
-        UTF8 = 1
-        DEFAULT = HEX
+        HEX = "h"
+        BIN = "b"
+        UTF8 = "a"
+
+    BYTE_REPR_LEN = {ViewMode.HEX: 2, ViewMode.BIN: 8, ViewMode.UTF8: 1}
+
+    VALID_CHARS = {
+        ViewMode.HEX: "0123456789ABCDEF",
+        ViewMode.BIN: "01",
+        ViewMode.UTF8: printable,
+    }
 
     def __init__(
         self,
         data: bytes | bytearray,
         *,
-        mode: Mode = Mode.DEFAULT,
+        view_mode: ViewMode = ViewMode.HEX,
         column_count: int = 4,
         column_size: int = 4,
         offsets: bool = False,
         hex_offsets: bool = True,
         start_offset: int = 0,
         padding: PaddingDimensions = 0,
+        cursor_visible: bool = True,
     ) -> None:
         """Initialize ByteView Component."""
         self.data = data
-        self.mode = mode
+        self.view_mode = view_mode
         self.column_count = column_count
         self.column_size = column_size
         self.offsets = offsets
         self.hex_offsets = hex_offsets
         self.start_offset = start_offset
         self.padding = padding
+        self.cursor_visible = cursor_visible
 
     @property
     def line_byte_length(self) -> int:
@@ -73,12 +80,12 @@ class ByteView(JupyterMixin):
     @property
     def line_count(self) -> int:
         """Get the number of lines based on data size and column settings."""
-        return ceil(len(self.data) / (self.column_count * self.column_size))
+        return ceil(len(self.data) / (self.line_byte_length))
 
     @property
     def data_width(self) -> int:
         """Get the character width of the data column."""
-        return (self.mode.value * self.column_size + 1) * self.column_count
+        return (self.BYTE_REPR_LEN[self.view_mode] * self.column_size + 1) * self.column_count
 
     @property
     def _offsets_column_width(self) -> int:
@@ -92,36 +99,34 @@ class ByteView(JupyterMixin):
             return len(num_str) + NUMBERS_COLUMN_DEFAULT_PADDING
         return 0
 
+    @property
+    def height(self) -> int:
+        """Return calculated height in lines."""
+        _height = len(self.data) // self.line_byte_length + 1
+        return _height
+
+    @property
+    def width(self) -> int:
+        """Return calculated width in columns."""
+        _, right, _, left = Padding.unpack(self.padding)
+        padding = left + right
+        _width = self._offsets_column_width + padding + self.data_width
+        if self.offsets:
+            _width += 1
+        return _width
+
+    @property
+    def size(self) -> Size:
+        """Return the calculated size of the byte view."""
+        return Size(self.width, self.height)
+
     def __rich_measure__(
         self,
         console: Console,  # pylint: disable=redefined-outer-name,unused-argument
         options: ConsoleOptions,  # pylint: disable=unused-argument
     ) -> Measurement:
         """Create Rich Measurement instance for ByteView."""
-        _, right, _, left = Padding.unpack(self.padding)
-        padding = left + right
-        width = self._offsets_column_width + padding + self.data_width
-        if self.offsets:
-            width += 1
-        return Measurement(self._offsets_column_width, width)
-
-    # def render(
-    #     self, console: "Console", end: str = ""
-    # ) -> Iterable[Union[Padding, Segments]]:
-    #     """
-    #     Render the text as Segments.
-
-    #     Args:
-    #         console (Console): Console instance.
-    #         end (Optional[str], optional): Optional end character.
-    #     Returns:
-    #         Iterable[Union[Padding, Segments]: Result of render that may be written to the console.
-    #     """
-    #     segments = Segments(self._get_view(console))
-    #     if self.padding:
-    #         yield Padding(segments, pad=self.padding)
-    #     else:
-    #         yield segments
+        return Measurement(self._offsets_column_width, self.width)
 
     def __rich_console__(
         self,
@@ -135,54 +140,79 @@ class ByteView(JupyterMixin):
         else:
             yield segments
 
+    def generate_line(self, _console: Console, offset: int, data: bytes, end: str = "") -> Iterable[Segment]:
+        """Generate a single view line."""
+        if self.offsets:
+            offset_txt = hex(offset) if self.hex_offsets else str(offset)
+            offset_column = str(offset_txt).rjust(self._offsets_column_width - 2) + " | "
+            yield Segment(offset_column)
+        text = self.generate_text(data)
+        yield from text.render(_console, end=end)
+
+    def generate_text(self, data: bytes) -> Text:
+        """Generate a text line from data."""
+        text = Text()
+        if self.view_mode is ByteView.ViewMode.BIN:
+            text = self._generate_bin_text(data)
+        if self.view_mode is ByteView.ViewMode.HEX:
+            text = self._generate_hex_text(data)
+        if self.view_mode is ByteView.ViewMode.UTF8:
+            text = self._generate_utf8_text(data)
+        return text
+
+    def _generate_bin_text(self, data: bytes) -> Text:
+        """Generate binary text from data."""
+        text = Text()
+        for col_start in range(0, self.line_byte_length, self.column_size):
+            chunk = data[col_start : col_start + self.column_size]
+            for bite in chunk:
+                if bite == 0:
+                    text.append("00000000", style="dim")
+                else:
+                    text.append(f"{bite:>08b}")
+            text.append(" ")
+        return text
+
+    def _generate_hex_text(self, data: bytes) -> Text:
+        """Generate hexadecimal text from data."""
+        text = Text()
+        for col_start in range(0, self.line_byte_length, self.column_size):
+            chunk = data[col_start : col_start + self.column_size]
+            for bite in chunk:
+                if bite == 0:
+                    text.append("00", style="dim")
+                else:
+                    text.append(f"{bite:02x}")
+            text.append(" ")
+        return text
+
+    def _generate_utf8_text(self, data: bytes) -> Text:
+        """Generate utf8 text from data."""
+        text = Text()
+        for col_start in range(0, self.line_byte_length, self.column_size):
+            chunk = data[col_start : col_start + self.column_size]
+            for bite in chunk:
+                if chr(bite).isprintable():
+                    text.append(chr(bite))
+                else:
+                    text.append(".", style="dim")
+            text.append(" ")
+        return text
+
     def _get_view(
         self,
-        console: Console,  # pylint: disable=redefined-outer-name,unused-argument
+        _console: Console,
         options: ConsoleOptions | None = None,  # pylint: disable=unused-argument
     ) -> Iterable[Segment]:
-        """Get Segments for the ByteView object, excluding any ver/hor padding."""
-        data_lines = self._process_data(self.data)
-
-        if not self.offsets:
-            # Simple case of just rendering text
-            for line in data_lines:
-                yield from line.render(console, end="\n")
-            return
-
-        offsets_column_width = self._offsets_column_width
-
+        """Get Segments for the ByteView object."""
         offset = self.start_offset
-        for line in data_lines:
+        for start in range(0, len(self.data), self.line_byte_length):
+            line_data = self.data[start : start + self.line_byte_length]
             if self.offsets:
-                offset_txt = hex(offset) if self.hex_offsets else str(offset)
-                offset_column = str(offset_txt).rjust(offsets_column_width - 2) + " "
-                yield Segment(offset_column)
-            yield from line.render(console, end="\n")
+                yield from self.generate_line(_console, offset, line_data, end="\n")
+            else:
+                yield from self.generate_text(line_data).render(console, end="\n")
             offset += self.line_byte_length
-
-    def _process_data(self, data: bytes) -> list[Text]:
-        """Process raw data bytes into hexadecimal columnized lines."""
-        lines: list[Text] = []
-        text = Text()
-        for i, start in enumerate(range(0, len(data), self.column_size)):
-            chunk = data[start : start + self.column_size]
-
-            if self.mode is ByteView.Mode.HEX:
-                text.append(bytes(chunk).hex() + " ")
-            elif self.mode is ByteView.Mode.BIN:
-                text.append("".join([f"{bite:>08b}" for bite in chunk]) + " ")
-            elif self.mode is ByteView.Mode.UTF8:
-                for bite in chunk:
-                    if chr(bite).isprintable():
-                        text.append(chr(bite), style="bold")
-                    else:
-                        text.append(".")
-
-            if (i + 1) % self.column_count == 0:
-                lines.append(text)
-                text = Text()
-
-        return lines
 
 
 if __name__ == "__main__":  # pragma: no cover
@@ -269,16 +299,16 @@ if __name__ == "__main__":  # pragma: no cover
     else:
         byte_data = FILLER_DATA  # pylint: disable=invalid-name
     if args.mode_str.lower() == "h":
-        view_mode = ByteView.Mode.HEX
+        mode = ByteView.ViewMode.HEX
     elif args.mode_str.lower() == "b":
-        view_mode = ByteView.Mode.BIN
+        mode = ByteView.ViewMode.BIN
     elif args.mode_str.lower() == "a":
-        view_mode = ByteView.Mode.UTF8
+        mode = ByteView.ViewMode.UTF8
     else:
         raise ValueError("Mode option must be 'h', 'b', or 'a'")
     view = ByteView(
         data=byte_data,
-        mode=view_mode,
+        view_mode=mode,
         offsets=args.offsets,
         start_offset=args.start_offset,
         column_count=args.column_count,
