@@ -6,6 +6,7 @@ from textual.reactive import reactive
 from textual.widgets import ContentSwitcher, Placeholder, Tab, Tabs
 
 from ..models.data_model import DataModel
+from .info_panel import InfoPanel
 
 
 class Sidebar(Vertical):
@@ -13,11 +14,13 @@ class Sidebar(Vertical):
 
     DEFAULT_CSS = """
     Sidebar {
+        background: $accent;
         layer: base;
         column-span: 2;
         height: 100%;
     }
     Sidebar Tabs {
+        background: $accent-darken-2;
         dock: top;
     }
     Sidebar ContentSwitcher {
@@ -36,14 +39,22 @@ class Sidebar(Vertical):
             Tab("Structures", id=f"{self.id}-structures"),
             Tab("Entropy", id=f"{self.id}-entropy"),
         )
-        with ContentSwitcher(initial=f"{self.id}-info-pane"):
-            yield Placeholder("Info", id=f"{self.id}-info-pane", classes="pane")
-            yield Placeholder("Structures", id=f"{self.id}-structures-pane", classes="pane")
-            yield Placeholder("Entropy", id=f"{self.id}-entropy-pane", classes="pane")
+        with ContentSwitcher(initial=f"{self.id}-info-panel"):
+            yield InfoPanel(id=f"{self.id}-info-panel", classes="panel")
+            yield Placeholder("Structures", id=f"{self.id}-structures-panel", classes="panel")
+            yield Placeholder("Entropy", id=f"{self.id}-entropy-panel", classes="panel")
 
     def on_mount(self) -> None:
         """Prepare sidebar contents."""
 
     def on_tabs_tab_activated(self, event: Tabs.TabActivated) -> None:
         """Handle TabActivated message sent by Tabs."""
-        self.query_one(ContentSwitcher).current = f"{event.tab.id}-pane"
+        self.query_one(ContentSwitcher).current = f"{event.tab.id}-panel"
+
+    def watch_active_model(self, active_model: DataModel):
+        """React to active model change."""
+        panel = self.query_one(f"#{self.id}-info-panel", InfoPanel)
+        if active_model is not None:
+            panel.filepath = active_model.filepath
+        else:
+            panel.filepath = None
