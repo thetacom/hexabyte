@@ -1,1 +1,0 @@
-"""Hexabyte Widget Package."""
