@@ -8,6 +8,7 @@ from .config import Config
 from .constants import DIFF_MODEL_COUNT
 from .models.data_model import DataModel
 from .modes import Modes
+from .views.byte_view import ByteView
 from .workbench.editor import Editor
 from .workbench.workbench import Workbench
 
@@ -45,15 +46,15 @@ class HexabyteApp(App):
 
         # Create an editors
         if self._mode is Modes.NORMAL:
-            self.sub_title = f"{self.models[0].filepath.name}<-->{self.models[0].filepath.name}"
-            left_editor = Editor(self.models[0], classes="dual")
-            right_editor = Editor(self.models[0], classes="dual")
+            self.sub_title = f"{self.models[0].filepath.name} <--> {self.models[0].filepath.name}"
+            left_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.HEX, classes="dual")
+            right_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.UTF8, classes="dual")
         else:
             if len(self.models) != DIFF_MODEL_COUNT:
                 raise ValueError("Two files must be loaded for diff mode.")
-            self.sub_title = f"{self.models[0].filepath.name}<-DIFF->{self.models[1].filepath.name}"
-            left_editor = Editor(self.models[0], classes="dual")
-            right_editor = Editor(self.models[1], classes="dual")
+            self.sub_title = f"{self.models[0].filepath.name} <-DIFF-> {self.models[1].filepath.name}"
+            left_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.HEX, classes="dual")
+            right_editor = Editor(self.models[1], view_mode=ByteView.ViewMode.HEX, classes="dual")
 
         self.workbench = Workbench(self._mode, left_editor, right_editor)
 
