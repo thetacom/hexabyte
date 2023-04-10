@@ -4,20 +4,36 @@ from textual.containers import Container, Vertical
 from textual.reactive import reactive
 from textual.widgets import Footer, Header
 
-from ..enum.app_mode import AppMode
+from ..modes import Modes
 from .editor import Editor
 from .sidebar import Sidebar
+
+
+class Body(Container):  # pylint: disable=too-few-public-methods
+    """Main container for workspace."""
 
 
 class Workbench(Vertical):
     """Provides the main TUI surface to which widgets are attached."""
 
+    DEFAULT_CSS = """
+    Workbench {
+        layers: base overlay notes notifications;
+    }
+    Workbench Body {
+    width: 100%;
+    layout: grid;
+    grid-size: 6 1;
+    grid-gutter: 1;
+    }
+    """
+
     show_sidebar: reactive[bool] = reactive(True)
-    active_editor: reactive[Editor | None] = reactive(None)
+    active_editor: reactive[Editor | None] = reactive(None, init=False)
 
     def __init__(
         self,
-        mode: AppMode,
+        mode: Modes,
         left_editor: Editor,
         right_editor: Editor,
         **kwargs,
@@ -32,7 +48,7 @@ class Workbench(Vertical):
     def compose(self) -> ComposeResult:
         """Compose sidebar widgets."""
         yield Header(show_clock=True)
-        with Container(id="body"):
+        with Body():
             yield self.left_editor
             yield self.right_editor
             yield self.sidebar
@@ -48,7 +64,7 @@ class Workbench(Vertical):
 
     async def watch_active_editor(self):
         """Watch active editor to update sidebar."""
-        self.sidebar.active_editor = self.active_editor
+        self.sidebar.active_model = self.active_editor.model
 
     def on_editor_selected(self, message: Editor.Selected) -> None:
         """Update global state when switching editors."""
