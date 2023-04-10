@@ -20,11 +20,14 @@ class Workbench(Vertical):
     Workbench {
         layers: base overlay notes notifications;
     }
+    Workbench Header {
+        background: $primary;
+    }
     Workbench Body {
-    width: 100%;
-    layout: grid;
-    grid-size: 6 1;
-    grid-gutter: 1;
+        width: 100%;
+        layout: grid;
+        grid-size: 6 1;
+        grid-gutter: 0;
     }
     """
 
@@ -64,9 +67,11 @@ class Workbench(Vertical):
 
     async def watch_active_editor(self):
         """Watch active editor to update sidebar."""
-        self.sidebar.active_model = self.active_editor.model
+        if self.active_editor is not None:
+            self.sidebar.active_model = self.active_editor.model
+        else:
+            self.sidebar.active_model = None
 
     def on_editor_selected(self, message: Editor.Selected) -> None:
         """Update global state when switching editors."""
         self.active_editor = message.editor
-        # self.active_editor.update("Selected")
