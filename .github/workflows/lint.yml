@@ -17,7 +17,8 @@ jobs:
     - uses: Gr1N/setup-poetry@v8
     - run: poetry --version
     - name: Install dependencies
-      run: poetry install
-    - name: Run linters and checkers
       run: |
-        make lint
+        poetry install
+        source .venv/bin/activate
+    - name: Lint files
+      run: make lint
