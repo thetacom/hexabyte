@@ -18,6 +18,7 @@ jobs:
       run: pip install bandit
     - name: Check files
       run: |
+        mkdir reports
         bandit -r -v -f xml -o reports/bandit.xml hexabyte
   black:
     runs-on: ubuntu-latest
@@ -34,7 +35,7 @@ jobs:
       run: pip install black
     - name: Check files
       run: |
-        @black --check .
+        black --check .
   mypy:
     runs-on: ubuntu-latest
     strategy:
