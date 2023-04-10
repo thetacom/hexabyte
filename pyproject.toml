@@ -1,12 +1,11 @@
 [tool.poetry]
 name = "hexabyte"
-version = "0.1.0"
+version = "0.1.1"
 description = "A modern, modular, and robust commandline hex editor."
 keywords = ["commandline", "hexeditor", "binary", "hexadecimal", "raw", "byteview"]
 repository = "https://github.com/thetacom/hexabyte"
 authors = ["Justin C <justin@thetacom.info>"]
-readme = "README.md"
-license = "LICENSE"
+readme = "docs/README.md"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
@@ -27,20 +26,20 @@ classifiers = [
 packages = [{ include = 'hexabyte' }]
 
 [tool.poetry.dependencies]
-python  = "^3.10"
-click   = "^8.1.3"
+python             = "^3.10"
+click              = "^8.1.3"
 importlib-metadata = "^6.2.1"
-textual = "^0.19.0"
-toml    = "^0.10.2"
-python-magic = "^0.4.27"
+textual            = "^0.19.0"
+toml               = "^0.10.2"
+python-magic       = "^0.4.27"
 
 [tool.poetry.group.dev.dependencies]
-aiohttp = "^3.8.4"
-coverage = "^7.2.3"
+aiohttp     = "^3.8.4"
+coverage    = "^7.2.3"
 black       = "^23.3.0"
 bandit      = "^1.7.5"
 ipykernel   = "^6.16.0"
-msgpack = "^1.0.5"
+msgpack     = "^1.0.5"
 mypy        = "^1.2.0"
 pydocstyle  = "^6.3.0"
 pylint      = "^2.17.2"
@@ -111,7 +110,7 @@ class-naming-style           = "PascalCase"
 const-naming-style           = "UPPER_CASE"
 docstring-min-length         = -1
 function-naming-style        = "snake_case"
-good-names                   = ["f", "i", "j", "k", "ex", "Run", "_", "id"]
+good-names                   = ["f", "i", "j", "k", "x", "y", "z", "ex", "Run", "_", "id"]
 inlinevar-naming-style       = "any"
 method-naming-style          = "snake_case"
 module-naming-style          = "snake_case"
@@ -126,7 +125,7 @@ valid-classmethod-first-arg           = ["cls"]
 valid-metaclass-classmethod-first-arg = ["mcs"]
 
 [tool.pylint.design]
-max-args           = 7
+max-args           = 10
 max-attributes     = 10
 max-bool-expr      = 5
 max-branches       = 12

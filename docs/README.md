@@ -9,23 +9,13 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/hexabyte)](https://pypi.org/project/hexabyte/)
 [![Release](https://github.com/thetacom/hexabyte/actions/workflows/release.yml/badge.svg)](https://github.com/thetacom/hexabyte/actions/)
 
-[![Pre-Commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v1.json)](https://github.com/charliermarsh/ruff)
-
 A modern, robust, and extensible commandline hex editor.
 
-## User
-
-### Install
+## Usage
 
 ```bash
 ~/$ pip install hexabyte
 ...
-```
-
-### Run
-
-```bash
 ~/$ hexabyte --help
 Usage: hexabyte [OPTIONS] FILENAME1 [FILENAME2]
 
@@ -34,14 +24,4 @@ Usage: hexabyte [OPTIONS] FILENAME1 [FILENAME2]
 Options:
   -c, --config PATH  [default: ~/.config/hexabyte/config.toml]
   --help             Show this message and exit.
-```
-
-## Developer
-
-```bash
-~/$ git clone https://github.com/thetacom/hexabyte
-...
-~/$ cd hexabyte
-hexabyte/$ poetry install
-...
 ```
