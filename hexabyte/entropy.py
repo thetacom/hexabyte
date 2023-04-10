@@ -3,7 +3,7 @@
 Transforms binary data into a entropy value.
 """
 import math
-from typing import Dict, List
+
 from .data_model import DataModel
 
 
@@ -24,12 +24,12 @@ class Entropy:
         return math.floor(val * 256)
 
     @property
-    def values(self) -> List[float]:
+    def values(self) -> list[float]:
         """Return the table of entropy values for all chunks."""
         return self._entropy
 
     @property
-    def qvalues(self) -> List[float]:
+    def qvalues(self) -> list[float]:
         """Return the table of quantized entropy values for all chunks."""
         return [self.quantize(val) for val in self._entropy]
 
@@ -49,22 +49,18 @@ class Entropy:
     def _calculate_entropy(self) -> None:
         """Calculate entropy values."""
         # Precalculate logarithms
-        log_table: List[float] = self._create_log_table()
+        log_table: list[float] = self._create_log_table()
         size = len(self.model.data)
         chunk_count = size // self.chunk_size
         if self.chunk_size == 0 or size % chunk_count != 0:
             chunk_count += 1
         self._entropy = [float(0) for _ in range(chunk_count)]
 
-        offset = 0
-        chunk_index = 0
-        for offset in range(0, size, self.chunk_size):
+        for idx, offset in enumerate(range(0, size, self.chunk_size)):
             histogram = self._create_histogram(offset)
-            self._calculate_chunk(chunk_index, histogram, log_table)
-            offset += self.chunk_size
-            chunk_index += 1
+            self._calculate_chunk(idx, histogram, log_table)
 
-    def _create_log_table(self) -> List[float]:
+    def _create_log_table(self) -> list[float]:
         log_table = [float(0) for _ in range(self.chunk_size + 1)]
         logtwo = math.log(self.chunk_size)
         for i in range(1, self.chunk_size):
@@ -74,9 +70,9 @@ class Entropy:
         # log_table[self.chunk_size] = 0.0
         return log_table
 
-    def _create_histogram(self, offset: int) -> Dict[int, int]:
+    def _create_histogram(self, offset: int) -> dict[int, int]:
         chunk = self.model.data[offset : offset + self.chunk_size]
-        histogram: Dict[int, int] = {}
+        histogram: dict[int, int] = {}
         for val in chunk:
             if val in histogram:
                 histogram[val] += 1
@@ -87,8 +83,8 @@ class Entropy:
     def _calculate_chunk(
         self,
         chunk_index: int,
-        histogram: Dict[int, int],
-        log_table: List[float],
+        histogram: dict[int, int],
+        log_table: list[float],
     ) -> None:
         """Calculate the entropy for specified chunk."""
         result = sum(log_table[val] for val in histogram.values())

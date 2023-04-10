@@ -1,7 +1,7 @@
 """Hexabyte Commands."""
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import ClassVar, List
+from typing import ClassVar
 
 
 class CommandType(Enum):
@@ -64,7 +64,7 @@ class HighlightCommand(Command):
     """Highlight Command."""
 
     type: ClassVar[CommandType] = CommandType.HIGHLIGHT
-    selections: List[Selection] = field(default_factory=list)
+    selections: list[Selection] = field(default_factory=list)
 
 
 @dataclass
@@ -80,7 +80,7 @@ class SelectCommand(Command):
     """Select Command."""
 
     type: ClassVar[CommandType] = CommandType.SELECT
-    selections: List[Selection] = field(default_factory=list)
+    selections: list[Selection] = field(default_factory=list)
 
 
 @dataclass
