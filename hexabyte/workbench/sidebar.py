@@ -5,13 +5,29 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import ContentSwitcher, Placeholder, Tab, Tabs
 
-from .editor import Editor
+from ..models.data_model import DataModel
 
 
 class Sidebar(Vertical):
     """The tabbed sidebar container."""
 
-    active_editor: reactive[Editor | None] = reactive(None)
+    DEFAULT_CSS = """
+    Sidebar {
+        layer: base;
+        column-span: 2;
+        height: 100%;
+    }
+    Sidebar Tabs {
+        dock: top;
+    }
+    Sidebar ContentSwitcher {
+        width: 100%;
+        height: 100%;
+        overflow-x: hidden;
+        overflow-y: scroll;
+    }
+    """
+    active_model: reactive[DataModel | None] = reactive(None)
 
     def compose(self) -> ComposeResult:
         """Compose sidebar tabs."""
