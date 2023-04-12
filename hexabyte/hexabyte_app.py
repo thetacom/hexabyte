@@ -6,7 +6,7 @@ from textual.binding import Binding
 
 from .components.byte_view import ByteView
 from .config import Config
-from .constants import DIFF_MODEL_COUNT
+from .constants import APP_NAME, DIFF_MODEL_COUNT
 from .models.data_model import DataModel
 from .modes import Modes
 from .workbench.editor import Editor
@@ -16,7 +16,7 @@ from .workbench.workbench import Workbench
 class HexabyteApp(App):
     """Hexabyte Application Class."""
 
-    TITLE = "Hexabyte"
+    TITLE = APP_NAME.title()
     CSS_PATH = "hexabyte_app.css"
     BINDINGS = [
         Binding("ctrl+c,ctrl+q", "app.quit", "Quit", show=True),
@@ -27,8 +27,7 @@ class HexabyteApp(App):
     def __init__(
         self,
         config: Config,
-        filename1: Path,
-        filename2: Path | None,
+        files: list[Path],
         **kwargs,
     ) -> None:
         """Initialize Application.
@@ -36,23 +35,23 @@ class HexabyteApp(App):
         If two filenames are specified, app will open in diff mode.
         """
         self.config = config
-        self.models = [DataModel(filename1)]
-        if filename2:
+        self.models = [DataModel(files[0])]
+        if len(files) > 1:
             self._mode = Modes.DIFF
-            self.models.append(DataModel(filename2))
+            self.models.append(DataModel(files[1]))
         else:
             self._mode = Modes.NORMAL
         super().__init__(**kwargs)
 
         # Create an editors
         if self._mode is Modes.NORMAL:
-            self.sub_title = f"{self.models[0].filepath.name} <--> {self.models[0].filepath.name}"
+            self.sub_title = f"NORMAL MODE: {self.models[0].filepath.name}"
             left_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.HEX, classes="dual", id="editor1")
             right_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.UTF8, classes="dual", id="editor2")
         else:
             if len(self.models) != DIFF_MODEL_COUNT:
                 raise ValueError("Two files must be loaded for diff mode.")
-            self.sub_title = f"{self.models[0].filepath.name} <-DIFF-> {self.models[1].filepath.name}"
+            self.sub_title = f"DIFF MODE: {self.models[0].filepath.name} <-> {self.models[1].filepath.name}"
             left_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.HEX, classes="dual", id="editor1")
             right_editor = Editor(self.models[1], view_mode=ByteView.ViewMode.HEX, classes="dual", id="editor2")
 
