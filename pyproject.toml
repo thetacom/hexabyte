@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hexabyte"
-version = "0.1.1"
+version = "0.2.0"
 description = "A modern, modular, and robust commandline hex editor."
 keywords = ["commandline", "hexeditor", "binary", "hexadecimal", "raw", "byteview"]
 repository = "https://github.com/thetacom/hexabyte"
