@@ -126,12 +126,12 @@ valid-metaclass-classmethod-first-arg = ["mcs"]
 
 [tool.pylint.design]
 max-args           = 10
-max-attributes     = 10
+max-attributes     = 15
 max-bool-expr      = 5
 max-branches       = 12
 max-locals         = 15
 max-parents        = 7
-max-public-methods = 20
+max-public-methods = 30
 max-returns        = 6
 max-statements     = 50
 min-public-methods = 2

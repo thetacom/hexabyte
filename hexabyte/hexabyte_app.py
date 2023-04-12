@@ -47,14 +47,14 @@ class HexabyteApp(App):
         # Create an editors
         if self._mode is Modes.NORMAL:
             self.sub_title = f"{self.models[0].filepath.name} <--> {self.models[0].filepath.name}"
-            left_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.HEX, classes="dual")
-            right_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.UTF8, classes="dual")
+            left_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.HEX, classes="dual", id="editor1")
+            right_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.UTF8, classes="dual", id="editor2")
         else:
             if len(self.models) != DIFF_MODEL_COUNT:
                 raise ValueError("Two files must be loaded for diff mode.")
             self.sub_title = f"{self.models[0].filepath.name} <-DIFF-> {self.models[1].filepath.name}"
-            left_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.HEX, classes="dual")
-            right_editor = Editor(self.models[1], view_mode=ByteView.ViewMode.HEX, classes="dual")
+            left_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.HEX, classes="dual", id="editor1")
+            right_editor = Editor(self.models[1], view_mode=ByteView.ViewMode.HEX, classes="dual", id="editor2")
 
         self.workbench = Workbench(self._mode, left_editor, right_editor)
 
@@ -66,6 +66,11 @@ class HexabyteApp(App):
     def compose(self) -> ComposeResult:
         """Compose main screen."""
         yield self.workbench
+
+    def on_mount(self) -> None:
+        """Perform initial actions after mount."""
+        editor = self.query_one("#editor1", Editor)
+        editor.focus()
 
     async def action_toggle_sidebar(self) -> None:
         """Toggle visibility of sidebar."""
