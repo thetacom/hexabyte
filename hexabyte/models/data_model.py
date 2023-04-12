@@ -4,7 +4,7 @@ Provides the interface for interacting with raw file data.
 """
 from pathlib import Path
 
-from ..constants import KB, MB
+from ..constants.sizes import KB, MB
 from .cursor import Cursor
 from .data_sources import SimpleDataSource
 

@@ -1,6 +1,5 @@
 """ByteView Component Module."""
 from collections.abc import Iterable
-from enum import Enum
 from math import ceil
 from string import printable
 
@@ -14,7 +13,8 @@ from rich.style import Style
 from rich.text import Text
 from textual.geometry import Size
 
-from ..constants import BYTE_BITS, NIBBLE_BITS
+from ..constants import DisplayMode
+from ..constants.sizes import BYTE_BITS, NIBBLE_BITS
 from ..models.cursor import Cursor
 
 NUMBERS_COLUMN_DEFAULT_PADDING = 3
@@ -38,29 +38,19 @@ class ByteView(JupyterMixin):
         highlighter (Highlighter, optional): Text highlighter.
     """
 
-    class ViewMode(Enum):
-        """ByteView Views.
-
-        Value represents the number of character per byte.
-        """
-
-        HEX = "h"
-        BIN = "b"
-        UTF8 = "a"
-
-    BYTE_REPR_LEN = {ViewMode.HEX: 2, ViewMode.BIN: 8, ViewMode.UTF8: 1}
+    BYTE_REPR_LEN = {DisplayMode.HEX: 2, DisplayMode.BIN: 8, DisplayMode.UTF8: 1}
 
     VALID_CHARS = {
-        ViewMode.HEX: "0123456789ABCDEF",
-        ViewMode.BIN: "01",
-        ViewMode.UTF8: printable,
+        DisplayMode.HEX: "0123456789ABCDEF",
+        DisplayMode.BIN: "01",
+        DisplayMode.UTF8: printable,
     }
 
     def __init__(
         self,
         data: bytes | bytearray,
         *,
-        view_mode: ViewMode = ViewMode.HEX,
+        view_mode: DisplayMode = DisplayMode.HEX,
         column_count: int = 4,
         column_size: int = 4,
         offsets: bool = False,
@@ -184,11 +174,11 @@ class ByteView(JupyterMixin):
     def generate_text(self, offset: int, data: bytes) -> Text:
         """Generate a text line from data."""
         text = Text()
-        if self.view_mode is ByteView.ViewMode.BIN:
+        if self.view_mode is DisplayMode.BIN:
             text = self._generate_bin_text(offset, data)
-        if self.view_mode is ByteView.ViewMode.HEX:
+        if self.view_mode is DisplayMode.HEX:
             text = self._generate_hex_text(offset, data)
-        if self.view_mode is ByteView.ViewMode.UTF8:
+        if self.view_mode is DisplayMode.UTF8:
             text = self._generate_utf8_text(offset, data)
         return text
 
@@ -350,11 +340,11 @@ if __name__ == "__main__":  # pragma: no cover
     else:
         byte_data = FILLER_DATA  # pylint: disable=invalid-name
     if args.mode_str.lower() == "h":
-        mode = ByteView.ViewMode.HEX
+        mode = DisplayMode.HEX
     elif args.mode_str.lower() == "b":
-        mode = ByteView.ViewMode.BIN
+        mode = DisplayMode.BIN
     elif args.mode_str.lower() == "a":
-        mode = ByteView.ViewMode.UTF8
+        mode = DisplayMode.UTF8
     else:
         raise ValueError("Mode option must be 'h', 'b', or 'a'")
     view = ByteView(

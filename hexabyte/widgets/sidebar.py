@@ -5,8 +5,7 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import ContentSwitcher, Placeholder, Tab, Tabs
 
-from .editor import Editor
-from .info_panel import InfoPanel
+from . import Editor, InfoPanel
 
 
 class Sidebar(Vertical):

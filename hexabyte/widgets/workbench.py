@@ -4,9 +4,8 @@ from textual.containers import Container, Vertical
 from textual.reactive import reactive
 from textual.widgets import Footer, Header
 
-from ..modes import Modes
-from .editor import Editor
-from .sidebar import Sidebar
+from ..constants import FileMode
+from . import Editor, Sidebar
 
 
 class Body(Container):  # pylint: disable=too-few-public-methods
@@ -36,7 +35,7 @@ class Workbench(Vertical):
 
     def __init__(
         self,
-        mode: Modes,
+        mode: FileMode,
         left_editor: Editor,
         right_editor: Editor,
         **kwargs,

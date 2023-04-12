@@ -5,7 +5,7 @@ from shutil import copy
 
 import toml
 
-from .constants import CONFIG_FILENAME, DEFAULT_CONFIG_PATH
+from .constants.generic import CONFIG_FILENAME, DEFAULT_CONFIG_PATH
 
 
 class Config:
