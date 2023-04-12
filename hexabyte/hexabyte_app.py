@@ -71,6 +71,13 @@ class HexabyteApp(App):
         editor = self.query_one("#editor1", Editor)
         editor.focus()
 
+    def action_toggle_dark(self) -> None:
+        """Toggle dark mode."""
+        super().action_toggle_dark()
+        editors = self.query("Editor").results(Editor)
+        for editor in editors:
+            editor.update_view_style()
+
     async def action_toggle_sidebar(self) -> None:
         """Toggle visibility of sidebar."""
         self.workbench.show_sidebar = not self.workbench.show_sidebar

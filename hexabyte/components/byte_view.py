@@ -33,6 +33,9 @@ class ByteView(JupyterMixin):
         start_offset (int, optional): Starting number for line offsets. Defaults to 0.
         padding (PaddingDimensions, optional): Specifies padding. Defaults to 0.
         cursor_visible (bool, optional): Display cursor. Defaults to True.
+        cursor_style (Style, optional): Cursor style.
+        text_style (Style, optional): Text style.
+        highlighter (Highlighter, optional): Text highlighter.
     """
 
     class ViewMode(Enum):
@@ -65,7 +68,7 @@ class ByteView(JupyterMixin):
         start_offset: int = 0,
         padding: PaddingDimensions = 0,
         cursor: Cursor = Cursor(),
-        cursor_style: Style = Style(color="white", reverse=True),
+        text_style: Style = Style(),
         highlighter: Highlighter | None = None,
     ) -> None:
         """Initialize ByteView Component."""
@@ -79,7 +82,7 @@ class ByteView(JupyterMixin):
         self.padding = padding
         self.cursor = cursor
         self.cursor_visible = False
-        self.cursor_style = cursor_style
+        self.text_style = text_style
         self.highlighter = highlighter
 
     @property
@@ -121,6 +124,18 @@ class ByteView(JupyterMixin):
         return _height
 
     @property
+    def text_style(self) -> Style:
+        """Return the current text style."""
+        return self._text_style
+
+    @text_style.setter
+    def text_style(self, new_style: Style) -> None:
+        """Update text styles."""
+        self._text_style = new_style
+        self.cursor_style = Style.combine(styles=[self._text_style, Style(reverse=True)])
+        self.offset_style = Style.combine(styles=[self._text_style, Style(bold=True)])
+
+    @property
     def width(self) -> int:
         """Return calculated width in columns."""
         _, right, _, left = Padding.unpack(self.padding)
@@ -160,7 +175,7 @@ class ByteView(JupyterMixin):
         if self.offsets:
             offset_txt = hex(offset) if self.hex_offsets else str(offset)
             offset_column = str(offset_txt).rjust(self.offsets_column_width - 2) + " | "
-            yield Segment(offset_column)
+            yield Segment(offset_column, style=self.offset_style)
         text = self.generate_text(offset, data)
         if self.highlighter is not None:
             text = self.highlighter(text)
@@ -185,9 +200,10 @@ class ByteView(JupyterMixin):
             chunk = data[col_start : col_start + self.column_size]
             for bite in chunk:
                 if bite == 0:
-                    txt = Text("00000000", style="dim")
+                    txt = Text("00000000", self.text_style)
+                    txt.stylize("dim")
                 else:
-                    txt = Text(f"{bite:>08b}")
+                    txt = Text(f"{bite:>08b}", self.text_style)
                 if self.cursor_visible and self.cursor is not None and byte_position == self.cursor.byte:
                     txt.stylize(self.cursor_style, self.cursor.remainder_bits, self.cursor.remainder_bits + 1)
                 text.append(txt)
@@ -203,9 +219,10 @@ class ByteView(JupyterMixin):
             chunk = data[col_start : col_start + self.column_size]
             for bite in chunk:
                 if bite == 0:
-                    txt = Text("00", style="dim")
+                    txt = Text("00", self.text_style)
+                    txt.stylize("dim")
                 else:
-                    txt = Text(f"{bite:02x}")
+                    txt = Text(f"{bite:02x}", self.text_style)
                 if self.cursor_visible and self.cursor is not None and byte_position == self.cursor.byte:
                     start = self.cursor.remainder_bits // NIBBLE_BITS
                     txt.stylize(self.cursor_style, start, start + 1)
@@ -221,10 +238,11 @@ class ByteView(JupyterMixin):
         for col_start in range(0, self.line_byte_length, self.column_size):
             chunk = data[col_start : col_start + self.column_size]
             for bite in chunk:
-                if chr(bite).isprintable():
-                    txt = Text(chr(bite))
+                if not chr(bite).isprintable():
+                    txt = Text(".", self.text_style)
+                    txt.stylize("dim")
                 else:
-                    txt = Text(".", style="dim")
+                    txt = Text(chr(bite), self.text_style)
                 if self.cursor_visible and self.cursor is not None and byte_position == self.cursor.byte:
                     txt.stylize(self.cursor_style)
                 text.append(txt)

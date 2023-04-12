@@ -58,11 +58,11 @@ class Editor(ScrollView):
     | ctrl+s | Save file. |.
     """
 
-    COMPONENT_CLASSES: ClassVar[set[str]] = {"cursor"}
+    COMPONENT_CLASSES: ClassVar[set[str]] = {"text"}
     """
     | Class | Description |
     | :- | :- |
-    | `cursor` | Target the cursor. |.
+    | `editor--text` | Target the editor text. |.
     """
 
     DEFAULT_CSS = """
@@ -85,10 +85,9 @@ class Editor(ScrollView):
     Editor.dual.with-sidebar {
         column-span: 2;
     }
-    Editor>.cursor {
+    Editor>.text {
         background: $surface;
         color: $text;
-        text-style: reverse;
     }
     """
 
@@ -166,7 +165,7 @@ class Editor(ScrollView):
             continue
         self.mode = view_mode
         self.cursor_increment = CURSOR_INCREMENTS[self.mode]
-        self.view = ByteView(self.model.read(), view_mode=view_mode)
+        self.view = ByteView(data=self.model.read(), view_mode=view_mode)
         self.virtual_size = self.view.size
         self.cursor = start_offset
 
@@ -283,6 +282,7 @@ class Editor(ScrollView):
 
     def on_mount(self) -> None:
         """Mount child widgets."""
+        self.update_view_style()
         self.blink_timer = self.set_interval(  # pylint: disable=attribute-defined-outside-init
             0.5,
             self._toggle_cursor,
@@ -308,6 +308,11 @@ class Editor(ScrollView):
             .crop(scroll_x, scroll_x + self.size.width)
         )
         return strip
+
+    def update_view_style(self) -> None:
+        """Update text style of view component."""
+        self._update_styles()
+        self.view.text_style = self.get_component_rich_style("text")
 
     def validate_cursor(self, cursor: int) -> int:
         """Validate updated cursor position."""
