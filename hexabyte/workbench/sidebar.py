@@ -5,7 +5,7 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import ContentSwitcher, Placeholder, Tab, Tabs
 
-from ..models.data_model import DataModel
+from .editor import Editor
 from .info_panel import InfoPanel
 
 
@@ -30,7 +30,7 @@ class Sidebar(Vertical):
         overflow-y: scroll;
     }
     """
-    active_model: reactive[DataModel | None] = reactive(None)
+    active_editor: reactive[Editor | None] = reactive(None)
 
     def compose(self) -> ComposeResult:
         """Compose sidebar tabs."""
@@ -51,10 +51,10 @@ class Sidebar(Vertical):
         """Handle TabActivated message sent by Tabs."""
         self.query_one(ContentSwitcher).current = f"{event.tab.id}-panel"
 
-    def watch_active_model(self, active_model: DataModel):
+    def watch_active_editor(self, editor: Editor):
         """React to active model change."""
         panel = self.query_one(f"#{self.id}-info-panel", InfoPanel)
-        if active_model is not None:
-            panel.filepath = active_model.filepath
+        if editor is not None:
+            panel.editor = editor
         else:
-            panel.filepath = None
+            panel.editor = None

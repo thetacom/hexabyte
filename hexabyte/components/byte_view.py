@@ -1,16 +1,21 @@
-"""A Rich Compatible Byteview Component."""
+"""ByteView Component Module."""
 from collections.abc import Iterable
 from enum import Enum
 from math import ceil
 from string import printable
 
 from rich.console import Console, ConsoleOptions
+from rich.highlighter import Highlighter
 from rich.jupyter import JupyterMixin
 from rich.measure import Measurement
 from rich.padding import Padding, PaddingDimensions
 from rich.segment import Segment, Segments
+from rich.style import Style
 from rich.text import Text
 from textual.geometry import Size
+
+from ..constants import BYTE_BITS, NIBBLE_BITS
+from ..models.cursor import Cursor
 
 NUMBERS_COLUMN_DEFAULT_PADDING = 3
 
@@ -59,7 +64,9 @@ class ByteView(JupyterMixin):
         hex_offsets: bool = True,
         start_offset: int = 0,
         padding: PaddingDimensions = 0,
-        cursor_visible: bool = True,
+        cursor: Cursor = Cursor(),
+        cursor_style: Style = Style(color="white", reverse=True),
+        highlighter: Highlighter | None = None,
     ) -> None:
         """Initialize ByteView Component."""
         self.data = data
@@ -70,7 +77,15 @@ class ByteView(JupyterMixin):
         self.hex_offsets = hex_offsets
         self.start_offset = start_offset
         self.padding = padding
-        self.cursor_visible = cursor_visible
+        self.cursor = cursor
+        self.cursor_visible = False
+        self.cursor_style = cursor_style
+        self.highlighter = highlighter
+
+    @property
+    def line_bit_length(self) -> int:
+        """Get bits per line based on column settings."""
+        return self.line_byte_length * BYTE_BITS
 
     @property
     def line_byte_length(self) -> int:
@@ -88,7 +103,7 @@ class ByteView(JupyterMixin):
         return (self.BYTE_REPR_LEN[self.view_mode] * self.column_size + 1) * self.column_count
 
     @property
-    def _offsets_column_width(self) -> int:
+    def offsets_column_width(self) -> int:
         """Get the number of characters used to render the offsets column."""
         if self.offsets:
             max_val = self.start_offset + (self.line_count * self.line_byte_length)
@@ -110,7 +125,7 @@ class ByteView(JupyterMixin):
         """Return calculated width in columns."""
         _, right, _, left = Padding.unpack(self.padding)
         padding = left + right
-        _width = self._offsets_column_width + padding + self.data_width
+        _width = self.offsets_column_width + padding + self.data_width
         if self.offsets:
             _width += 1
         return _width
@@ -126,7 +141,7 @@ class ByteView(JupyterMixin):
         options: ConsoleOptions,  # pylint: disable=unused-argument
     ) -> Measurement:
         """Create Rich Measurement instance for ByteView."""
-        return Measurement(self._offsets_column_width, self.width)
+        return Measurement(self.offsets_column_width, self.width)
 
     def __rich_console__(
         self,
@@ -144,58 +159,76 @@ class ByteView(JupyterMixin):
         """Generate a single view line."""
         if self.offsets:
             offset_txt = hex(offset) if self.hex_offsets else str(offset)
-            offset_column = str(offset_txt).rjust(self._offsets_column_width - 2) + " | "
+            offset_column = str(offset_txt).rjust(self.offsets_column_width - 2) + " | "
             yield Segment(offset_column)
-        text = self.generate_text(data)
+        text = self.generate_text(offset, data)
+        if self.highlighter is not None:
+            text = self.highlighter(text)
         yield from text.render(_console, end=end)
 
-    def generate_text(self, data: bytes) -> Text:
+    def generate_text(self, offset: int, data: bytes) -> Text:
         """Generate a text line from data."""
         text = Text()
         if self.view_mode is ByteView.ViewMode.BIN:
-            text = self._generate_bin_text(data)
+            text = self._generate_bin_text(offset, data)
         if self.view_mode is ByteView.ViewMode.HEX:
-            text = self._generate_hex_text(data)
+            text = self._generate_hex_text(offset, data)
         if self.view_mode is ByteView.ViewMode.UTF8:
-            text = self._generate_utf8_text(data)
+            text = self._generate_utf8_text(offset, data)
         return text
 
-    def _generate_bin_text(self, data: bytes) -> Text:
+    def _generate_bin_text(self, offset: int, data: bytes) -> Text:
         """Generate binary text from data."""
         text = Text()
+        byte_position = offset
         for col_start in range(0, self.line_byte_length, self.column_size):
             chunk = data[col_start : col_start + self.column_size]
             for bite in chunk:
                 if bite == 0:
-                    text.append("00000000", style="dim")
+                    txt = Text("00000000", style="dim")
                 else:
-                    text.append(f"{bite:>08b}")
+                    txt = Text(f"{bite:>08b}")
+                if self.cursor_visible and self.cursor is not None and byte_position == self.cursor.byte:
+                    txt.stylize(self.cursor_style, self.cursor.remainder_bits, self.cursor.remainder_bits + 1)
+                text.append(txt)
+                byte_position += 1
             text.append(" ")
         return text
 
-    def _generate_hex_text(self, data: bytes) -> Text:
+    def _generate_hex_text(self, offset: int, data: bytes) -> Text:
         """Generate hexadecimal text from data."""
         text = Text()
+        byte_position = offset
         for col_start in range(0, self.line_byte_length, self.column_size):
             chunk = data[col_start : col_start + self.column_size]
             for bite in chunk:
                 if bite == 0:
-                    text.append("00", style="dim")
+                    txt = Text("00", style="dim")
                 else:
-                    text.append(f"{bite:02x}")
+                    txt = Text(f"{bite:02x}")
+                if self.cursor_visible and self.cursor is not None and byte_position == self.cursor.byte:
+                    start = self.cursor.remainder_bits // NIBBLE_BITS
+                    txt.stylize(self.cursor_style, start, start + 1)
+                text.append(txt)
+                byte_position += 1
             text.append(" ")
         return text
 
-    def _generate_utf8_text(self, data: bytes) -> Text:
+    def _generate_utf8_text(self, offset: int, data: bytes) -> Text:
         """Generate utf8 text from data."""
         text = Text()
+        byte_position = offset
         for col_start in range(0, self.line_byte_length, self.column_size):
             chunk = data[col_start : col_start + self.column_size]
             for bite in chunk:
                 if chr(bite).isprintable():
-                    text.append(chr(bite))
+                    txt = Text(chr(bite))
                 else:
-                    text.append(".", style="dim")
+                    txt = Text(".", style="dim")
+                if self.cursor_visible and self.cursor is not None and byte_position == self.cursor.byte:
+                    txt.stylize(self.cursor_style)
+                text.append(txt)
+                byte_position += 1
             text.append(" ")
         return text
 
@@ -211,7 +244,7 @@ class ByteView(JupyterMixin):
             if self.offsets:
                 yield from self.generate_line(_console, offset, line_data, end="\n")
             else:
-                yield from self.generate_text(line_data).render(console, end="\n")
+                yield from self.generate_text(offset, line_data).render(console, end="\n")
             offset += self.line_byte_length
 
 

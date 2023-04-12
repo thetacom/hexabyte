@@ -1,0 +1,1 @@
+"""Rich-compatible Components Package."""

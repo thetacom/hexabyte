@@ -35,17 +35,12 @@ class DataModel:
         #     self._source = SimpleDataSource(filepath)
         # else:
         #     self._source = PagedDataSource(filepath, self.BLOCK_SIZE)
-        self._cursor = Cursor()
         self._selected: int = 0
+        self.cursor = Cursor(max_bytes=len(self))
 
     def __len__(self) -> int:
         """Return length of data."""
         return len(self._source)
-
-    @property
-    def cursor(self) -> Cursor:
-        """Return the cursor position."""
-        return self._cursor
 
     @property
     def filepath(self) -> Path:

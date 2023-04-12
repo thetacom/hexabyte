@@ -1,1 +1,0 @@
-"""Hexabyte View Component Package."""

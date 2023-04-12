@@ -1,6 +1,6 @@
 """Data Model Cursor Module."""
 
-from ..constants import BYTE, QWORD_64BIT, WORD_32BIT, WORD_64BIT
+from ..constants import BYTE_BITS, QWORD64_BITS, QWORD64_SZ, WORD32_BITS, WORD32_SZ, WORD64_BITS, WORD64_SZ
 
 
 class Cursor:
@@ -9,9 +9,11 @@ class Cursor:
     Tracks the position within the data at multiple resolutions
     """
 
-    def __init__(self, val: int = 0) -> None:
+    def __init__(self, val: int = 0, max_bytes: int = 0) -> None:
         """Initialize Cursor."""
+        super().__init__()
         self._absolute = val
+        self._max = max_bytes * BYTE_BITS
 
     @property
     def bit(self) -> int:
@@ -28,40 +30,30 @@ class Cursor:
 
     @property
     def byte(self) -> int:
-        """Return the cursor byte position in data."""
-        return self._absolute // BYTE
+        """Return the byte aligned cursor position as byte offset."""
+        return self.bit // BYTE_BITS
 
     @byte.setter
-    def byte(self, val: int) -> None:
+    def byte(self, byte_offset: int) -> None:
         """Set the cursor byte position in data."""
-        self.bit = val * BYTE
-
-    @property
-    def word32(self) -> int:
-        """Return the cursor 32-bit word position in data."""
-        return self.bit // WORD_32BIT
-
-    @word32.setter
-    def word32(self, val: int) -> None:
-        """Set the cursor 32-bit word position in data."""
-        self.bit = val * WORD_32BIT
-
-    @property
-    def word64(self) -> int:
-        """Return the cursor 64-bit word position in data."""
-        return self.bit // WORD_64BIT
-
-    @word64.setter
-    def word64(self, val: int) -> None:
-        """Set the cursor 64-bit word position in data."""
-        self.bit = val * WORD_64BIT
+        self.bit = byte_offset * BYTE_BITS
 
     @property
     def qword64(self) -> int:
-        """Return the cursor 64-bit word position in data."""
-        return self.bit // QWORD_64BIT
+        """Return the cursor 64-bit qword aligned cursor position as byte offset."""
+        return self.bit // QWORD64_BITS * QWORD64_SZ
 
-    @qword64.setter
-    def qword64(self, val: int) -> None:
-        """Set the cursor 64-bit quad word position in data."""
-        self.bit = val * QWORD_64BIT
+    @property
+    def remainder_bits(self) -> int:
+        """Return the number of bits offset from last byte position."""
+        return self.bit % BYTE_BITS
+
+    @property
+    def word32(self) -> int:
+        """Return the 32-bit word aligned cursor position as byte offset."""
+        return self.bit // WORD32_BITS * WORD32_SZ
+
+    @property
+    def word64(self) -> int:
+        """Return the 64-bit word aligned cursor position as byte offset."""
+        return self.bit // WORD64_BITS * WORD64_SZ

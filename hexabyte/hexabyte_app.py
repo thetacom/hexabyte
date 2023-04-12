@@ -4,11 +4,11 @@ from pathlib import Path
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 
+from .components.byte_view import ByteView
 from .config import Config
 from .constants import DIFF_MODEL_COUNT
 from .models.data_model import DataModel
 from .modes import Modes
-from .views.byte_view import ByteView
 from .workbench.editor import Editor
 from .workbench.workbench import Workbench
 

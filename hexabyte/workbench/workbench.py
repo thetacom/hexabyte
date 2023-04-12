@@ -57,6 +57,13 @@ class Workbench(Vertical):
             yield self.sidebar
         yield Footer()
 
+    async def watch_active_editor(self):
+        """Watch active editor to update sidebar."""
+        if self.active_editor is not None:
+            self.sidebar.active_editor = self.active_editor
+        else:
+            self.sidebar.active_editor = None
+
     async def watch_show_sidebar(self, visibility: bool) -> None:
         """Toggle sidebar view visibility if show_sidebar flag changes."""
         self.sidebar.display = visibility
@@ -64,13 +71,6 @@ class Workbench(Vertical):
             self.query("Editor").add_class("with-sidebar")
         else:
             self.query("Editor").remove_class("with-sidebar")
-
-    async def watch_active_editor(self):
-        """Watch active editor to update sidebar."""
-        if self.active_editor is not None:
-            self.sidebar.active_model = self.active_editor.model
-        else:
-            self.sidebar.active_model = None
 
     def on_editor_selected(self, message: Editor.Selected) -> None:
         """Update global state when switching editors."""
