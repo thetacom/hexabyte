@@ -140,6 +140,7 @@ class Editor(ScrollView):
         self,
         model: DataModel,
         view_mode: ByteView.ViewMode = ByteView.ViewMode.HEX,
+        start_offset: int = 0,
         name: str | None = None,
         id: str | None = None,  # pylint: disable=redefined-builtin
         classes: str | None = None,
@@ -151,6 +152,7 @@ class Editor(ScrollView):
         ----
         model: The model containing data to be rendered.
         view_mode: An optional view mode. Default ByteView.ViewMode.HEX.
+        start_offset: Optional start offset of cursor. Default is 0.
         name: Optional name for the editor widget.
         id: Optional ID for the widget.
         classes: Optional initial classes for the widget.
@@ -166,6 +168,7 @@ class Editor(ScrollView):
         self.cursor_increment = CURSOR_INCREMENTS[self.mode]
         self.view = ByteView(self.model.read(), view_mode=view_mode)
         self.virtual_size = self.view.size
+        self.cursor = start_offset
 
     @property
     def _cursor_at_end(self) -> bool:
@@ -218,6 +221,14 @@ class Editor(ScrollView):
     def action_cursor_home(self) -> None:
         """Move the cursor to the start of the input."""
         self.cursor = self.cursor // self.view.line_bit_length * self.view.line_bit_length
+
+    def action_cursor_page_up(self) -> None:
+        """Move the cursor up a page."""
+        self.cursor -= self.view.line_bit_length * self.size.height
+
+    def action_cursor_page_down(self) -> None:
+        """Move the cursor down a page."""
+        self.cursor += self.view.line_bit_length * self.size.height
 
     def action_save(self) -> None:
         """Save data to file."""
