@@ -4,14 +4,21 @@ from typing import ClassVar
 
 from rich.highlighter import Highlighter
 from textual.binding import Binding, BindingType
-from textual.events import Key, Paste
+from textual.events import Click, Key, Paste
 from textual.message import Message
 from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
+from ..components.byte_view import ByteView
+from ..constants import BIT, BYTE_BITS, NIBBLE_BITS
 from ..models.data_model import DataModel
-from ..views.byte_view import ByteView
+
+CURSOR_INCREMENTS = {
+    ByteView.ViewMode.HEX: NIBBLE_BITS,
+    ByteView.ViewMode.BIN: BIT,
+    ByteView.ViewMode.UTF8: BYTE_BITS,
+}
 
 
 class Editor(ScrollView):
@@ -51,11 +58,11 @@ class Editor(ScrollView):
     | ctrl+s | Save file. |.
     """
 
-    COMPONENT_CLASSES: ClassVar[set[str]] = {"--cursor"}
+    COMPONENT_CLASSES: ClassVar[set[str]] = {"cursor"}
     """
     | Class | Description |
     | :- | :- |
-    | `--cursor` | Target the cursor. |.
+    | `cursor` | Target the cursor. |.
     """
 
     DEFAULT_CSS = """
@@ -78,18 +85,20 @@ class Editor(ScrollView):
     Editor.dual.with-sidebar {
         column-span: 2;
     }
-    Editor>.--cursor {
+    Editor>.cursor {
         background: $surface;
         color: $text;
         text-style: reverse;
     }
     """
 
-    mode = reactive(ByteView.ViewMode.HEX)
-    show_offsets = reactive(True)
-    hex_offsets = reactive(True)
-    cursor_blink = reactive(True)
-    _cursor_visible = reactive(True)
+    mode: reactive[ByteView.ViewMode] = reactive(ByteView.ViewMode.HEX)
+    highlighter: reactive[Highlighter | None] = reactive(None)
+    show_offsets: reactive[bool] = reactive(True)
+    hex_offsets: reactive[bool] = reactive(True)
+    cursor: reactive[int] = reactive(0)  # Cursor bit position
+    cursor_blink: reactive[bool] = reactive(True)
+    _cursor_visible: reactive[bool] = reactive(True)
 
     class Changed(Message):  # pylint: disable=too-few-public-methods
         """Posted when data changes.
@@ -131,7 +140,6 @@ class Editor(ScrollView):
         self,
         model: DataModel,
         view_mode: ByteView.ViewMode = ByteView.ViewMode.HEX,
-        highlighter: Highlighter | None = None,
         name: str | None = None,
         id: str | None = None,  # pylint: disable=redefined-builtin
         classes: str | None = None,
@@ -143,7 +151,6 @@ class Editor(ScrollView):
         ----
         model: The model containing data to be rendered.
         view_mode: An optional view mode. Default ByteView.ViewMode.HEX.
-        highlighter: An optional highlighter for the editor.
         name: Optional name for the editor widget.
         id: Optional ID for the widget.
         classes: Optional initial classes for the widget.
@@ -151,19 +158,24 @@ class Editor(ScrollView):
         """
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
         self.model = model
-        self.view = ByteView(self.model.read(), view_mode=view_mode)
         self.view_modes = cycle(ByteView.ViewMode)
         # Synch modes cycle with specified view
         while next(self.view_modes) is not view_mode:
             continue
         self.mode = view_mode
+        self.cursor_increment = CURSOR_INCREMENTS[self.mode]
+        self.view = ByteView(self.model.read(), view_mode=view_mode)
         self.virtual_size = self.view.size
-        self.highlighter = highlighter
 
     @property
     def _cursor_at_end(self) -> bool:
         """Flag to indicate if the cursor is at the end."""
-        return self.model.cursor.byte >= len(self.model)
+        return self.cursor >= len(self.model) * BYTE_BITS
+
+    @property
+    def _cursor_y(self) -> int:
+        """Return the y position of cursor."""
+        return self.cursor // self.view.line_bit_length
 
     def _toggle_cursor(self) -> None:
         """Toggle visibility of cursor."""
@@ -183,33 +195,29 @@ class Editor(ScrollView):
             self.hex_offsets = True
             self.show_offsets = True
 
+    def action_cursor_down(self) -> None:
+        """Move the cursor down."""
+        self.cursor += self.view.line_bit_length
+
+    def action_cursor_up(self) -> None:
+        """Move the cursor up."""
+        self.cursor -= self.view.line_bit_length
+
     def action_cursor_left(self) -> None:
         """Move the cursor one position to the left."""
-        if self.mode is ByteView.ViewMode.BIN:
-            self.model.cursor.bit -= 1
-        elif self.mode is ByteView.ViewMode.HEX:
-            self.model.cursor.bit -= 4
-        elif self.mode is ByteView.ViewMode.UTF8:
-            self.model.cursor.byte -= 1
+        self.cursor -= self.cursor_increment
 
     def action_cursor_right(self) -> None:
         """Move the cursor one position to the right."""
-        if self.mode is ByteView.ViewMode.BIN:
-            self.model.cursor.bit += 1
-        elif self.mode is ByteView.ViewMode.HEX:
-            self.model.cursor.bit += 4
-        elif self.mode is ByteView.ViewMode.UTF8:
-            self.model.cursor.byte += 1
+        self.cursor += self.cursor_increment
 
     def action_cursor_end(self) -> None:
         """Move the cursor to the end of the input."""
-        self.model.cursor.byte = (
-            self.model.cursor.byte // self.view.line_byte_length + 1
-        ) * self.view.line_byte_length - 1
+        self.cursor = (self.cursor // self.view.line_bit_length + 1) * self.view.line_bit_length - 1
 
     def action_cursor_home(self) -> None:
         """Move the cursor to the start of the input."""
-        self.model.cursor.byte = self.model.cursor.byte // self.view.line_byte_length * self.view.line_byte_length
+        self.cursor = self.cursor // self.view.line_bit_length * self.view.line_bit_length
 
     def action_save(self) -> None:
         """Save data to file."""
@@ -227,9 +235,19 @@ class Editor(ScrollView):
         """Handle blur events."""
         self.blink_timer.pause()
 
+    def on_click(self, click: Click) -> None:
+        """Handle click events."""
+        if click.button == 1:
+            if click.x > self.view.offsets_column_width + 1:
+                y_portion = (self.scroll_offset.y + click.y - 1) * self.view.line_bit_length
+                data_x = click.x - self.view.offsets_column_width - 2
+                adjusted_x = data_x - data_x // (self.view.BYTE_REPR_LEN[self.mode] * self.view.column_size)
+                x_portion = adjusted_x * self.cursor_increment
+                self.cursor = y_portion + x_portion
+
     def on_focus(self) -> None:
         """Handle focus events."""
-        # self.cursor_position = len(self.model)
+        self.cursor = self.model.cursor.bit
         if self.cursor_blink:
             self.blink_timer.resume()
         self.post_message(self.Selected(self))
@@ -246,11 +264,11 @@ class Editor(ScrollView):
             event.stop()
             return
         if event.is_printable:
-            event.stop()
-            assert event.character is not None
-            if event.key in ByteView.VALID_CHARS[self.mode]:
-                self.insert_at_cursor(event.character)
             event.prevent_default()
+            event.stop()
+            if event.character is not None:
+                if event.key in ByteView.VALID_CHARS[self.mode]:
+                    self.insert_at_cursor(event.character)
 
     def on_mount(self) -> None:
         """Mount child widgets."""
@@ -270,28 +288,32 @@ class Editor(ScrollView):
         """Render editor content line."""
         scroll_x, scroll_y = self.scroll_offset
         y += scroll_y
-        row_data_width = self.view.column_count * self.view.column_size
-        offset = y * row_data_width
-        line_data = self.model.read(offset, row_data_width)
+        offset = y * self.view.line_byte_length
+        line_data = self.model.read(offset, self.view.line_byte_length)
         # Crop the strip so that is covers the visible area
         strip = (
-            Strip(list(self.view.generate_line(self._console, offset, line_data)))
+            Strip(self.view.generate_line(self._console, offset, line_data))
             .extend_cell_length(self.content_size.width - self.scrollbar_gutter.width)
             .crop(scroll_x, scroll_x + self.size.width)
         )
         return strip
 
-    def validate_cursor_position(self, cursor_position: int) -> int:
+    def validate_cursor(self, cursor: int) -> int:
         """Validate updated cursor position."""
-        return min(max(0, cursor_position), len(self.model))
+        return min(max(0, cursor), len(self.model) * BYTE_BITS)
 
     async def watch_hex_offsets(self, val: bool) -> None:
         """Update hex_offsets property of ByteView component."""
         self.view.hex_offsets = val
         self.virtual_size = self.view.size
 
+    async def watch_highlighter(self) -> None:
+        """Update highlighter property of ByteView component."""
+        self.view.highlighter = self.highlighter
+
     async def watch_mode(self, mode: ByteView.ViewMode) -> None:
         """Update view mode of ByteView component."""
+        self.cursor_increment = CURSOR_INCREMENTS[mode]
         if mode == ByteView.ViewMode.HEX:
             self.view.column_count = 4
             self.view.column_size = 4
@@ -307,3 +329,18 @@ class Editor(ScrollView):
     async def watch_show_offsets(self, val: bool) -> None:
         """Update show_offsets property of ByteView component."""
         self.view.offsets = val
+
+    async def watch__cursor_visible(self, val: bool) -> None:
+        """Update view cursor status."""
+        self.view.cursor_visible = val
+
+    async def watch_cursor(self) -> None:
+        """React to cursor changes."""
+        self.model.cursor.bit = self.cursor
+        self.view.cursor.bit = self.cursor
+        scroll_y = self.scroll_offset.y
+        cursor_y = self._cursor_y
+        if cursor_y < scroll_y:
+            self.scroll_to(y=cursor_y, animate=False)
+        elif cursor_y >= scroll_y + self.size.height:
+            self.scroll_to(y=cursor_y - self.size.height + 1, animate=False)
