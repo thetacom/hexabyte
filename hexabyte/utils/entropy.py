@@ -51,9 +51,7 @@ class Entropy:
         # Precalculate logarithms
         log_table: list[float] = self._create_log_table()
         size = len(self.model)
-        chunk_count = size // self.chunk_size
-        if self.chunk_size == 0 or size % chunk_count != 0:
-            chunk_count += 1
+        chunk_count = size // self.chunk_size + 1
         self._entropy = [float(0) for _ in range(chunk_count)]
 
         for idx, offset in enumerate(range(0, size, self.chunk_size)):
