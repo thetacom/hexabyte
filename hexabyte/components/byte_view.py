@@ -13,15 +13,15 @@ from rich.style import Style
 from rich.text import Text
 from textual.geometry import Size
 
-from ..constants import DisplayMode
-from ..constants.sizes import BYTE_BITS, NIBBLE_BITS
-from ..models.cursor import Cursor
+from hexabyte.constants import DisplayMode
+from hexabyte.constants.sizes import BYTE_BITS, NIBBLE_BITS
+from hexabyte.models.cursor import Cursor
 
 NUMBERS_COLUMN_DEFAULT_PADDING = 3
 
 
 class ByteView(JupyterMixin):
-    """Construct a ByteView object to render byte data as hexadecimal.
+    """Construct a ByteView object to render byte data in various formats.
 
     Args:
     ----
