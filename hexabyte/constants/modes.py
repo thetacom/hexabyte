@@ -6,8 +6,8 @@ class DisplayMode(Enum):
     """Display Modes."""
 
     HEX = "h"
-    BIN = "b"
     UTF8 = "a"
+    BIN = "b"
 
 
 class FileMode(Enum):
