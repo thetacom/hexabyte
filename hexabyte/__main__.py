@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 
 from hexabyte.config import CONFIG_FILENAME, DEFAULT_CONFIG_PATH, Config
-from hexabyte.constants import MAX_FILE_COUNT, MIN_FILE_COUNT
+from hexabyte.constants.generic import MAX_FILE_COUNT, MIN_FILE_COUNT
 from hexabyte.hexabyte_app import HexabyteApp
 
 

@@ -11,13 +11,14 @@ from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
 from ..components.byte_view import ByteView
-from ..constants import BIT, BYTE_BITS, NIBBLE_BITS
-from ..models.data_model import DataModel
+from ..constants import DisplayMode
+from ..constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
+from ..models import DataModel
 
 CURSOR_INCREMENTS = {
-    ByteView.ViewMode.HEX: NIBBLE_BITS,
-    ByteView.ViewMode.BIN: BIT,
-    ByteView.ViewMode.UTF8: BYTE_BITS,
+    DisplayMode.HEX: NIBBLE_BITS,
+    DisplayMode.BIN: BIT,
+    DisplayMode.UTF8: BYTE_BITS,
 }
 
 
@@ -91,7 +92,7 @@ class Editor(ScrollView):
     }
     """
 
-    mode: reactive[ByteView.ViewMode] = reactive(ByteView.ViewMode.HEX)
+    mode: reactive[DisplayMode] = reactive(DisplayMode.HEX)
     highlighter: reactive[Highlighter | None] = reactive(None)
     show_offsets: reactive[bool] = reactive(True)
     hex_offsets: reactive[bool] = reactive(True)
@@ -138,7 +139,7 @@ class Editor(ScrollView):
     def __init__(
         self,
         model: DataModel,
-        view_mode: ByteView.ViewMode = ByteView.ViewMode.HEX,
+        view_mode: DisplayMode = DisplayMode.HEX,
         start_offset: int = 0,
         name: str | None = None,
         id: str | None = None,  # pylint: disable=redefined-builtin
@@ -150,7 +151,7 @@ class Editor(ScrollView):
         Args:
         ----
         model: The model containing data to be rendered.
-        view_mode: An optional view mode. Default ByteView.ViewMode.HEX.
+        view_mode: An optional view mode. Default DisplayMode.HEX.
         start_offset: Optional start offset of cursor. Default is 0.
         name: Optional name for the editor widget.
         id: Optional ID for the widget.
@@ -159,7 +160,7 @@ class Editor(ScrollView):
         """
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
         self.model = model
-        self.view_modes = cycle(ByteView.ViewMode)
+        self.view_modes = cycle(DisplayMode)
         # Synch modes cycle with specified view
         while next(self.view_modes) is not view_mode:
             continue
@@ -327,16 +328,16 @@ class Editor(ScrollView):
         """Update highlighter property of ByteView component."""
         self.view.highlighter = self.highlighter
 
-    async def watch_mode(self, mode: ByteView.ViewMode) -> None:
+    async def watch_mode(self, mode: DisplayMode) -> None:
         """Update view mode of ByteView component."""
         self.cursor_increment = CURSOR_INCREMENTS[mode]
-        if mode == ByteView.ViewMode.HEX:
+        if mode == DisplayMode.HEX:
             self.view.column_count = 4
             self.view.column_size = 4
-        elif mode == ByteView.ViewMode.BIN:
+        elif mode == DisplayMode.BIN:
             self.view.column_count = 4
             self.view.column_size = 1
-        elif mode == ByteView.ViewMode.UTF8:
+        elif mode == DisplayMode.UTF8:
             self.view.column_count = 8
             self.view.column_size = 4
         self.view.view_mode = mode

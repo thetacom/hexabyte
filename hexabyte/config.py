@@ -5,7 +5,7 @@ from shutil import copy
 
 import toml
 
-from .constants import CONFIG_FILENAME, DEFAULT_CONFIG_PATH
+from .constants.generic import CONFIG_FILENAME, DEFAULT_CONFIG_PATH
 
 
 class Config:
@@ -18,7 +18,7 @@ class Config:
     def setup(cls, config_path: Path = DEFAULT_CONFIG_PATH) -> None:
         """Initialize new config for a user."""
         if not config_path.exists():
-            config_path.parent.mkdir(parents=True)
+            config_path.mkdir(parents=True, exist_ok=True)
         src = str(files("hexabyte.assets").joinpath(CONFIG_FILENAME))
         copy(src, config_path / CONFIG_FILENAME)
 

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hexabyte"
-version = "0.2.0"
+version = "0.3.0"
 description = "A modern, modular, and robust commandline hex editor."
 keywords = ["commandline", "hexeditor", "binary", "hexadecimal", "raw", "byteview"]
 repository = "https://github.com/thetacom/hexabyte"
@@ -31,24 +31,29 @@ importlib-metadata = "^6.2.1"
 textual            = "^0.19.0"
 toml               = "^0.10.2"
 python-magic       = "^0.4.27"
+hilbertcurve       = "^2.0.5"
 
 [tool.poetry.group.dev.dependencies]
-aiohttp     = "^3.8.4"
-coverage    = "^7.2.3"
-black       = "^23.3.0"
-bandit      = "^1.7.5"
-ipykernel   = "^6.16.0"
-msgpack     = "^1.0.5"
-mypy        = "^1.2.0"
-pydocstyle  = "^6.3.0"
-pylint      = "^2.17.2"
-pycodestyle = "^2.10.0"
-pytest      = "^7.3.0"
-pytest-cov  = "^4.0.0"
-pytest-mock = "^3.10.0"
-pre-commit  = "^3.2.2"
-types-toml  = "^0.10.8.5"
-ruff        = "^0.0.261"
+aiohttp          = "^3.8.4"
+coverage         = "^7.2.3"
+black            = "^23.3.0"
+bandit           = "^1.7.5"
+ipykernel        = "^6.16.0"
+msgpack          = "^1.0.5"
+mypy             = "^1.2.0"
+pydocstyle       = "^6.3.0"
+pylint           = "^2.17.2"
+pytest           = "^7.3.0"
+pytest-cov       = "^4.0.0"
+pytest-mock      = "^3.10.0"
+pre-commit       = "^3.2.2"
+types-toml       = "^0.10.8.5"
+ruff             = "^0.0.261"
+matplotlib       = "^3.7.1"
+sphinx           = "^6.1.3"
+sphinx-rtd-theme = "^1.2.0"
+sphinx-autobuild = "^2021.3.14"
+sphinx-autodoc-typehints = "^1.23.0"
 
 [build-system]
 requires      = ["poetry-core"]
@@ -60,7 +65,7 @@ hexabyte = "hexabyte.__main__:main"
 [tool.bandit]
 targets      = ["hexabyte"]
 skips        = []
-exclude_dirs = ["tests"]
+exclude_dirs = ["docs", "tests"]
 
 [tool.black]
 line-length    = 120
@@ -90,6 +95,7 @@ testpaths  = ["tests"]
 # exit-zero =
 fail-under              = 10
 ignore                  = ["CVS", ".venv", "tests"]
+ignore-paths            = ["docs/*"]
 ignore-patterns         = ["^\\.#"]
 jobs                    = 0
 limit-inference-results = 100
@@ -238,7 +244,7 @@ redefining-builtins-modules = [
 
 [tool.pyright]
 include = ["hexabyte"]
-exclude = ["**/__pycache__"]
+exclude = ["docs", "**/__pycache__"]
 venv    = ".venv"
 
 reportGeneralTypeIssues = false

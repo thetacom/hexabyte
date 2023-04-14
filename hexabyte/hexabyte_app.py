@@ -4,13 +4,11 @@ from pathlib import Path
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 
-from .components.byte_view import ByteView
 from .config import Config
-from .constants import APP_NAME, DIFF_MODEL_COUNT
-from .models.data_model import DataModel
-from .modes import Modes
-from .workbench.editor import Editor
-from .workbench.workbench import Workbench
+from .constants import DisplayMode, FileMode
+from .constants.generic import APP_NAME, DIFF_MODEL_COUNT
+from .models import DataModel
+from .widgets import Editor, Workbench
 
 
 class HexabyteApp(App):
@@ -37,28 +35,28 @@ class HexabyteApp(App):
         self.config = config
         self.models = [DataModel(files[0])]
         if len(files) > 1:
-            self._mode = Modes.DIFF
+            self._mode = FileMode.DIFF
             self.models.append(DataModel(files[1]))
         else:
-            self._mode = Modes.NORMAL
+            self._mode = FileMode.NORMAL
         super().__init__(**kwargs)
 
         # Create an editors
-        if self._mode is Modes.NORMAL:
+        if self._mode is FileMode.NORMAL:
             self.sub_title = f"NORMAL MODE: {self.models[0].filepath.name}"
-            left_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.HEX, classes="dual", id="editor1")
-            right_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.UTF8, classes="dual", id="editor2")
+            left_editor = Editor(self.models[0], view_mode=DisplayMode.HEX, classes="dual", id="editor1")
+            right_editor = Editor(self.models[0], view_mode=DisplayMode.UTF8, classes="dual", id="editor2")
         else:
             if len(self.models) != DIFF_MODEL_COUNT:
                 raise ValueError("Two files must be loaded for diff mode.")
             self.sub_title = f"DIFF MODE: {self.models[0].filepath.name} <-> {self.models[1].filepath.name}"
-            left_editor = Editor(self.models[0], view_mode=ByteView.ViewMode.HEX, classes="dual", id="editor1")
-            right_editor = Editor(self.models[1], view_mode=ByteView.ViewMode.HEX, classes="dual", id="editor2")
+            left_editor = Editor(self.models[0], view_mode=DisplayMode.HEX, classes="dual", id="editor1")
+            right_editor = Editor(self.models[1], view_mode=DisplayMode.HEX, classes="dual", id="editor2")
 
         self.workbench = Workbench(self._mode, left_editor, right_editor)
 
     @property
-    def mode(self) -> Modes:
+    def mode(self) -> FileMode:
         """Return the application mode."""
         return self._mode
 

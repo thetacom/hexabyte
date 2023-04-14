@@ -8,7 +8,7 @@ from textual.containers import VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import Label
 
-from .editor import Editor
+from . import Editor
 
 
 class InfoPanel(VerticalScroll):

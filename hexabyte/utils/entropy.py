@@ -4,7 +4,7 @@ Transforms binary data into a entropy value.
 """
 import math
 
-from .data_model import DataModel
+from ..models.data_model import DataModel
 
 
 class Entropy:
@@ -50,10 +50,8 @@ class Entropy:
         """Calculate entropy values."""
         # Precalculate logarithms
         log_table: list[float] = self._create_log_table()
-        size = len(self.model.data)
-        chunk_count = size // self.chunk_size
-        if self.chunk_size == 0 or size % chunk_count != 0:
-            chunk_count += 1
+        size = len(self.model)
+        chunk_count = size // self.chunk_size + 1
         self._entropy = [float(0) for _ in range(chunk_count)]
 
         for idx, offset in enumerate(range(0, size, self.chunk_size)):
@@ -71,7 +69,7 @@ class Entropy:
         return log_table
 
     def _create_histogram(self, offset: int) -> dict[int, int]:
-        chunk = self.model.data[offset : offset + self.chunk_size]
+        chunk = self.model.read(offset, self.chunk_size)
         histogram: dict[int, int] = {}
         for val in chunk:
             if val in histogram:

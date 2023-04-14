@@ -5,8 +5,7 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import ContentSwitcher, Placeholder, Tab, Tabs
 
-from .editor import Editor
-from .info_panel import InfoPanel
+from . import Editor, EntropyPanel, InfoPanel
 
 
 class Sidebar(Vertical):
@@ -42,7 +41,7 @@ class Sidebar(Vertical):
         with ContentSwitcher(initial=f"{self.id}-info-panel"):
             yield InfoPanel(id=f"{self.id}-info-panel", classes="panel")
             yield Placeholder("Structures", id=f"{self.id}-structures-panel", classes="panel")
-            yield Placeholder("Entropy", id=f"{self.id}-entropy-panel", classes="panel")
+            yield EntropyPanel(id=f"{self.id}-entropy-panel", classes="panel")
 
     def on_mount(self) -> None:
         """Prepare sidebar contents."""
@@ -53,8 +52,7 @@ class Sidebar(Vertical):
 
     def watch_active_editor(self, editor: Editor):
         """React to active model change."""
-        panel = self.query_one(f"#{self.id}-info-panel", InfoPanel)
-        if editor is not None:
-            panel.editor = editor
-        else:
-            panel.editor = None
+        info_panel = self.query_one(f"#{self.id}-info-panel", InfoPanel)
+        info_panel.editor = editor
+        entropy_panel = self.query_one(f"#{self.id}-entropy-panel", EntropyPanel)
+        entropy_panel.editor = editor
