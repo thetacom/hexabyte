@@ -43,10 +43,6 @@ mypy: .venv
 	@echo "*****Mypy*****"
 	@mypy --pretty --disable-error-code import $(SRC_DIR)
 
-pycodestyle: .venv
-	@echo "*****Pycodestyle*****"
-	@pycodestyle --max-line-length=120 $(SRC_DIR)
-
 pydocstyle: .venv
 	@echo "*****Pydocstyle*****"
 	@pydocstyle $(SRC_DIR)
