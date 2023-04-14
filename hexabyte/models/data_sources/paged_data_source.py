@@ -2,7 +2,7 @@
 
 Provides the interface for interacting with raw file data.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from ._data_source import DataSource
@@ -19,7 +19,7 @@ class DataBlock:
     clean_size: int = 0
     dirty: bool = False
     loaded: bool = False
-    data: bytearray = bytearray()
+    data: bytearray = field(default_factory=bytearray)
 
     def __len__(self) -> int:
         """Return the data size of the block."""
