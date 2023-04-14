@@ -1,10 +1,10 @@
-name: Release
+name: Pre-Release
 
 on:
   create:
   push:
     tags:
-      - v*
+      - v*pre
 
 permissions:
   contents: write
@@ -12,7 +12,8 @@ permissions:
 
 jobs:
   release:
-    name: Create Package Release
+    name: Create Package Pre-Release
+    if: ${{ github.event.type == 'prereleased'}}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -28,6 +29,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         draft: true
-        prerelease: false
+        prerelease: true
         files: |
           dist/*

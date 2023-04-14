@@ -2,85 +2,50 @@ name: Lint
 
 on: [push]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
-  bandit:
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         python-version: ["3.10"]
+    defaults:
+      run:
+        shell: bash
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: pip install bandit
-    - name: Check files
-      run: |
-        mkdir reports
-        bandit -r -v -f xml -o reports/bandit.xml hexabyte
-  black:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+        architecture: x64
+    - name: Install and configure Poetry
+      uses: snok/install-poetry@v1
       with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: pip install black
-    - name: Check files
-      run: |
-        black --check .
-  mypy:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+        virtualenvs-in-project: true
+        virtualenvs-path: .venv
+        installer-parallel: true
+    - name: Load cached venv
+      id: cached-dependencies
+      uses: actions/cache@v3
       with:
-        python-version: ${{ matrix.python-version }}
+        path: .venv
+        key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+    - run: poetry --version
     - name: Install dependencies
-      run: pip install mypy
-    - name: Check files
+      if: steps.cached-dependencies.outputs.cache-hit != 'true'
+      run: poetry install --no-interaction --no-root --extras "dev"
+    - name: Install project
+      run: poetry install --no-interaction
+    - name: Run test suite
       run: |
-        mypy --pretty --disable-error-code import hexabyte
-  pylint:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: pip install pylint
-    - name: Check files
-      run: |
-        pylint .
-  ruff:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.10"]
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: pip install ruff
-    - name: Check files
-      run: |
-        ruff check --config pyproject.toml --show-source -e .
+        source $VENV
+        make lint
