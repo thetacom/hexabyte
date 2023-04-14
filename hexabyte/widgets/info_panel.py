@@ -14,6 +14,15 @@ from . import Editor
 class InfoPanel(VerticalScroll):
     """Display file info for selected editor."""
 
+    DEFAULT_CSS = """
+    InfoPanel {
+
+    }
+    InfoPanel Label {
+        padding: 1 0 0 1;
+    }
+    """
+
     editor: reactive[Editor | None] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:

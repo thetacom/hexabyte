@@ -35,8 +35,8 @@ class Sidebar(Vertical):
         """Compose sidebar tabs."""
         yield Tabs(
             Tab("Info", id=f"{self.id}-info"),
-            Tab("Structures", id=f"{self.id}-structures"),
             Tab("Entropy", id=f"{self.id}-entropy"),
+            Tab("Structures", id=f"{self.id}-structures"),
         )
         with ContentSwitcher(initial=f"{self.id}-info-panel"):
             yield InfoPanel(id=f"{self.id}-info-panel", classes="panel")
