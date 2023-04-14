@@ -45,7 +45,7 @@ jobs:
         key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
     - run: poetry --version
     - name: Install external packages
-      run: sudo apt-get install -y libmagic
+      run: sudo apt-get install -y libmagic1
     - name: Install dependencies
       if: steps.cached-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
