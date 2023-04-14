@@ -13,7 +13,6 @@ permissions:
 jobs:
   release:
     name: Create Package Pre-Release
-    if: ${{ github.event.type == 'prereleased'}}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -25,6 +24,7 @@ jobs:
     - run: poetry --version
     - name: Build package
       run: poetry build
+
     - name: Release
       uses: softprops/action-gh-release@v1
       with:

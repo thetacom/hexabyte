@@ -10,7 +10,6 @@ permissions:
 jobs:
   pypi-publish:
     name: Upload release to PyPI
-    if: ${{ github.event.type == 'released'}}
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -24,7 +23,15 @@ jobs:
     - run: poetry --version
     - name: Build package
       run: poetry build
+    - name: Publish package distributions to Test PyPI
+      if: ${{ github.event.type == 'prereleased'}}
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository-url: https://test.pypi.org/legacy/
     - name: Publish package distributions to PyPI
+      if: ${{ github.event.type == 'released'}}
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
