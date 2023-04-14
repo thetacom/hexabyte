@@ -2,9 +2,9 @@
 import argparse
 from pathlib import Path
 
-from hexabyte.config import CONFIG_FILENAME, DEFAULT_CONFIG_PATH, Config
 from hexabyte.constants.generic import MAX_FILE_COUNT, MIN_FILE_COUNT
 from hexabyte.hexabyte_app import HexabyteApp
+from hexabyte.utils.config import CONFIG_FILENAME, DEFAULT_CONFIG_PATH, Config
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
         for filename in args.files:
             if not filename.exists():
                 raise FileNotFoundError(f"File not found: {filename}")
-        config = Config(args.config)
+        config = Config.from_file(args.config)
         app = HexabyteApp(config=config, files=args.files)
         app.run()
         config.save()

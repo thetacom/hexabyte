@@ -4,8 +4,10 @@ from textual.containers import Container, Vertical
 from textual.reactive import reactive
 from textual.widgets import Footer, Header
 
+from hexabyte.widgets.help_screen import HelpScreen, HelpWindow
+
 from ..constants import FileMode
-from . import Editor, Sidebar
+from . import CommandPrompt, Editor, Sidebar
 
 
 class Body(Container):  # pylint: disable=too-few-public-methods
@@ -28,8 +30,19 @@ class Workbench(Vertical):
         grid-size: 6 1;
         grid-gutter: 0;
     }
+    Workbench CommandPrompt {
+        layer: overlay;
+        dock: bottom;
+        width: 100%;
+        display: none;
+    }
+    Workbench HelpScreen {
+        layer: notifications;
+        display: none;
+    }
     """
 
+    show_help: reactive[bool] = reactive(False)
     show_sidebar: reactive[bool] = reactive(True)
     active_editor: reactive[Editor | None] = reactive(None, init=False)
 
@@ -45,7 +58,6 @@ class Workbench(Vertical):
         self._mode = mode
         self.left_editor = left_editor
         self.right_editor = right_editor
-        self.sidebar = Sidebar(id="sidebar")
 
     def compose(self) -> ComposeResult:
         """Compose sidebar widgets."""
@@ -53,20 +65,31 @@ class Workbench(Vertical):
         with Body():
             yield self.left_editor
             yield self.right_editor
-            yield self.sidebar
+            yield Sidebar(id="sidebar")
+        yield CommandPrompt(id="cmd-prompt")
         yield Footer()
+        yield HelpScreen(id="help")
 
-    async def watch_active_editor(self):
+    def watch_active_editor(self):
         """Watch active editor to update sidebar."""
+        sidebar = self.query_one("#sidebar", Sidebar)
         if self.active_editor is not None:
-            self.sidebar.active_editor = self.active_editor
+            sidebar.active_editor = self.active_editor
         else:
-            self.sidebar.active_editor = None
+            sidebar.active_editor = None
 
-    async def watch_show_sidebar(self, visibility: bool) -> None:
+    def watch_show_help(self, visibility: bool) -> None:
+        """Toggle help screen visibility if show_help flag changes."""
+        help_screen = self.query_one("#help", HelpScreen)
+        help_screen.display = visibility
+        window = help_screen.query_one("HelpWindow", HelpWindow)
+        window.focus()
+
+    def watch_show_sidebar(self, visibility: bool) -> None:
         """Toggle sidebar view visibility if show_sidebar flag changes."""
-        self.sidebar.display = visibility
-        if self.sidebar.display:
+        sidebar = self.query_one("#sidebar", Sidebar)
+        sidebar.display = visibility
+        if sidebar.display:
             self.query("Editor").add_class("with-sidebar")
         else:
             self.query("Editor").remove_class("with-sidebar")

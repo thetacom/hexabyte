@@ -5,13 +5,13 @@ from enum import Enum
 class DisplayMode(Enum):
     """Display Modes."""
 
-    HEX = "h"
-    UTF8 = "a"
-    BIN = "b"
+    HEX = "hex"
+    UTF8 = "utf8"
+    BIN = "bin"
 
 
 class FileMode(Enum):
     """Application Modes."""
 
-    NORMAL = "Normal Single File Mode"
-    DIFF = "File Diff Mode"
+    NORMAL = "normal"
+    DIFF = "diff"

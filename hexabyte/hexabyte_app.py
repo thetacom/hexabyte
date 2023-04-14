@@ -3,12 +3,13 @@ from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.widgets import Input
 
-from .config import Config
-from .constants import DisplayMode, FileMode
+from .constants import FileMode
 from .constants.generic import APP_NAME, DIFF_MODEL_COUNT
 from .models import DataModel
-from .widgets import Editor, Workbench
+from .utils.config import Config
+from .widgets import CommandPrompt, Editor, Workbench
 
 
 class HexabyteApp(App):
@@ -17,9 +18,12 @@ class HexabyteApp(App):
     TITLE = APP_NAME.title()
     CSS_PATH = "hexabyte_app.css"
     BINDINGS = [
-        Binding("ctrl+c,ctrl+q", "app.quit", "Quit", show=True),
-        Binding("ctrl+d", "toggle_dark", "Toggle Dark Mode", show=True),
-        Binding("ctrl+b", "toggle_sidebar", "Toggle Sidebar", show=True),
+        Binding("ctrl+c,ctrl+q", "app.quit", "Quit", show=False),
+        Binding("ctrl+d", "toggle_dark", "Light/Dark Mode", show=False),
+        Binding("ctrl+b", "toggle_sidebar", "Toggle Sidebar", show=False),
+        Binding("ctrl+g", "toggle_help", "Show/Hide Help", show=True),
+        Binding(":", "cmd_mode_enter", "Command Mode", show=False),
+        Binding("escape", "cmd_mode_exit", "Exit Command Mode", show=False),
     ]
 
     def __init__(
@@ -44,16 +48,28 @@ class HexabyteApp(App):
         # Create an editors
         if self._mode is FileMode.NORMAL:
             self.sub_title = f"NORMAL MODE: {self.models[0].filepath.name}"
-            left_editor = Editor(self.models[0], view_mode=DisplayMode.HEX, classes="dual", id="editor1")
-            right_editor = Editor(self.models[0], view_mode=DisplayMode.UTF8, classes="dual", id="editor2")
+            primary_editor = Editor(self._mode, self.models[0], classes="dual", id="primary", config=self.config)
+            secondary_editor = Editor(
+                self._mode,
+                self.models[0],
+                classes="dual",
+                id="secondary",
+                config=self.config,
+            )
         else:
             if len(self.models) != DIFF_MODEL_COUNT:
                 raise ValueError("Two files must be loaded for diff mode.")
             self.sub_title = f"DIFF MODE: {self.models[0].filepath.name} <-> {self.models[1].filepath.name}"
-            left_editor = Editor(self.models[0], view_mode=DisplayMode.HEX, classes="dual", id="editor1")
-            right_editor = Editor(self.models[1], view_mode=DisplayMode.HEX, classes="dual", id="editor2")
+            primary_editor = Editor(self._mode, self.models[0], classes="dual", id="primary", config=self.config)
+            secondary_editor = Editor(
+                self._mode,
+                self.models[1],
+                classes="dual",
+                id="secondary",
+                config=self.config,
+            )
 
-        self.workbench = Workbench(self._mode, left_editor, right_editor)
+        self.workbench = Workbench(self._mode, primary_editor, secondary_editor)
 
     @property
     def mode(self) -> FileMode:
@@ -66,8 +82,25 @@ class HexabyteApp(App):
 
     def on_mount(self) -> None:
         """Perform initial actions after mount."""
-        editor = self.query_one("#editor1", Editor)
+        editor = self.query_one("#primary", Editor)
         editor.focus()
+
+    def action_cmd_mode_enter(self) -> None:
+        """Enter command mode."""
+        prompt = self.query_one("#cmd-prompt", CommandPrompt)
+        prompt.display = True
+        prompt_input = prompt.query_one("Input", Input)
+        prompt_input.focus()
+
+    def action_cmd_mode_exit(self) -> None:
+        """Exit command mode."""
+        prompt = self.query_one("#cmd-prompt", CommandPrompt)
+        prompt.display = False
+        if self.workbench.active_editor is not None:
+            self.workbench.active_editor.focus()
+        else:
+            editor = self.query_one("#primary", Editor)
+            editor.focus()
 
     def action_toggle_dark(self) -> None:
         """Toggle dark mode."""
@@ -76,6 +109,10 @@ class HexabyteApp(App):
         for editor in editors:
             editor.update_view_style()
 
-    async def action_toggle_sidebar(self) -> None:
+    def action_toggle_help(self) -> None:
+        """Toggle visibility of sidebar."""
+        self.workbench.show_help = not self.workbench.show_help
+
+    def action_toggle_sidebar(self) -> None:
         """Toggle visibility of sidebar."""
         self.workbench.show_sidebar = not self.workbench.show_sidebar

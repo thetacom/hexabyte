@@ -10,10 +10,11 @@ from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
-from ..components.byte_view import ByteView
-from ..constants import DisplayMode
-from ..constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
-from ..models import DataModel
+from hexabyte.components import ByteView
+from hexabyte.constants import DisplayMode, FileMode
+from hexabyte.constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
+from hexabyte.models import DataModel
+from hexabyte.utils import Config
 
 CURSOR_INCREMENTS = {
     DisplayMode.HEX: NIBBLE_BITS,
@@ -92,10 +93,10 @@ class Editor(ScrollView):
     }
     """
 
-    mode: reactive[DisplayMode] = reactive(DisplayMode.HEX)
+    display_mode: reactive[DisplayMode] = reactive(DisplayMode.HEX)
     highlighter: reactive[Highlighter | None] = reactive(None)
-    show_offsets: reactive[bool] = reactive(True)
-    hex_offsets: reactive[bool] = reactive(True)
+    show_offsets: reactive[bool] = reactive(True, init=False)
+    hex_offsets: reactive[bool] = reactive(True, init=False)
     cursor: reactive[int] = reactive(0)  # Cursor bit position
     cursor_blink: reactive[bool] = reactive(True)
     _cursor_visible: reactive[bool] = reactive(True)
@@ -138,35 +139,56 @@ class Editor(ScrollView):
 
     def __init__(
         self,
+        file_mode: FileMode,
         model: DataModel,
-        view_mode: DisplayMode = DisplayMode.HEX,
         start_offset: int = 0,
         name: str | None = None,
         id: str | None = None,  # pylint: disable=redefined-builtin
         classes: str | None = None,
         disabled: bool = False,
+        config: Config = Config(),
     ) -> None:
         """Initialize `Editor` widget.
 
         Args:
         ----
+        file_mode: Indicates normal or diff mode.
         model: The model containing data to be rendered.
-        view_mode: An optional view mode. Default DisplayMode.HEX.
         start_offset: Optional start offset of cursor. Default is 0.
+        config: Settings loaded from config file.
         name: Optional name for the editor widget.
         id: Optional ID for the widget.
         classes: Optional initial classes for the widget.
         disabled: Whether the editor is disabled or not.
         """
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
+        self.file_mode = file_mode
         self.model = model
+        self.config = config
+        editor_config = self.config.settings.get("editors", {}).get(self.file_mode.value, {})
+        if id == "primary":
+            self.display_mode = DisplayMode(editor_config.get("primary", "hex"))
+        else:
+            self.display_mode = DisplayMode(editor_config.get("secondary", "utf8"))
+        layout_config = self.config.settings.get("layout", {})
+        offset_style = layout_config.get("offset-style")
+        self.hex_offsets = not offset_style == "dec"
+        self.show_offsets = not offset_style == "off"
+        column_count = layout_config.get(self.display_mode.value, {}).get("column-count")
+        column_size = layout_config.get(self.display_mode.value, {}).get("column-size")
         self.view_modes = cycle(DisplayMode)
         # Synch modes cycle with specified view
-        while next(self.view_modes) is not view_mode:
+        while next(self.view_modes) is not self.display_mode:
             continue
-        self.mode = view_mode
-        self.cursor_increment = CURSOR_INCREMENTS[self.mode]
-        self.view = ByteView(data=self.model.read(), view_mode=view_mode)
+        self.cursor_increment = CURSOR_INCREMENTS[self.display_mode]
+        self.view = ByteView(
+            data=self.model.read(),
+            view_mode=self.display_mode,
+            column_count=column_count,
+            column_size=column_size,
+            offsets=self.show_offsets,
+            hex_offsets=self.hex_offsets,
+        )
         self.virtual_size = self.view.size
         self.cursor = start_offset
 
@@ -186,7 +208,7 @@ class Editor(ScrollView):
 
     def action_next_view(self) -> None:
         """Cycle editor to next view mode."""
-        self.mode = next(self.view_modes)
+        self.display_mode = next(self.view_modes)
 
     def action_toggle_offsets(self) -> None:
         """Cycle line offset style."""
@@ -252,7 +274,7 @@ class Editor(ScrollView):
             if click.x > self.view.offsets_column_width + 1:
                 y_portion = (self.scroll_offset.y + click.y - 1) * self.view.line_bit_length
                 data_x = click.x - self.view.offsets_column_width - 2
-                adjusted_x = data_x - data_x // (self.view.BYTE_REPR_LEN[self.mode] * self.view.column_size)
+                adjusted_x = data_x - data_x // (self.view.BYTE_REPR_LEN[self.display_mode] * self.view.column_size)
                 x_portion = adjusted_x * self.cursor_increment
                 self.cursor = y_portion + x_portion
 
@@ -270,16 +292,18 @@ class Editor(ScrollView):
             self.blink_timer.reset()
 
         # Do key bindings first
+        if event.key == "escape" or event.character == ":":
+            return
         if await self.handle_key(event):
             event.prevent_default()
             event.stop()
             return
         if event.is_printable:
-            event.prevent_default()
-            event.stop()
             if event.character is not None:
-                if event.key in ByteView.VALID_CHARS[self.mode]:
+                if event.key in ByteView.VALID_CHARS[self.display_mode]:
                     self.insert_at_cursor(event.character)
+                    event.prevent_default()
+                    event.stop()
 
     def on_mount(self) -> None:
         """Mount child widgets."""
@@ -328,18 +352,12 @@ class Editor(ScrollView):
         """Update highlighter property of ByteView component."""
         self.view.highlighter = self.highlighter
 
-    async def watch_mode(self, mode: DisplayMode) -> None:
+    async def watch_display_mode(self, mode: DisplayMode) -> None:
         """Update view mode of ByteView component."""
         self.cursor_increment = CURSOR_INCREMENTS[mode]
-        if mode == DisplayMode.HEX:
-            self.view.column_count = 4
-            self.view.column_size = 4
-        elif mode == DisplayMode.BIN:
-            self.view.column_count = 4
-            self.view.column_size = 1
-        elif mode == DisplayMode.UTF8:
-            self.view.column_count = 8
-            self.view.column_size = 4
+        layout_config = self.config.settings.get("layout", {})
+        self.view.column_count = layout_config.get(mode.value, {}).get("column-count")
+        self.view.column_size = layout_config.get(mode.value, {}).get("column-size")
         self.view.view_mode = mode
         self.virtual_size = self.view.size
 

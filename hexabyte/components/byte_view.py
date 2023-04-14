@@ -339,14 +339,7 @@ if __name__ == "__main__":  # pragma: no cover
             byte_data = file.read()
     else:
         byte_data = FILLER_DATA  # pylint: disable=invalid-name
-    if args.mode_str.lower() == "h":
-        mode = DisplayMode.HEX
-    elif args.mode_str.lower() == "b":
-        mode = DisplayMode.BIN
-    elif args.mode_str.lower() == "a":
-        mode = DisplayMode.UTF8
-    else:
-        raise ValueError("Mode option must be 'h', 'b', or 'a'")
+    mode = DisplayMode(args.mode_str.lower())
     view = ByteView(
         data=byte_data,
         view_mode=mode,
