@@ -7,6 +7,7 @@ author = "Justin Cady"  # pylint: disable=invalid-name
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions: list[str] = [
+    "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.autosummary",
@@ -15,13 +16,10 @@ extensions: list[str] = [
     "sphinx.ext.githubpages",
     "sphinx.ext.graphviz",
     "sphinx.ext.ifconfig",
-    "sphinx.ext.napoleon",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
-    "sphinx-autodoc-typehints",
-    "sphinx-git",
-    "sphinx-autodoc-annotation",
-    "sphinx-rtd-theme",
+    "sphinx_autodoc_typehints",
+    "sphinx_rtd_theme",
 ]
 
 templates_path: list[str] = ["_templates"]
@@ -33,8 +31,9 @@ source_suffix = {
     ".md": "markdown",
 }
 
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "alabaster"  # pylint: disable=invalid-name
+html_theme = "sphinx_rtd_theme"  # pylint: disable=invalid-name
 html_static_path: list[str] = ["_static"]

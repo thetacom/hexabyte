@@ -111,6 +111,6 @@ repos:
   rev: v6.1.2
   hooks:
   - id: rstcheck
-    args: [--report-level=warning]
+    args: [--report-level=warning, --ignore-directives, automodule]
     files: ^(docs/(.*/)*.*\.rst)
-    additional_dependencies: [Sphinx==5.0.1]
+    additional_dependencies: [sphinx==6.1.3]
