@@ -10,7 +10,7 @@ from textual.widgets import Label, Static
 
 from hexabyte.constants.sizes import KB, MB
 
-from . import Editor
+from .editor import Editor
 
 
 class InfoItem(Vertical):  # pylint: disable=too-few-public-methods

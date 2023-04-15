@@ -4,10 +4,10 @@ from textual.containers import Container, Vertical
 from textual.reactive import reactive
 from textual.widgets import Footer, Header
 
-from hexabyte.widgets.help_screen import HelpScreen, HelpWindow
+from hexabyte.constants import FileMode
 
-from ..constants import FileMode
-from . import CommandPrompt, Editor, Sidebar
+from .editor import Editor
+from .sidebar import Sidebar
 
 
 class Body(Container):  # pylint: disable=too-few-public-methods
@@ -48,19 +48,8 @@ class Workbench(Vertical):
         column-span: 6;
         height: 100%;
     }
-    Workbench CommandPrompt {
-        layer: overlay;
-        dock: bottom;
-        width: 100%;
-        display: none;
-    }
-    Workbench HelpScreen {
-        layer: notifications;
-        display: none;
-    }
     """
 
-    show_help: reactive[bool] = reactive(False)
     show_sidebar: reactive[bool] = reactive(True)
     active_editor: reactive[Editor | None] = reactive(None, init=False)
 
@@ -82,9 +71,7 @@ class Workbench(Vertical):
             for editor in self.editors:
                 yield from editor
             yield Sidebar(id="sidebar")
-        yield CommandPrompt(id="cmd-prompt")
         yield Footer()
-        yield HelpScreen(id="help")
 
     def watch_active_editor(self):
         """Watch active editor to update sidebar."""
@@ -93,13 +80,6 @@ class Workbench(Vertical):
             sidebar.active_editor = self.active_editor
         else:
             sidebar.active_editor = None
-
-    def watch_show_help(self, visibility: bool) -> None:
-        """Toggle help screen visibility if show_help flag changes."""
-        help_screen = self.query_one("#help", HelpScreen)
-        help_screen.display = visibility
-        window = help_screen.query_one("HelpWindow", HelpWindow)
-        window.focus()
 
     def watch_show_sidebar(self, visibility: bool) -> None:
         """Toggle sidebar view visibility if show_sidebar flag changes."""

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.reactive import reactive
 from textual.widgets import Input
 
 from .constants import FileMode
@@ -10,6 +11,7 @@ from .constants.generic import APP_NAME, DIFF_MODEL_COUNT
 from .models import DataModel
 from .utils.config import Config
 from .widgets import CommandPrompt, Editor, Workbench
+from .widgets.help_screen import HelpScreen, HelpWindow
 
 
 class HexabyteApp(App):
@@ -25,6 +27,8 @@ class HexabyteApp(App):
         Binding(":", "cmd_mode_enter", "Command Mode", show=False),
         Binding("escape", "cmd_mode_exit", "Exit Command Mode", show=False),
     ]
+
+    show_help: reactive[bool] = reactive(False)
 
     def __init__(
         self,
@@ -84,6 +88,8 @@ class HexabyteApp(App):
     def compose(self) -> ComposeResult:
         """Compose main screen."""
         yield self.workbench
+        yield CommandPrompt(id="cmd-prompt")
+        yield HelpScreen(id="help")
 
     def on_mount(self) -> None:
         """Perform initial actions after mount."""
@@ -116,8 +122,15 @@ class HexabyteApp(App):
 
     def action_toggle_help(self) -> None:
         """Toggle visibility of sidebar."""
-        self.workbench.show_help = not self.workbench.show_help
+        self.show_help = not self.show_help
 
     def action_toggle_sidebar(self) -> None:
         """Toggle visibility of sidebar."""
         self.workbench.show_sidebar = not self.workbench.show_sidebar
+
+    def watch_show_help(self, visibility: bool) -> None:
+        """Toggle help screen visibility if show_help flag changes."""
+        help_screen = self.query_one("#help", HelpScreen)
+        help_screen.display = visibility
+        window = help_screen.query_one("HelpWindow", HelpWindow)
+        window.focus()

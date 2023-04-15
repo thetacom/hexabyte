@@ -10,7 +10,8 @@ from hexabyte.components import HCView
 from hexabyte.constants.sizes import BYTE_BITS
 from hexabyte.utils import Entropy
 from hexabyte.utils.misc import map_range
-from hexabyte.widgets import Editor
+
+from .editor import Editor
 
 ENTROPY_LOW_BOUND = 0.3
 ENTROPY_HIGH_BOUND = 0.6

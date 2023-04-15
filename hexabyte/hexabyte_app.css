@@ -1,3 +1,17 @@
 * {
     transition: background 250ms linear, color 250ms linear;
 }
+HexabyteApp {
+    layers: base overlay notes notifications;
+}
+CommandPrompt {
+    layer: overlay;
+    dock: bottom;
+    width: 100%;
+    display: none;
+}
+
+HelpScreen {
+    layer: notifications;
+    display: none;
+}
