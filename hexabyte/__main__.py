@@ -1,5 +1,6 @@
 """Haxabyte Package Main."""
 import argparse
+from importlib.metadata import version
 from pathlib import Path
 
 from hexabyte.constants import FileMode
@@ -26,6 +27,7 @@ def main():
         help=f"Specify config location. Default: {Config.DEFAULT_FILEPATH}",
     )
     parser.add_argument("-s", "--split", action="store_true", help="Display a single file in two split screen editors.")
+    parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {version('hexabyte')}")
     parser.add_argument("files", type=Path, nargs="*", help="Specify 1 or 2 filenames")
     try:
         args = parser.parse_args()

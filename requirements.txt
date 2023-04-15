@@ -1,9 +1,9 @@
 hilbertcurve==2.0.5 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:6a7703d9a2f1fe748c86d86908bf183e7d139b973645e4b2526e10b34e75796d \
     --hash=sha256:dbaad510237d3cd4355c189f00e8dbe66a9e66e03af37f9d3f257799292da363
-importlib-metadata==6.3.0 ; python_version >= "3.10" and python_version < "4.0" \
-    --hash=sha256:23c2bcae4762dfb0bbe072d358faec24957901d75b6c4ab11172c0c982532402 \
-    --hash=sha256:8f8bd2af397cf33bd344d35cfe7f489219b7d14fc79a3f854b75b8417e9226b0
+importlib-metadata==6.4.1 ; python_version >= "3.10" and python_version < "4.0" \
+    --hash=sha256:63ace321e24167d12fbb176b6015f4dbe06868c54a2af4f15849586afb9027fd \
+    --hash=sha256:eb1a7933041f0f85c94cd130258df3fb0dec060ad8c1c9318892ef4192c47ce1
 linkify-it-py==2.0.0 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:1bff43823e24e507a099e328fc54696124423dd6320c75a9da45b4b754b748ad \
     --hash=sha256:476464480906bed8b2fa3813bf55566282e55214ad7e41b7d1c2b564666caf2f

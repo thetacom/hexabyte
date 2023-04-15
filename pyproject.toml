@@ -29,7 +29,6 @@ packages = [{ include = 'hexabyte' }]
 
 [tool.poetry.dependencies]
 python             = "^3.10"
-importlib-metadata = "^6.2.1"
 textual            = "^0.19.0"
 toml               = "^0.10.2"
 python-magic       = "^0.4.27"
