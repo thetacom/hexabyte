@@ -55,6 +55,8 @@ class EntropyPanel(ScrollView):
             scroll_x, scroll_y = self.scroll_offset
             y = click.y + scroll_y
             x = click.x + scroll_x
+            if x > self.view.width:
+                return
             idx = self.view.coord2idx(x, y)
             bit_offset = idx * self.entropy.chunk_size * BYTE_BITS
             self.editor.cursor = bit_offset

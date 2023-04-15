@@ -1,10 +1,12 @@
 """Sidebar Info Panel."""
+import grp
+import pwd
 import stat
 from hashlib import md5, sha1
 
 import magic
 from textual.app import ComposeResult
-from textual.containers import Vertical, VerticalScroll
+from textual.containers import Horizontal, VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import Label, Static
 
@@ -13,7 +15,7 @@ from hexabyte.constants.sizes import KB, MB
 from .editor import Editor
 
 
-class InfoItem(Vertical):  # pylint: disable=too-few-public-methods
+class InfoItem(Horizontal):  # pylint: disable=too-few-public-methods
     """A row of info."""
 
     DEFAULT_CSS = """
@@ -26,6 +28,7 @@ class InfoItem(Vertical):  # pylint: disable=too-few-public-methods
     InfoItem Static {
     }
     InfoItem Label {
+        padding: 0 1;
     }
     """
 
@@ -56,11 +59,13 @@ class InfoPanel(VerticalScroll):
         """Compose child widgets."""
         yield InfoItem(name="filename")
         yield InfoItem(name="path")
-        yield InfoItem(name="permissions")
         yield InfoItem(name="size")
-        yield InfoItem(name="MD5")
-        yield InfoItem(name="SHA1")
+        yield InfoItem(name="owner")
+        yield InfoItem(name="group")
+        yield InfoItem(name="permissions")
         yield InfoItem(name="type")
+        yield InfoItem(name="md5")
+        yield InfoItem(name="sha1")
 
     def update_hashes(self) -> None:
         """Update file hashes."""
@@ -70,9 +75,9 @@ class InfoPanel(VerticalScroll):
         with filepath.open("rb") as f:
             md5_hash = md5(f.read(), usedforsecurity=False).hexdigest()
             sha1_hash = sha1(f.read(), usedforsecurity=False).hexdigest()
-        md5_value = self.query_one("#MD5-value", Static)
+        md5_value = self.query_one("#md5-value", Static)
         md5_value.update(md5_hash)
-        sha1_value = self.query_one("#SHA1-value", Static)
+        sha1_value = self.query_one("#sha1-value", Static)
         sha1_value.update(sha1_hash)
 
     def update_stats(self) -> None:
@@ -88,6 +93,12 @@ class InfoPanel(VerticalScroll):
         else:
             kb_size = file_size // KB
             size_value.update(f"{kb_size:,} KB ({file_size:,} bytes)")
+        owner_value = self.query_one("#owner-value", Static)
+        owner_value.update(pwd.getpwuid(stats.st_uid).pw_name)
+
+        group_value = self.query_one("#group-value", Static)
+        group_value.update(grp.getgrgid(stats.st_gid).gr_name)
+
         perm_value = self.query_one("#permissions-value", Static)
         perm_value.update(stat.filemode(stats.st_mode))
 
