@@ -29,6 +29,11 @@ class HelpScreen(Center):  # pylint: disable=too-few-public-methods
     HELP_TEXT = f"""
 # {APP_NAME} Help
 
+Hexabyte can operate in three distinct modes:
+- single file mode - Opens a single file with a single editor.
+- split screen mode - Opens a single file with a split screen view.
+- diff mode - Opens two files side by side.
+
 ## Global Shortcuts
 
 - `:` - Open Command Prompt
@@ -49,33 +54,59 @@ class HelpScreen(Center):  # pylint: disable=too-few-public-methods
 `~/.config/hexabyte/config.toml`
 
 ```toml
-[editors.normal]
-primary   = 'hex'  # 'hex', 'bin', 'utf8'
-secondary = 'utf8' # 'hex', 'bin', 'utf8'
-
-[editors.diff]
-primary   = 'hex' # 'hex', 'bin', 'utf8'
-secondary = 'hex' # 'hex', 'bin', 'utf8'
+[normal]
+primary      = 'hex' # 'hex', 'bin', 'utf8'
+offset-style = 'hex' # 'hex', 'dec', 'off'
 
 # Column count is the number of columns per row
 # Column width represents the byte width of each column
 
-[layout]
+[normal.bin]
+column-count = 8
+column-size  = 1
+
+[normal.hex]
+column-count = 32
+column-size  = 1
+
+[normal.utf8]
+column-count = 1
+column-size  = 64
+
+[split]
+primary      = 'hex'  # 'hex', 'bin', 'utf8'
+secondary    = 'utf8' # 'hex', 'bin', 'utf8'
+offset-style = 'hex'  # 'hex', 'dec', 'off'
+
+[split.bin]
+column-count = 4
+column-size  = 1
+
+[split.hex]
+column-count = 4
+column-size  = 4
+
+[split.utf8]
+column-count = 8
+column-size  = 4
+
+[diff]
+primary      = 'hex' # 'hex', 'bin', 'utf8'
+secondary    = 'hex' # 'hex', 'bin', 'utf8'
 offset-style = 'hex' # 'hex', 'dec', 'off'
 
-[layout.bin]
+[diff.bin]
 column-count = 4
-column-size = 1
+column-size  = 1
 
-[layout.hex]
+[diff.hex]
 column-count = 4
-column-size = 4
+column-size  = 4
 
-[layout.utf8]
+[diff.utf8]
 column-count = 8
-column-size = 4
+column-size  = 4
 ```
-
 """
 
     DEFAULT_CSS = """

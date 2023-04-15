@@ -9,10 +9,8 @@ class CommandPrompt(Horizontal):  # pylint: disable=too-few-public-methods
 
     DEFAULT_CSS = """
     CommandPrompt {
-        layer: overlay;
         border: tall $accent;
         height: 5;
-        overflow: hidden;
     }
     CommandPrompt Label {
         dock: left;
