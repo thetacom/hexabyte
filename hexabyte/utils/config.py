@@ -15,6 +15,8 @@ class Config:
     Responsible for loading, tracking and saving application-wide configurations.
     """
 
+    DEFAULT_FILEPATH = DEFAULT_CONFIG_PATH / CONFIG_FILENAME
+
     def __init__(self) -> None:
         """Initialize the application config."""
         self.filepath: Path | None = None

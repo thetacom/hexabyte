@@ -22,6 +22,12 @@ class EntropyPanel(ScrollView):
     editor: reactive[Editor | None] = reactive(None, init=False)
     entropy: reactive[Entropy | None] = reactive(None)
 
+    DEFAULT_CSS = """
+    EntropyPanel {
+        background: $background;
+    }
+    """
+
     def __init__(
         self,
         name: str | None = None,

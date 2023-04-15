@@ -14,9 +14,6 @@ class Sidebar(Vertical):
     DEFAULT_CSS = """
     Sidebar {
         background: $accent;
-        layer: base;
-        column-span: 2;
-        height: 100%;
     }
     Sidebar Tabs {
         background: $accent-darken-2;

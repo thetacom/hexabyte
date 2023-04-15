@@ -14,4 +14,5 @@ class FileMode(Enum):
     """Application Modes."""
 
     NORMAL = "normal"
+    SPLIT = "split"
     DIFF = "diff"

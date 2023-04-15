@@ -27,8 +27,26 @@ class Workbench(Vertical):
     Workbench Body {
         width: 100%;
         layout: grid;
-        grid-size: 6 1;
+        grid-size: 18 1;
         grid-gutter: 0;
+    }
+    Workbench Editor {
+        layer: base;
+        column-span: 18;
+    }
+    Workbench Editor.with-sidebar {
+        column-span: 12;
+    }
+    Workbench Editor.split {
+        column-span: 9;
+    }
+    Workbench Editor.split.with-sidebar {
+        column-span: 6;
+    }
+    Workbench Sidebar {
+        layer: base;
+        column-span: 6;
+        height: 100%;
     }
     Workbench CommandPrompt {
         layer: overlay;
@@ -48,23 +66,21 @@ class Workbench(Vertical):
 
     def __init__(
         self,
+        *editors: tuple[Editor, ...],
         mode: FileMode,
-        left_editor: Editor,
-        right_editor: Editor,
         **kwargs,
     ) -> None:
         """Initialize Workbench."""
         super().__init__(**kwargs)
         self._mode = mode
-        self.left_editor = left_editor
-        self.right_editor = right_editor
+        self.editors = editors
 
     def compose(self) -> ComposeResult:
         """Compose sidebar widgets."""
         yield Header(show_clock=True)
         with Body():
-            yield self.left_editor
-            yield self.right_editor
+            for editor in self.editors:
+                yield from editor
             yield Sidebar(id="sidebar")
         yield CommandPrompt(id="cmd-prompt")
         yield Footer()

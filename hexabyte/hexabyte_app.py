@@ -29,6 +29,7 @@ class HexabyteApp(App):
     def __init__(
         self,
         config: Config,
+        file_mode: FileMode,
         files: list[Path],
         **kwargs,
     ) -> None:
@@ -37,44 +38,48 @@ class HexabyteApp(App):
         If two filenames are specified, app will open in diff mode.
         """
         self.config = config
-        self.models = [DataModel(files[0])]
-        if len(files) > 1:
-            self._mode = FileMode.DIFF
-            self.models.append(DataModel(files[1]))
-        else:
-            self._mode = FileMode.NORMAL
+        self._file_mode = file_mode
+        self.models = []
+        for file in files:
+            self.models.append(DataModel(file))
         super().__init__(**kwargs)
 
         # Create an editors
-        if self._mode is FileMode.NORMAL:
+        if self._file_mode is FileMode.NORMAL:
             self.sub_title = f"NORMAL MODE: {self.models[0].filepath.name}"
-            primary_editor = Editor(self._mode, self.models[0], classes="dual", id="primary", config=self.config)
+            primary_editor = Editor(self._file_mode, self.models[0], id="primary", config=self.config)
+            workbench = Workbench((primary_editor,), mode=self._file_mode)
+        elif self._file_mode is FileMode.SPLIT:
+            self.sub_title = f"SPLIT MODE: {self.models[0].filepath.name} <-> {self.models[0].filepath.name}"
+            primary_editor = Editor(self._file_mode, self.models[0], classes="split", id="primary", config=self.config)
             secondary_editor = Editor(
-                self._mode,
+                self._file_mode,
                 self.models[0],
-                classes="dual",
+                classes="split",
                 id="secondary",
                 config=self.config,
             )
+            workbench = Workbench((primary_editor, secondary_editor), mode=self._file_mode)
         else:
             if len(self.models) != DIFF_MODEL_COUNT:
                 raise ValueError("Two files must be loaded for diff mode.")
             self.sub_title = f"DIFF MODE: {self.models[0].filepath.name} <-> {self.models[1].filepath.name}"
-            primary_editor = Editor(self._mode, self.models[0], classes="dual", id="primary", config=self.config)
+            primary_editor = Editor(self._file_mode, self.models[0], classes="split", id="primary", config=self.config)
             secondary_editor = Editor(
-                self._mode,
+                self._file_mode,
                 self.models[1],
-                classes="dual",
+                classes="split",
                 id="secondary",
                 config=self.config,
             )
+            workbench = Workbench((primary_editor, secondary_editor), mode=self._file_mode)
 
-        self.workbench = Workbench(self._mode, primary_editor, secondary_editor)
+        self.workbench = workbench
 
     @property
-    def mode(self) -> FileMode:
+    def file_mode(self) -> FileMode:
         """Return the application mode."""
-        return self._mode
+        return self._file_mode
 
     def compose(self) -> ComposeResult:
         """Compose main screen."""

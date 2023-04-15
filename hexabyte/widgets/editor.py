@@ -69,23 +69,12 @@ class Editor(ScrollView):
 
     DEFAULT_CSS = """
     Editor {
-        layer: base;
-        column-span: 6;
         background: $boost;
         color: $text;
         border: tall $background;
     }
     Editor:focus {
         border: tall $secondary;
-    }
-    Editor.with-sidebar {
-        column-span: 4;
-    }
-    Editor.dual {
-        column-span: 3;
-    }
-    Editor.dual.with-sidebar {
-        column-span: 2;
     }
     Editor>.text {
         background: $surface;
@@ -165,17 +154,17 @@ class Editor(ScrollView):
         self.file_mode = file_mode
         self.model = model
         self.config = config
-        editor_config = self.config.settings.get("editors", {}).get(self.file_mode.value, {})
+        mode_config = self.config.settings.get(self.file_mode.value, {})
         if id == "primary":
-            self.display_mode = DisplayMode(editor_config.get("primary", "hex"))
+            self.display_mode = DisplayMode(mode_config.get("primary", "hex"))
         else:
-            self.display_mode = DisplayMode(editor_config.get("secondary", "utf8"))
-        layout_config = self.config.settings.get("layout", {})
-        offset_style = layout_config.get("offset-style")
+            self.display_mode = DisplayMode(mode_config.get("secondary", "utf8"))
+        offset_style = mode_config.get("offset-style")
         self.hex_offsets = not offset_style == "dec"
         self.show_offsets = not offset_style == "off"
-        column_count = layout_config.get(self.display_mode.value, {}).get("column-count")
-        column_size = layout_config.get(self.display_mode.value, {}).get("column-size")
+        display_mode_config = mode_config.get(self.display_mode.value, {})
+        column_count = display_mode_config.get("column-count")
+        column_size = display_mode_config.get("column-size")
         self.view_modes = cycle(DisplayMode)
         # Synch modes cycle with specified view
         while next(self.view_modes) is not self.display_mode:
@@ -271,10 +260,14 @@ class Editor(ScrollView):
     def on_click(self, click: Click) -> None:
         """Handle click events."""
         if click.button == 1:
-            if click.x > self.view.offsets_column_width + 1:
-                y_portion = (self.scroll_offset.y + click.y - 1) * self.view.line_bit_length
-                data_x = click.x - self.view.offsets_column_width - 2
-                adjusted_x = data_x - data_x // (self.view.BYTE_REPR_LEN[self.display_mode] * self.view.column_size)
+            x_offset, y_offset = self.scroll_offset
+            x = click.x + x_offset
+            y = click.y + y_offset
+            if x > self.view.offsets_column_width + 1:
+                y_portion = (y - 1) * self.view.line_bit_length
+                data_x = x - self.view.offsets_column_width - 2
+                spaces_count = data_x // (self.view.BYTE_REPR_LEN[self.display_mode] * self.view.column_size + 1)
+                adjusted_x = data_x - spaces_count
                 x_portion = adjusted_x * self.cursor_increment
                 self.cursor = y_portion + x_portion
 
@@ -355,9 +348,10 @@ class Editor(ScrollView):
     async def watch_display_mode(self, mode: DisplayMode) -> None:
         """Update view mode of ByteView component."""
         self.cursor_increment = CURSOR_INCREMENTS[mode]
-        layout_config = self.config.settings.get("layout", {})
-        self.view.column_count = layout_config.get(mode.value, {}).get("column-count")
-        self.view.column_size = layout_config.get(mode.value, {}).get("column-size")
+        mode_config = self.config.settings.get(self.file_mode.value, {})
+        display_mode_config = mode_config.get(self.display_mode.value, {})
+        self.view.column_count = display_mode_config.get("column-count")
+        self.view.column_size = display_mode_config.get("column-size")
         self.view.view_mode = mode
         self.virtual_size = self.view.size
 
