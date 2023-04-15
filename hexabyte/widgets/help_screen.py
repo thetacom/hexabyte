@@ -49,6 +49,44 @@ Hexabyte can operate in three distinct modes:
 - `Ctrl+o` - Cycle offset display style (hex, decimal, off)
 - `Ctrl+s` - Save changes to disk
 
+## Commands
+
+- **test** *success*
+  - Flash green
+- **test** *fail*
+  - Flash red
+- **test** *warn*
+  - Flash orange
+
+### Planned
+
+- **goto** *offset*
+  - Jump active editor to specified offset.
+- **set** *offset* *value*
+  - Set the byte value at specified offset.
+- **select** *offset* *length*
+  - Select a chunk of data at specified offset.
+- **move** *offset*
+  - Move selected data to specified offset.
+- **find** *( str | hex | int | bin )* *value*
+  - Find a value in data.
+- **findnext**
+  - Find the next occurrence of previous search.
+- **match** *( str | hex | int | bin )* *pattern*
+  - Highlight all matches to pattern.
+- **revert**
+  - Revert all unsaved data modifications.
+- **save**
+  - Save data changes to file.
+- **saveas** *new_filename*
+  - Save data changes to a new file.
+- **open** *(primary | secondary)* *filename*
+  - Open a file into the specified editor.
+- **undo**
+  - Undo the last action performed.
+- **redo**
+  - Redo the last action that was undone.
+
 ## Example Configuration File
 
 `~/.config/hexabyte/config.toml`

@@ -41,6 +41,8 @@ class Editor(ScrollView):
         Binding("ctrl+n", "next_view", "Next View Mode", show=True),
         Binding("ctrl+o", "toggle_offsets", "Offset Style", show=True),
         Binding("ctrl+s", "save", "Save File", show=True),
+        Binding("ctrl+z", "undo", "Undo Action", show=False),
+        Binding("ctrl+y", "redo", "Redo Action", show=False),
     ]
     """
     | Key(s) | Description |
@@ -57,7 +59,9 @@ class Editor(ScrollView):
     | delete,ctrl+d | Delete the character to the right of the cursor. |
     | ctrl+n | Next view mode. |
     | ctrl+o | Offset Style. |
-    | ctrl+s | Save file. |.
+    | ctrl+s | Save file. |
+    | ctrl+z | Undo. |
+    | ctrl+y | Redo. |.
     """
 
     COMPONENT_CLASSES: ClassVar[set[str]] = {"text"}
@@ -241,9 +245,19 @@ class Editor(ScrollView):
         """Move the cursor down a page."""
         self.cursor += self.view.line_bit_length * self.size.height
 
+    def action_redo(self) -> None:
+        """Redo action."""
+        self.model.redo()
+        self.cursor = self.model.cursor.bit
+
     def action_save(self) -> None:
         """Save data to file."""
         self.model.save()
+
+    def action_undo(self) -> None:
+        """Undo action."""
+        self.model.undo()
+        self.cursor = self.model.cursor.bit
 
     def insert_at_cursor(self, text: str) -> None:
         """Insert character at the cursor, move the cursor to the end of the new text.

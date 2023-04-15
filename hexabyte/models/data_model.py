@@ -4,6 +4,9 @@ Provides the interface for interacting with raw file data.
 """
 from pathlib import Path
 
+from hexabyte.events.action import Action
+from hexabyte.events.action_handler import ActionHandler
+
 from ..constants.sizes import KB, MB
 from .cursor import Cursor
 from .data_sources import SimpleDataSource
@@ -37,6 +40,7 @@ class DataModel:
         #     self._source = PagedDataSource(filepath, self.BLOCK_SIZE)
         self._selected: int = 0
         self.cursor = Cursor(max_bytes=len(self))
+        self.action_handler = ActionHandler(self)
 
     def __len__(self) -> int:
         """Return length of data."""
@@ -52,28 +56,22 @@ class DataModel:
         """Return the number of selected bytes."""
         return self._selected
 
-    # def commands(self, commands: List[Command]) -> None:
-    #     """Process a list of one or more commands."""
-    #     # Supported commands:
-    #
-    #     # Cursor Operations
-    #     # GOTO(offset)
-    #
-    #     # Data Operations
-    #     # UPDATE(offset, data)
-    #     # INSERT(offset, data)
-    #     # DELETE(offset, len)
-    #
-    #     # Selection Operations
-    #     # SELECT(offset, len)
-    #     # MOV(dst_offset)
-    #     # CUT()
-    #     # COPY()
+    def do(self, action: Action) -> None:  # pylint: disable=invalid-name
+        """Process and perform action."""
+        self.action_handler.do(action)
 
     def read(self, offset: int = 0, length: int | None = None) -> bytearray:
         """Return a bytearray of the specified range."""
         return self._source.read(offset, length)
 
+    def redo(self) -> None:
+        """Redo action."""
+        self.action_handler.redo()
+
     def save(self, new_filename: Path | None = None) -> None:
         """Save the current data to file."""
         self._source.save(new_filename)
+
+    def undo(self) -> None:
+        """Undo action."""
+        self.action_handler.undo()
