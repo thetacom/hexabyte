@@ -57,11 +57,11 @@ Hexabyte can operate in three distinct modes:
   - Flash red
 - **test** *warn*
   - Flash orange
+- **goto** *offset*
+  - Jump active editor to specified byte offset. Accepts offset in decimal, hex, and binary.
 
 ### Planned
 
-- **goto** *offset*
-  - Jump active editor to specified offset.
 - **set** *offset* *value*
   - Set the byte value at specified offset.
 - **select** *offset* *length*

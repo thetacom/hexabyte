@@ -10,11 +10,12 @@ from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
+from hexabyte.actions import Action, ActionHandler
 from hexabyte.components import ByteView
 from hexabyte.constants import DisplayMode, FileMode
 from hexabyte.constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
 from hexabyte.models import DataModel
-from hexabyte.utils import Config
+from hexabyte.utils.config import Config
 
 CURSOR_INCREMENTS = {
     DisplayMode.HEX: NIBBLE_BITS,
@@ -158,6 +159,7 @@ class Editor(ScrollView):
         self.file_mode = file_mode
         self.model = model
         self.config = config
+        self.action_handler = ActionHandler(self)
         mode_config = self.config.settings.get(self.file_mode.value, {})
         if id == "primary":
             self.display_mode = DisplayMode(mode_config.get("primary", "hex"))
@@ -247,8 +249,7 @@ class Editor(ScrollView):
 
     def action_redo(self) -> None:
         """Redo action."""
-        self.model.redo()
-        self.cursor = self.model.cursor.bit
+        self.action_handler.redo()
 
     def action_save(self) -> None:
         """Save data to file."""
@@ -256,8 +257,11 @@ class Editor(ScrollView):
 
     def action_undo(self) -> None:
         """Undo action."""
-        self.model.undo()
-        self.cursor = self.model.cursor.bit
+        self.action_handler.undo()
+
+    def do(self, action: Action) -> None:  # pylint: disable=invalid-name
+        """Process and perform action."""
+        self.action_handler.do(action)
 
     def insert_at_cursor(self, text: str) -> None:
         """Insert character at the cursor, move the cursor to the end of the new text.

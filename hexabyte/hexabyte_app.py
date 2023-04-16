@@ -7,11 +7,11 @@ from textual.reactive import reactive
 from textual.widgets import Input
 
 from .constants import FileMode
-from .constants.generic import APP_NAME, DIFF_MODEL_COUNT
-from .models import DataModel
+from .constants.generic import APP_NAME
 from .utils.config import Config
-from .widgets import CommandPrompt, Editor, Workbench
+from .widgets.command_prompt import CommandPrompt
 from .widgets.help_screen import HelpScreen, HelpWindow
+from .widgets.workbench import Workbench
 
 
 class HexabyteApp(App):
@@ -43,42 +43,9 @@ class HexabyteApp(App):
         """
         self.config = config
         self._file_mode = file_mode
-        self.models = []
-        for file in files:
-            self.models.append(DataModel(file))
         super().__init__(**kwargs)
 
-        # Create an editors
-        if self._file_mode is FileMode.NORMAL:
-            self.sub_title = f"NORMAL MODE: {self.models[0].filepath.name}"
-            primary_editor = Editor(self._file_mode, self.models[0], id="primary", config=self.config)
-            workbench = Workbench((primary_editor,), mode=self._file_mode)
-        elif self._file_mode is FileMode.SPLIT:
-            self.sub_title = f"SPLIT MODE: {self.models[0].filepath.name} <-> {self.models[0].filepath.name}"
-            primary_editor = Editor(self._file_mode, self.models[0], classes="split", id="primary", config=self.config)
-            secondary_editor = Editor(
-                self._file_mode,
-                self.models[0],
-                classes="split",
-                id="secondary",
-                config=self.config,
-            )
-            workbench = Workbench((primary_editor, secondary_editor), mode=self._file_mode)
-        else:
-            if len(self.models) != DIFF_MODEL_COUNT:
-                raise ValueError("Two files must be loaded for diff mode.")
-            self.sub_title = f"DIFF MODE: {self.models[0].filepath.name} <-> {self.models[1].filepath.name}"
-            primary_editor = Editor(self._file_mode, self.models[0], classes="split", id="primary", config=self.config)
-            secondary_editor = Editor(
-                self._file_mode,
-                self.models[1],
-                classes="split",
-                id="secondary",
-                config=self.config,
-            )
-            workbench = Workbench((primary_editor, secondary_editor), mode=self._file_mode)
-
-        self.workbench = workbench
+        self.workbench = Workbench(self.config, self.file_mode, files)
 
     @property
     def file_mode(self) -> FileMode:
@@ -90,11 +57,6 @@ class HexabyteApp(App):
         yield self.workbench
         yield CommandPrompt(id="cmd-prompt")
         yield HelpScreen(id="help")
-
-    def on_mount(self) -> None:
-        """Perform initial actions after mount."""
-        editor = self.query_one("#primary", Editor)
-        editor.focus()
 
     def action_cmd_mode_enter(self) -> None:
         """Enter command mode."""
@@ -110,15 +72,13 @@ class HexabyteApp(App):
         if self.workbench.active_editor is not None:
             self.workbench.active_editor.focus()
         else:
-            editor = self.query_one("#primary", Editor)
-            editor.focus()
+            self.workbench.focus()
 
     def action_toggle_dark(self) -> None:
         """Toggle dark mode."""
         super().action_toggle_dark()
-        editors = self.query("Editor").results(Editor)
-        for editor in editors:
-            editor.update_view_style()
+        workbench = self.query_one("Workbench", Workbench)
+        workbench.update_view_styles()
 
     def action_toggle_help(self) -> None:
         """Toggle visibility of sidebar."""

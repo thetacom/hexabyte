@@ -1,5 +1,5 @@
 """Action Handler Module."""
-from .action import Action
+from ._action import Action, ReversibleAction
 
 
 class ActionHandler:
@@ -11,19 +11,12 @@ class ActionHandler:
     def __init__(self, target) -> None:
         """Initialize the action handler."""
         self.target = target
-        self.undo_history: list[Action] = []
-        self.redo_history: list[Action] = []
+        self.undo_history: list[ReversibleAction] = []
+        self.redo_history: list[ReversibleAction] = []
+        self.previous_action: Action | None = None
 
     def do(self, action: Action) -> None:  # pylint: disable=invalid-name
         """Process and perform action.
-
-        Cursor Operations
-        GOTO(offset)
-
-        Data Operations
-        UPDATE(offset, data)
-        INSERT(offset, data)
-        DELETE(offset, len)
 
         Selection Operations
         SELECT(offset, len)
@@ -32,9 +25,11 @@ class ActionHandler:
         COPY()
         """
         self.redo_history = []
-        action.set_target(self.target)
-        action.apply()
-        self.undo_history.append(action)
+        action.target = self.target
+        action.do()
+        if isinstance(action, ReversibleAction):
+            self.undo_history.append(action)
+        self.previous_action = action
 
     def redo(self) -> None:
         """Redo action."""

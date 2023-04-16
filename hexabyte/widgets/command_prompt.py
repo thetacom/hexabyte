@@ -8,6 +8,9 @@ from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import Input, Label
 
+from hexabyte.actions import ActionError
+from hexabyte.command_parser import CommandParser, InvalidCommandError
+
 from .workbench import Workbench
 
 
@@ -88,6 +91,12 @@ class CommandPrompt(Horizontal):  # pylint: disable=too-few-public-methods
         if clear_cmd:
             box.value = ""
 
+    def _update_history(self) -> None:
+        """Add current command to input history."""
+        box = self.query_one("CommandInput", CommandInput)
+        box.history.append(box.value)
+        box.history_idx = -1
+
     def compose(self) -> ComposeResult:
         """Compose Command Prompt widgets."""
         yield Label("Command:")
@@ -99,16 +108,25 @@ class CommandPrompt(Horizontal):  # pylint: disable=too-few-public-methods
         if self.parent is None:
             self._command_fail()
             return
-        workbench = self.parent.query_one("Workbench", Workbench)
-        editor = workbench.active_editor
-        if editor is None:
-            self._command_fail()
-        if cmd == "test success":
+        try:
+            if cmd == "test success":
+                self._command_success()
+            elif cmd == "test fail":
+                self._command_fail(True)
+            elif cmd == "test warn":
+                self._command_warn()
+            else:
+                actions = CommandParser.parse(cmd)
+                workbench = self.parent.query_one("Workbench", Workbench)
+                editor = workbench.active_editor
+                if editor is None or editor.model is None:
+                    self._command_fail()
+                    return
+                for action in actions:
+                    editor.action_handler.do(action)
+            self._update_history()
             self._command_success()
-        elif cmd == "test fail":
-            self._command_fail()
-        elif cmd == "test warn":
+        except InvalidCommandError:
             self._command_warn()
-        box = self.query_one("CommandInput", CommandInput)
-        box.history.append(event.value)
-        box.history_idx = -1
+        except ActionError:
+            self._command_fail(True)

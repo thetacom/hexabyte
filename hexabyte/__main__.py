@@ -46,7 +46,7 @@ def main():
         else:
             file_mode = FileMode.NORMAL
 
-        app = HexabyteApp(config=config, file_mode=file_mode, files=args.files)
+        app = HexabyteApp(config, file_mode, args.files)
         app.run()
         config.save()
     except (FileNotFoundError, ValueError) as err:

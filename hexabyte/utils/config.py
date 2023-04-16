@@ -17,6 +17,11 @@ class Config:
 
     DEFAULT_FILEPATH = DEFAULT_CONFIG_PATH / CONFIG_FILENAME
 
+    # def __new__(cls):
+    #     if not hasattr(cls, 'instance'):
+    #     cls.instance = super(SingletonClass, cls).__new__(cls)
+    #     return cls.instance
+
     def __init__(self) -> None:
         """Initialize the application config."""
         self.filepath: Path | None = None

@@ -8,7 +8,7 @@ from textual.strip import Strip
 
 from hexabyte.components import HCView
 from hexabyte.constants.sizes import BYTE_BITS
-from hexabyte.utils import Entropy
+from hexabyte.utils.entropy import Entropy
 from hexabyte.utils.misc import map_range
 
 from .editor import Editor
