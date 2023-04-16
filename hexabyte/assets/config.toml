@@ -1,3 +1,8 @@
+[general]
+max-cmd-history = 100
+max-undo = 100
+
+
 [normal]
 primary      = 'hex' # 'hex', 'bin', 'utf8'
 offset-style = 'hex' # 'hex', 'dec', 'off'

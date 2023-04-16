@@ -57,11 +57,11 @@ Hexabyte can operate in three distinct modes:
   - Flash red
 - **test** *warn*
   - Flash orange
-- **goto** *offset*
+- **goto** *[ bit | byte ]* *OFFSET*
   - Jump active editor to specified byte offset. Accepts offset in decimal, hex, and binary.
-- **undo**
+- **undo** *[QTY]*
   - Undo the last action performed.
-- **redo**
+- **redo** *[QTY]*
   - Redo the last action that was undone.
 
 ### Planned
@@ -92,6 +92,10 @@ Hexabyte can operate in three distinct modes:
 `~/.config/hexabyte/config.toml`
 
 ```toml
+[general]
+max-cmd-history = 100
+max-undo = 100
+
 [normal]
 primary      = 'hex' # 'hex', 'bin', 'utf8'
 offset-style = 'hex' # 'hex', 'dec', 'off'

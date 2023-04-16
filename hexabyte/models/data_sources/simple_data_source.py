@@ -23,8 +23,9 @@ class SimpleDataSource(DataSource):
             return bytearray(self._data[offset : offset + length])
         return bytearray(self._data[offset:])
 
-    def replace(self, offset: int, length: int, data: bytearray) -> None:
+    def replace(self, offset: int, length: int, data: bytes) -> None:
         """Replace a portion of data with a new data sequence."""
+        self._data[offset : offset + length] = data
 
     def save(self, new_filepath: Path | None = None) -> None:
         """Save the current data to file.
@@ -44,7 +45,7 @@ class SimpleDataSource(DataSource):
         else:
             self._filepath = dest_filepath
 
-    def write(self, offset: int, data: bytes | bytearray, insert: bool = False) -> None:
+    def write(self, offset: int, data: bytes | bytes, insert: bool = False) -> None:
         """Write the provided data starting at the specified offset.
 
         Params:

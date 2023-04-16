@@ -1,7 +1,6 @@
 """Action Event Module."""
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Any, ClassVar
 
@@ -58,14 +57,6 @@ class ActionType(Enum):
     SWITCH_MODE = "view-mode"
     EXIT = "exit"
     QUIT = "quit"
-
-
-@dataclass
-class Selection:
-    """Data selection."""
-
-    offset: int
-    length: int
 
 
 class Action(ABC):

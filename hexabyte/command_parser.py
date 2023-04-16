@@ -2,7 +2,13 @@
 from hexabyte.actions import Action, ActionType
 from hexabyte.actions.goto_action import GotoAction
 from hexabyte.actions.redo_action import RedoAction
+from hexabyte.actions.save_action import SaveAction
+from hexabyte.actions.save_as_action import SaveAsAction
 from hexabyte.actions.undo_action import UndoAction
+
+ACTIONS: list[type[Action]] = [GotoAction, RedoAction, SaveAction, SaveAsAction, UndoAction]
+
+KEYWORD_MAP = {action.type: action for action in ACTIONS}
 
 
 class InvalidCommandError(ValueError):
@@ -12,13 +18,6 @@ class InvalidCommandError(ValueError):
         """Initialize error."""
         self.cmd = cmd
         super().__init__(*args)
-
-
-KEYWORD_MAP: dict[ActionType, type[Action]] = {
-    GotoAction.type: GotoAction,
-    RedoAction.type: RedoAction,
-    UndoAction.type: UndoAction,
-}
 
 
 class CommandParser:  # pylint: disable=too-few-public-methods
@@ -43,12 +42,16 @@ class CommandParser:  # pylint: disable=too-few-public-methods
         return action
 
     @classmethod
+    def _split_input(cls, cmd_input: str) -> list[list[str]]:
+        """Split input string into action_word and arguments."""
+        commands = filter(None, cmd_input.split(";"))
+        return [cmd.strip().split(" ") for cmd in commands]
+
+    @classmethod
     def parse(cls, cmd_input: str) -> list[Action]:
         """Parse command string into commands."""
-        commands = filter(None, cmd_input.split(";"))
         actions: list[Action] = []
-        for cmd in commands:
-            action_word, *arguments = cmd.strip().split(" ")
+        for action_word, *arguments in cls._split_input(cmd_input):
             action = cls._create_action(action_word, tuple(arguments))
             actions.append(action)
         return actions
@@ -59,4 +62,5 @@ class CommandParser:  # pylint: disable=too-few-public-methods
 
         Returns first command if several commands are included.
         """
-        return cls.parse(cmd_input)[0]
+        action_word, *arguments = cls._split_input(cmd_input)[0]
+        return cls._create_action(action_word, tuple(arguments))

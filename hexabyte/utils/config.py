@@ -26,12 +26,26 @@ class Config:
         """Initialize the application config."""
         self.filepath: Path | None = None
         self.settings: dict[str, Any] = {
-            "editors": {
-                "normal": {"primary": "hex", "secondary": "utf8"},
-                "diff": {"primary": "hex", "secondary": "hex"},
+            "general": {"max-cmd-history": 100, "max-undo": 100},
+            "normal": {
+                "primary": "hex",
+                "offset-style": "hex",
+                "bin": {"column-count": 8, "column-size": 1},
+                "hex": {"column-count": 32, "column-size": 1},
+                "utf8": {"column-count": 1, "column-size": 64},
             },
-            "layout": {
-                "offsets": "hex",
+            "split": {
+                "primary": "hex",
+                "secondary": "utf8",
+                "offset-style": "hex",
+                "bin": {"column-count": 4, "column-size": 1},
+                "hex": {"column-count": 4, "column-size": 4},
+                "utf8": {"column-count": 8, "column-size": 4},
+            },
+            "diff": {
+                "primary": "hex",
+                "secondary": "hex",
+                "offset-style": "hex",
                 "bin": {"column-count": 4, "column-size": 1},
                 "hex": {"column-count": 4, "column-size": 4},
                 "utf8": {"column-count": 8, "column-size": 4},

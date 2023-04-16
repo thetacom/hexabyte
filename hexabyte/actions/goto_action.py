@@ -1,7 +1,7 @@
 """Goto Action."""
 from typing import ClassVar
 
-from hexabyte.constants.generic import OffsetType
+from hexabyte.constants.enums import OffsetType
 from hexabyte.constants.sizes import BYTE_BITS
 from hexabyte.utils.misc import str_to_int
 from hexabyte.widgets.editor import Editor

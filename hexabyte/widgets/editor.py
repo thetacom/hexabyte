@@ -177,7 +177,8 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         self.file_mode = file_mode
         self.model = model
         self.config = config
-        self.action_handler = ActionHandler(self)
+        max_undo = self.config.settings.get("general", {}).get("max-undo")
+        self.action_handler = ActionHandler(self, max_undo=max_undo)
         mode_config = self.config.settings.get(self.file_mode.value, {})
         if id == "primary":
             self.display_mode = DisplayMode(mode_config.get("primary", "hex"))
@@ -279,7 +280,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     def action_save(self) -> None:
         """Save data to file."""
-        self.model.save()
+        self.post_message(self.Command(self, "save"))
 
     def action_undo(self) -> None:
         """Undo action."""

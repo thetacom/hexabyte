@@ -1,4 +1,4 @@
-"""Hexabyte App Modes."""
+"""Hexabyte Enums Module."""
 from enum import Enum
 
 
@@ -16,3 +16,10 @@ class FileMode(Enum):
     NORMAL = "normal"
     SPLIT = "split"
     DIFF = "diff"
+
+
+class OffsetType(Enum):
+    """Types of offsets."""
+
+    BIT = "bit"
+    BYTE = "byte"

@@ -106,6 +106,11 @@ class Workbench(Vertical):
         """Update global state when switching editors."""
         self.active_editor = message.editor
 
+    def on_mount(self) -> None:
+        """Perform on_mount tasks."""
+        editor = self.query_one("#primary", Editor)
+        editor.focus()
+
     def watch_active_editor(self):
         """Watch active editor to update sidebar."""
         sidebar = self.query_one("#sidebar", Sidebar)

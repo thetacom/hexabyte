@@ -1,4 +1,5 @@
 """Command Prompt Widget."""
+from collections import deque
 from typing import ClassVar
 
 from textual.app import ComposeResult
@@ -24,10 +25,10 @@ class CommandInput(Input):  # pylint: disable=too-few-public-methods
 
     value = reactive("", layout=True, init=False)
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args, max_cmd_history: int = 100, **kwargs) -> None:
         """Initialize command prompt."""
         super().__init__(*args, **kwargs)
-        self.history: list[str] = []
+        self.history: deque[str] = deque(maxlen=max_cmd_history)
         self.history_idx = -1
 
     def action_history_up(self) -> None:
@@ -67,28 +68,37 @@ class CommandPrompt(Horizontal):  # pylint: disable=too-few-public-methods
     }
     """
 
-    def _command_success(self, clear_cmd: bool = True) -> None:
+    def __init__(self, *args, max_cmd_history: int, **kwargs) -> None:
+        """Initialize CommandPrompt."""
+        super().__init__(*args, **kwargs)
+        self.max_cmd_history = max_cmd_history
+
+    def _command_success(self, clear: bool = True) -> None:
         """Flash to signify command success."""
         box = self.query_one("CommandInput", CommandInput)
         start_color = box.styles.background
         box.styles.animate("background", Color(0, 192, 0), final_value=start_color, duration=0.5)  # type: ignore
-        if clear_cmd:
+        if clear:
             box.value = ""
 
-    def _command_fail(self, clear_cmd: bool = False) -> None:
-        """Flash to signify invalid or failed command."""
+    def _command_error(self, msg: str | None = None, clear: bool = False) -> None:
+        """Flash to signify command error."""
         box = self.query_one("CommandInput", CommandInput)
         start_color = box.styles.background
         box.styles.animate("background", Color(192, 0, 0), final_value=start_color, duration=0.5)  # type: ignore
-        if clear_cmd:
+        if msg:
+            box.value = msg
+        elif clear:
             box.value = ""
 
-    def _command_warn(self, clear_cmd: bool = False) -> None:
+    def _command_warn(self, msg: str | None = None, clear: bool = False) -> None:
         """Flash to signify warning for command."""
         box = self.query_one("CommandInput", CommandInput)
         start_color = box.styles.background
         box.styles.animate("background", Color(255, 165, 0), final_value=start_color, duration=0.5)  # type: ignore
-        if clear_cmd:
+        if msg:
+            box.value = msg
+        elif clear:
             box.value = ""
 
     def _update_history(self) -> None:
@@ -100,19 +110,19 @@ class CommandPrompt(Horizontal):  # pylint: disable=too-few-public-methods
     def compose(self) -> ComposeResult:
         """Compose Command Prompt widgets."""
         yield Label("Command:")
-        yield CommandInput()
+        yield CommandInput(max_cmd_history=self.max_cmd_history)
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle input submitted event."""
         cmd = event.value
         if self.parent is None:
-            self._command_fail()
+            self._command_error()
             return
         try:
             if cmd == "test success":
                 self._command_success()
             elif cmd == "test fail":
-                self._command_fail(True)
+                self._command_error(clear=True)
             elif cmd == "test warn":
                 self._command_warn()
             else:
@@ -120,13 +130,13 @@ class CommandPrompt(Horizontal):  # pylint: disable=too-few-public-methods
                 workbench = self.parent.query_one("Workbench", Workbench)
                 editor = workbench.active_editor
                 if editor is None or editor.model is None:
-                    self._command_fail()
+                    self._command_error()
                     return
                 for action in actions:
                     editor.action_handler.do(action)
             self._update_history()
             self._command_success()
-        except InvalidCommandError:
-            self._command_warn()
-        except ActionError:
-            self._command_fail(True)
+        except InvalidCommandError as err:
+            self._command_warn(str(err))
+        except ActionError as err:
+            self._command_error(str(err))

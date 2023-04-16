@@ -55,7 +55,8 @@ class HexabyteApp(App):
     def compose(self) -> ComposeResult:
         """Compose main screen."""
         yield self.workbench
-        yield CommandPrompt(id="cmd-prompt")
+        max_cmd_history = self.config.settings.get("general", {}).get("max-cmd-history")
+        yield CommandPrompt(max_cmd_history=max_cmd_history, id="cmd-prompt")
         yield HelpScreen(id="help")
 
     def action_cmd_mode_enter(self) -> None:
