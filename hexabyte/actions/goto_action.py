@@ -1,6 +1,7 @@
 """Goto Action."""
 from typing import ClassVar
 
+from hexabyte.constants.generic import OffsetType
 from hexabyte.constants.sizes import BYTE_BITS
 from hexabyte.utils.misc import str_to_int
 from hexabyte.widgets.editor import Editor
@@ -9,18 +10,34 @@ from ._action import ActionError, ActionType, ReversibleAction, UndoActionError
 
 
 class GotoAction(ReversibleAction):
-    """Goto Action."""
+    """Goto Action.
+
+    Supports a one arg and two arg form:
+
+    goto 0x1000
+
+    goto bit 0x1000
+
+    goto byte 0x1000
+    """
+
+    MIN_ARGS = 1
+    MAX_ARGS = 2
 
     type: ClassVar[ActionType] = ActionType.GOTO
 
-    def __init__(self, raw_arguments: list[str]) -> None:
+    def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize action."""
-        super().__init__(raw_arguments)
-        if len(self.raw_arguments) != 1:
-            raise ValueError("Incorrect number of action arguments.")
-        # Editor stores cursor as a bit offset.
-        # Convert byte offset to bit offset.
-        self.offset = str_to_int(raw_arguments[0]) * BYTE_BITS
+        super().__init__(argv)
+        if self.argc == 1:
+            self.offset_type = OffsetType("byte")
+            self.offset = str_to_int(argv[0]) * BYTE_BITS
+        else:
+            self.offset_type = OffsetType(self.argv[0])
+            if self.offset_type == OffsetType.BYTE:
+                self.offset = str_to_int(argv[1]) * BYTE_BITS
+            else:
+                self.offset = str_to_int(argv[1])
         self.previous_offset = 0
 
     @property

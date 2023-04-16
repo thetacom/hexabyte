@@ -10,7 +10,8 @@ from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
-from hexabyte.actions import Action, ActionHandler
+from hexabyte.actions import Action
+from hexabyte.actions.action_handler import ActionHandler
 from hexabyte.components import ByteView
 from hexabyte.constants import DisplayMode, FileMode
 from hexabyte.constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
@@ -24,7 +25,7 @@ CURSOR_INCREMENTS = {
 }
 
 
-class Editor(ScrollView):
+class Editor(ScrollView):  # pylint: disable=too-many-public-methods
     """An editor container."""
 
     can_focus = True
@@ -113,6 +114,23 @@ class Editor(ScrollView):
             self.editor = sender
             super().__init__()
 
+    class Command(Message):  # pylint: disable=too-few-public-methods
+        """Send a command message.
+
+        Attributes
+        ----------
+        editor: The `Editor` widget to target.
+        command: The command to process.
+        """
+
+        bubble = True
+
+        def __init__(self, sender: "Editor", cmd: str) -> None:
+            """Initialize a Changed message."""
+            self.editor = sender
+            self.cmd: str = cmd
+            super().__init__()
+
     class Selected(Message):  # pylint: disable=too-few-public-methods
         """Posted when an editor is selected.
 
@@ -197,6 +215,14 @@ class Editor(ScrollView):
         """Return the y position of cursor."""
         return self.cursor // self.view.line_bit_length
 
+    def goto(self, new_offset: int) -> None:
+        """Generate a goto command to track cursor movement.
+
+        new_offset should be a bit offset, NOT a byte offset.
+        """
+        cmd = f"goto bit {new_offset}"
+        self.post_message(self.Command(self, cmd))
+
     def _toggle_cursor(self) -> None:
         """Toggle visibility of cursor."""
         self._cursor_visible = not self._cursor_visible
@@ -217,35 +243,35 @@ class Editor(ScrollView):
 
     def action_cursor_down(self) -> None:
         """Move the cursor down."""
-        self.cursor += self.view.line_bit_length
+        self.goto(self.cursor + self.view.line_bit_length)
 
     def action_cursor_up(self) -> None:
         """Move the cursor up."""
-        self.cursor -= self.view.line_bit_length
+        self.goto(self.cursor - self.view.line_bit_length)
 
     def action_cursor_left(self) -> None:
         """Move the cursor one position to the left."""
-        self.cursor -= self.cursor_increment
+        self.goto(self.cursor - self.cursor_increment)
 
     def action_cursor_right(self) -> None:
         """Move the cursor one position to the right."""
-        self.cursor += self.cursor_increment
+        self.goto(self.cursor + self.cursor_increment)
 
     def action_cursor_end(self) -> None:
         """Move the cursor to the end of the input."""
-        self.cursor = (self.cursor // self.view.line_bit_length + 1) * self.view.line_bit_length - 1
+        self.goto((self.cursor // self.view.line_bit_length + 1) * self.view.line_bit_length - 1)
 
     def action_cursor_home(self) -> None:
         """Move the cursor to the start of the input."""
-        self.cursor = self.cursor // self.view.line_bit_length * self.view.line_bit_length
+        self.goto(self.cursor // self.view.line_bit_length * self.view.line_bit_length)
 
     def action_cursor_page_up(self) -> None:
         """Move the cursor up a page."""
-        self.cursor -= self.view.line_bit_length * self.size.height
+        self.goto(self.cursor - self.view.line_bit_length * self.size.height)
 
     def action_cursor_page_down(self) -> None:
         """Move the cursor down a page."""
-        self.cursor += self.view.line_bit_length * self.size.height
+        self.goto(self.cursor + self.view.line_bit_length * self.size.height)
 
     def action_redo(self) -> None:
         """Redo action."""
@@ -287,7 +313,7 @@ class Editor(ScrollView):
                 spaces_count = data_x // (self.view.BYTE_REPR_LEN[self.display_mode] * self.view.column_size + 1)
                 adjusted_x = data_x - spaces_count
                 x_portion = adjusted_x * self.cursor_increment
-                self.cursor = y_portion + x_portion
+                self.goto(y_portion + x_portion)
 
     def on_focus(self) -> None:
         """Handle focus events."""

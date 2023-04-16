@@ -1,6 +1,8 @@
 """Command Parser Module."""
-
-from .actions import Action, ActionType, GotoAction
+from hexabyte.actions import Action, ActionType
+from hexabyte.actions.goto_action import GotoAction
+from hexabyte.actions.redo_action import RedoAction
+from hexabyte.actions.undo_action import UndoAction
 
 
 class InvalidCommandError(ValueError):
@@ -12,7 +14,11 @@ class InvalidCommandError(ValueError):
         super().__init__(*args)
 
 
-KEYWORD_MAP = {ActionType.GOTO: GotoAction}
+KEYWORD_MAP: dict[ActionType, type[Action]] = {
+    GotoAction.type: GotoAction,
+    RedoAction.type: RedoAction,
+    UndoAction.type: UndoAction,
+}
 
 
 class CommandParser:  # pylint: disable=too-few-public-methods
@@ -22,7 +28,7 @@ class CommandParser:  # pylint: disable=too-few-public-methods
     """
 
     @classmethod
-    def _create_action(cls, action_word: str, arguments: list[str]) -> Action:
+    def _create_action(cls, action_word: str, arguments: tuple[str, ...]) -> Action:
         """Create a new action."""
         try:
             action_word = action_word.lower()
@@ -39,10 +45,18 @@ class CommandParser:  # pylint: disable=too-few-public-methods
     @classmethod
     def parse(cls, cmd_input: str) -> list[Action]:
         """Parse command string into commands."""
-        commands = cmd_input.split(";")
+        commands = filter(None, cmd_input.split(";"))
         actions: list[Action] = []
         for cmd in commands:
-            action_word, *arguments = cmd.split(" ")
-            action = cls._create_action(action_word, arguments)
+            action_word, *arguments = cmd.strip().split(" ")
+            action = cls._create_action(action_word, tuple(arguments))
             actions.append(action)
         return actions
+
+    @classmethod
+    def parse_one(cls, cmd_input: str) -> Action:
+        """Parse command string into a single command.
+
+        Returns first command if several commands are included.
+        """
+        return cls.parse(cmd_input)[0]

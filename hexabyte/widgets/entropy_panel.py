@@ -59,7 +59,7 @@ class EntropyPanel(ScrollView):
                 return
             idx = self.view.coord2idx(x, y)
             bit_offset = idx * self.entropy.chunk_size * BYTE_BITS
-            self.editor.cursor = bit_offset
+            self.editor.goto(bit_offset)
 
     def render_line(self, y: int) -> Strip:
         """Render editor content line."""

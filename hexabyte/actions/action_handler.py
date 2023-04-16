@@ -1,5 +1,7 @@
 """Action Handler Module."""
-from ._action import Action, ReversibleAction
+from collections import deque
+
+from ._action import Action, HandlerAction, ReversibleAction
 
 
 class ActionHandler:
@@ -8,11 +10,14 @@ class ActionHandler:
     Implements action execution and Undo/Redo functionality.
     """
 
-    def __init__(self, target) -> None:
+    DEFAULT_MAX_UNDO = 100
+
+    def __init__(self, target, max_undo: int = DEFAULT_MAX_UNDO) -> None:
         """Initialize the action handler."""
         self.target = target
-        self.undo_history: list[ReversibleAction] = []
-        self.redo_history: list[ReversibleAction] = []
+        self.max_undo = max_undo
+        self.undo_history: deque[ReversibleAction] = deque(maxlen=max_undo)
+        self.redo_history: deque[ReversibleAction] = deque(maxlen=max_undo)
         self.previous_action: Action | None = None
 
     def do(self, action: Action) -> None:  # pylint: disable=invalid-name
@@ -24,21 +29,27 @@ class ActionHandler:
         CUT()
         COPY()
         """
-        self.redo_history = []
         action.target = self.target
         action.do()
+        if isinstance(action, HandlerAction):
+            return
         if isinstance(action, ReversibleAction):
             self.undo_history.append(action)
         self.previous_action = action
+        self.redo_history.clear()
 
     def redo(self) -> None:
         """Redo action."""
+        if len(self.redo_history) == 0:
+            return
         last_action = self.redo_history.pop()
         last_action.redo()
         self.undo_history.append(last_action)
 
     def undo(self) -> None:
         """Undo action."""
+        if len(self.undo_history) == 0:
+            return
         last_action = self.undo_history.pop()
         last_action.undo()
         self.redo_history.append(last_action)

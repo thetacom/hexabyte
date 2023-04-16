@@ -1,5 +1,4 @@
 """Data Model Cursor Module."""
-
 from ..constants.sizes import BYTE_BITS, QWORD64_BITS, QWORD64_SZ, WORD32_BITS, WORD32_SZ, WORD64_BITS, WORD64_SZ
 
 

@@ -59,6 +59,10 @@ Hexabyte can operate in three distinct modes:
   - Flash orange
 - **goto** *offset*
   - Jump active editor to specified byte offset. Accepts offset in decimal, hex, and binary.
+- **undo**
+  - Undo the last action performed.
+- **redo**
+  - Redo the last action that was undone.
 
 ### Planned
 
@@ -82,10 +86,6 @@ Hexabyte can operate in three distinct modes:
   - Save data changes to a new file.
 - **open** *(primary | secondary)* *filename*
   - Open a file into the specified editor.
-- **undo**
-  - Undo the last action performed.
-- **redo**
-  - Redo the last action that was undone.
 
 ## Example Configuration File
 

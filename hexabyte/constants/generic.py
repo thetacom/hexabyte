@@ -1,4 +1,5 @@
 """Generic app constants."""
+from enum import Enum
 from pathlib import Path
 
 APP_NAME = "Hexabyte"
@@ -7,3 +8,10 @@ CONFIG_FILENAME = "config.toml"
 DIFF_FILE_COUNT = 2
 MIN_FILE_COUNT = 1
 MAX_FILE_COUNT = DIFF_FILE_COUNT
+
+
+class OffsetType(Enum):
+    """Types of offsets."""
+
+    BIT = "bit"
+    BYTE = "byte"

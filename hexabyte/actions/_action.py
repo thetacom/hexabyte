@@ -75,12 +75,28 @@ class Action(ABC):
     """
 
     type: ClassVar[ActionType] = ActionType.INVALID
+    MIN_ARGS = 0
+    MAX_ARGS = 0
 
-    def __init__(self, raw_arguments: list[str]) -> None:
+    def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize Action."""
-        self.raw_arguments = raw_arguments
+        argc = len(argv)
+        if argc < self.MIN_ARGS or argc > self.MAX_ARGS:
+            raise ValueError(f"Invalid number of arguments ({argc}) - {self.MIN_ARGS} <= argc <= {self.MAX_ARGS}")
+        self._argc = argc
+        self._argv = argv
         self._target: Any | None = None
         self.applied = False
+
+    @property
+    def argc(self) -> int:
+        """Return the argument count."""
+        return self._argc
+
+    @property
+    def argv(self) -> tuple[str, ...]:
+        """Return the argument count."""
+        return self._argv
 
     @abstractmethod
     def do(self) -> None:  # pylint: disable=invalid-name
@@ -95,6 +111,13 @@ class Action(ABC):
     def target(self, target: Any | None) -> None:
         """Set action target."""
         self._target = target
+
+
+class HandlerAction(Action):
+    """Handler Action Abstract Class.
+
+    Special actions involving action handler.
+    """
 
 
 class ReversibleAction(Action):
