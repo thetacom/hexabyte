@@ -6,6 +6,10 @@ from textual.binding import Binding
 from textual.reactive import reactive
 from textual.widgets import Input
 
+from .actions import Action, ActionError
+from .actions.action_handler import ActionHandler
+from .actions.app import Exit
+from .commands import Command, CommandParser, InvalidCommandError, register_actions
 from .constants import FileMode
 from .constants.generic import APP_NAME
 from .utils.config import Config
@@ -13,7 +17,10 @@ from .widgets.command_prompt import CommandPrompt
 from .widgets.help_screen import HelpScreen, HelpWindow
 from .widgets.workbench import Workbench
 
+ACTIONS = [Exit]
 
+
+@register_actions(ACTIONS)
 class HexabyteApp(App):
     """Hexabyte Application Class."""
 
@@ -42,9 +49,12 @@ class HexabyteApp(App):
         If two filenames are specified, app will open in diff mode.
         """
         self.config = config
+        max_undo = self.config.settings.get("general", {}).get("max-undo")
+        self.action_handler = ActionHandler(self, max_undo=max_undo)
         self._file_mode = file_mode
         super().__init__(**kwargs)
-
+        self.cmd_parser = CommandParser()
+        self.cmd_parser.register_app(self)
         self.workbench = Workbench(self.config, self.file_mode, files)
 
     @property
@@ -88,6 +98,31 @@ class HexabyteApp(App):
     def action_toggle_sidebar(self) -> None:
         """Toggle visibility of sidebar."""
         self.workbench.show_sidebar = not self.workbench.show_sidebar
+
+    def do(self, action: Action) -> None:  # pylint: disable=invalid-name
+        """Process and perform action."""
+        self.action_handler.do(action)
+
+    def on_command(self, event: Command) -> None:
+        """Handle an editor command."""
+        prompt = self.query_one("#cmd-prompt", CommandPrompt)
+        try:
+            actions = self.cmd_parser.parse(event.cmd)
+            for action in actions:
+                if action.TARGET == "app":
+                    self.do(action)
+                elif action.TARGET == "editor":
+                    workbench = self.query_one("Workbench", Workbench)
+                    if workbench.active_editor is None:
+                        raise ValueError("No active editor")
+                    workbench.active_editor.do(action)
+                else:
+                    raise InvalidCommandError(event.cmd, f"Unsupported target - {action.TARGET}")
+            prompt.command_success()
+        except InvalidCommandError as err:
+            prompt.command_warn(str(err))
+        except ActionError as err:
+            prompt.command_error(str(err))
 
     def watch_show_help(self, visibility: bool) -> None:
         """Toggle help screen visibility if show_help flag changes."""

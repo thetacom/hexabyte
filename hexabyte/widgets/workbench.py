@@ -6,7 +6,6 @@ from textual.containers import Container, Vertical
 from textual.reactive import reactive
 from textual.widgets import Footer, Header
 
-from hexabyte.command_parser import CommandParser
 from hexabyte.constants import FileMode
 from hexabyte.constants.generic import DIFF_FILE_COUNT
 from hexabyte.models import DataModel
@@ -96,11 +95,6 @@ class Workbench(Vertical):
             yield from self.editors
             yield Sidebar(id="sidebar")
         yield Footer()
-
-    def on_editor_command(self, event: Editor.Command) -> None:
-        """Handle an editor command."""
-        action = CommandParser.parse_one(event.cmd)
-        event.editor.do(action)
 
     def on_editor_selected(self, message: Editor.Selected) -> None:
         """Update global state when switching editors."""

@@ -1,62 +1,19 @@
 """Action Event Module."""
 
 from abc import ABC, abstractmethod
-from enum import Enum, auto
-from typing import Any, ClassVar
+from typing import Any
 
 
 class ActionError(Exception):
     """Raised when an action fails to execute."""
 
 
-class RedoActionError(ActionError):
+class RedoError(ActionError):
     """Raised during a failed redo operation."""
 
 
-class UndoActionError(ActionError):
+class UndoError(ActionError):
     """Raised during a failed undo operation."""
-
-
-class ActionType(Enum):
-    """Action Type by keyword."""
-
-    INVALID = auto
-
-    # Cursor Commands
-    GOTO = "goto"  # GOTO(offset)
-    FIND = "find"  # find(offset, value)
-    FIND_NEXT = "findnext"
-    FIND_PREV = "findprev"
-
-    # Edit Commands
-    SET = "set"  # SET(offset, value)
-    UPDATE = "update"  # UPDATE(offset, data)
-    INSERT = "insert"  # INSERT(offset, data)
-    DELETE = "delete"  # DELETE(offset, len)
-
-    # Cut/Copy/Paste Commands
-    CUT = "cut"
-    COPY = "copy"
-    MOVE = "move"
-    PASTE = "paste"
-
-    # Selection Commands
-    SELECT = "select"
-    UNSELECT = "unselect"
-    HIGHLIGHT = "highlight"
-    MATCH = "match"
-
-    # File Operations
-    REVERT = "revert"
-    SAVE = "save"
-    SAVE_AS = "saveas"
-
-    # App Commands
-    UNDO = "undo"
-    REDO = "redo"
-    SWITCH_MODE = "view-mode"
-    EXIT = "exit"
-    QUIT = "quit"
 
 
 class Action(ABC):
@@ -65,9 +22,10 @@ class Action(ABC):
     An action that cannot be undone.
     """
 
-    type: ClassVar[ActionType] = ActionType.INVALID
+    CMD = "invalid"
     MIN_ARGS = 0
     MAX_ARGS = 0
+    TARGET = "invalid"
 
     def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize Action."""

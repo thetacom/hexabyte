@@ -1,15 +1,19 @@
 """Save Action."""
-from typing import ClassVar
+from __future__ import annotations
 
-from hexabyte.widgets.editor import Editor
+from typing import TYPE_CHECKING
 
-from ._action import ActionError, ActionType, HandlerAction
+from .._action import ActionError
+from ._editor_action import EditorHandlerAction
+
+if TYPE_CHECKING:
+    from hexabyte.widgets.editor import Editor
 
 
-class SaveAction(HandlerAction):
+class Save(EditorHandlerAction):
     """Save Action."""
 
-    type: ClassVar[ActionType] = ActionType.SAVE
+    CMD = "save"
 
     MIN_ARGS = 0
     MAX_ARGS = 0

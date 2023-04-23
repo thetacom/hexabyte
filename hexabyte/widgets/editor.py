@@ -11,12 +11,22 @@ from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
 from hexabyte.actions import Action
+from hexabyte.actions import editor as editor_actions
 from hexabyte.actions.action_handler import ActionHandler
+from hexabyte.commands import Command, register
 from hexabyte.components import ByteView
 from hexabyte.constants import DisplayMode, FileMode
 from hexabyte.constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
 from hexabyte.models import DataModel
 from hexabyte.utils.config import Config
+
+ACTIONS: list[type[Action]] = [
+    editor_actions.Goto,
+    editor_actions.Redo,
+    editor_actions.Save,
+    editor_actions.SaveAs,
+    editor_actions.Undo,
+]
 
 CURSOR_INCREMENTS = {
     DisplayMode.HEX: NIBBLE_BITS,
@@ -25,6 +35,7 @@ CURSOR_INCREMENTS = {
 }
 
 
+@register(ACTIONS)
 class Editor(ScrollView):  # pylint: disable=too-many-public-methods
     """An editor container."""
 
@@ -114,23 +125,6 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
             self.editor = sender
             super().__init__()
 
-    class Command(Message):  # pylint: disable=too-few-public-methods
-        """Send a command message.
-
-        Attributes
-        ----------
-        editor: The `Editor` widget to target.
-        command: The command to process.
-        """
-
-        bubble = True
-
-        def __init__(self, sender: "Editor", cmd: str) -> None:
-            """Initialize a Changed message."""
-            self.editor = sender
-            self.cmd: str = cmd
-            super().__init__()
-
     class Selected(Message):  # pylint: disable=too-few-public-methods
         """Posted when an editor is selected.
 
@@ -177,8 +171,10 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         self.file_mode = file_mode
         self.model = model
         self.config = config
+
         max_undo = self.config.settings.get("general", {}).get("max-undo")
         self.action_handler = ActionHandler(self, max_undo=max_undo)
+
         mode_config = self.config.settings.get(self.file_mode.value, {})
         if id == "primary":
             self.display_mode = DisplayMode(mode_config.get("primary", "hex"))
@@ -222,7 +218,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         new_offset should be a bit offset, NOT a byte offset.
         """
         cmd = f"goto bit {new_offset}"
-        self.post_message(self.Command(self, cmd))
+        self.post_message(Command(cmd))
 
     def _toggle_cursor(self) -> None:
         """Toggle visibility of cursor."""
@@ -280,7 +276,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     def action_save(self) -> None:
         """Save data to file."""
-        self.post_message(self.Command(self, "save"))
+        self.post_message(Command("save"))
 
     def action_undo(self) -> None:
         """Undo action."""
@@ -288,6 +284,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     def do(self, action: Action) -> None:  # pylint: disable=invalid-name
         """Process and perform action."""
+        action.target = self
         self.action_handler.do(action)
 
     def insert_at_cursor(self, text: str) -> None:

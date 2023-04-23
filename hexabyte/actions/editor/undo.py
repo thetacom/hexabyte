@@ -1,24 +1,32 @@
-"""SaveAsAction Module."""
-from pathlib import Path
-from typing import ClassVar
+"""Undo Action."""
+from __future__ import annotations
 
-from hexabyte.widgets.editor import Editor
+from typing import TYPE_CHECKING
 
-from ._action import ActionError, ActionType, HandlerAction
+from hexabyte.utils.misc import str_to_int
+
+from .._action import ActionError
+from ._editor_action import EditorHandlerAction
+
+if TYPE_CHECKING:
+    from hexabyte.widgets.editor import Editor
 
 
-class SaveAsAction(HandlerAction):
-    """Save Action."""
+class Undo(EditorHandlerAction):
+    """Undo Action."""
 
-    type: ClassVar[ActionType] = ActionType.SAVE_AS
+    CMD = "undo"
 
-    MIN_ARGS = 1
+    MIN_ARGS = 0
     MAX_ARGS = 1
 
     def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize action."""
         super().__init__(argv)
-        self.new_filepath = Path(argv[0])
+        if self.argc == 0:
+            self.count = 1
+        else:
+            self.count = str_to_int(argv[0])
 
     @property
     def target(self) -> Editor | None:
@@ -34,7 +42,6 @@ class SaveAsAction(HandlerAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        if not isinstance(self.target, Editor):
-            raise ActionError(f"Invalid target type for save action - {type(self.target)}")
-        self.target.model.save(self.new_filepath)
+        for _ in range(self.count):
+            self.target.action_undo()
         self.applied = True

@@ -1,12 +1,11 @@
 """Actions Package."""
-from ._action import Action, ActionError, ActionType, HandlerAction, RedoActionError, ReversibleAction, UndoActionError
+from ._action import Action, ActionError, HandlerAction, RedoError, ReversibleAction, UndoError
 
 __all__ = [
     "Action",
     "ActionError",
-    "ActionType",
     "HandlerAction",
-    "RedoActionError",
+    "RedoError",
     "ReversibleAction",
-    "UndoActionError",
+    "UndoError",
 ]

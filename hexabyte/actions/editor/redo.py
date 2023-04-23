@@ -1,16 +1,21 @@
-"""Undo Action."""
-from typing import ClassVar
+"""Redo Action."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from hexabyte.utils.misc import str_to_int
-from hexabyte.widgets.editor import Editor
 
-from ._action import ActionError, ActionType, HandlerAction
+from .._action import ActionError
+from ._editor_action import EditorHandlerAction
+
+if TYPE_CHECKING:
+    from hexabyte.widgets.editor import Editor
 
 
-class UndoAction(HandlerAction):
-    """Undo Action."""
+class Redo(EditorHandlerAction):
+    """Redo Action."""
 
-    type: ClassVar[ActionType] = ActionType.UNDO
+    CMD = "redo"
 
     MIN_ARGS = 0
     MAX_ARGS = 1
@@ -37,8 +42,6 @@ class UndoAction(HandlerAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        if not isinstance(self.target, Editor):
-            raise ActionError(f"Invalid target type for undo action - {type(self.target)}")
         for _ in range(self.count):
-            self.target.action_undo()
+            self.target.action_redo()
         self.applied = True
