@@ -1,4 +1,7 @@
-"""Modified Hilbert Curve View Component."""
+"""Hilbert Curve View Component.
+
+Maps data onto a modified hilbert curve. Colorized using the `color_map_func`.
+"""
 from collections.abc import Callable, Iterable
 from random import random
 
@@ -143,7 +146,7 @@ def percent_to_blue(val: float) -> RichColor:
 if __name__ == "__main__":  # pragma: no cover
     import argparse
 
-    filler_data = [random() for _ in range(4096)]
+    filler_data = [random() for _ in range(4096)]  # nosec
 
     # filler_data = list(range(0, 256))
     # filler_data = filler_data * 10
