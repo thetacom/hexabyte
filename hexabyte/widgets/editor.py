@@ -22,7 +22,9 @@ from hexabyte.utils.config import Config
 
 ACTIONS: list[type[Action]] = [
     editor_actions.Goto,
+    editor_actions.Open,
     editor_actions.Redo,
+    editor_actions.Revert,
     editor_actions.Set,
     editor_actions.Save,
     editor_actions.SaveAs,
