@@ -106,6 +106,5 @@ class Set(ReversibleEditorAction):
         """Undo action."""
         if self.target is None:
             raise UndoError("Action target not set.")
-        model = self.target.model
-        model.write(self.offset.byte, pack("@B", self.previous_value))
+        self.target.model.write(self.offset.byte, pack("@B", self.previous_value))
         self.applied = False

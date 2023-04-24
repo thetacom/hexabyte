@@ -53,6 +53,11 @@ class DataModel:
         """Return the number of selected bytes."""
         return sum(map(len, self.selections))
 
+    def delete(self, byte_offset: int, byte_length: int = 1) -> None:
+        """Delete byte(s) a specified offset."""
+        self.cursor.byte = byte_offset
+        self._source.replace(self.cursor.byte, byte_length, b"")
+
     def open(self, filepath: Path) -> None:
         """Open a new data source."""
         if not filepath.exists():

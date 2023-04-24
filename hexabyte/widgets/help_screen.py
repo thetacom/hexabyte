@@ -53,28 +53,22 @@ Hexabyte can operate in three distinct modes:
 
 ### Commands
 
-- **goto** *BYTE_OFFSET*
-  - Jump active editor to specified byte offset. Accepts offset in decimal, hex, and binary.
+- **goto** *BYTE_OFFSET* - Jump active editor to specified byte offset. Accepts offset in decimal, hex, and binary.
   - **goto** *byte* *BYTE_OFFSET*
   - **goto** *bit* *BIT_OFFSET*
-- **set** *byte_offset* *value*
-  - Set the byte value at specified offset.
-  - **set** *byte* *byte_offset* *value*
-  - **set** *bit* *byte_offset* *bit_offset* *value*
-- **undo**
-  - Undo the last action performed.
+- **insert** *BYTE_OFFSET* *BYTE_VALUE* - Insert a byte value at specified offset.
+- **set** *BYTE_OFFSET* *BYTE_VALUE* - Set the byte value at specified offset.
+  - **set** *byte* *BYTE_OFFSET* *BYTE_VALUE*
+  - **set** *bit* *BYTE_OFFSET* *BIT_OFFSET* *BIT_VALUE*
+- **undo** - Undo the last action performed.
   - **undo** *[QTY]*
-- **redo**
-  - Redo the last action that was undone.
+- **redo** - Redo the last action that was undone.
   - **redo** *[QTY]*
 
 ## Command Prompt
-- **test** *success*
-  - Flash green
-- **test** *fail*
-  - Flash red
-- **test** *warn*
-  - Flash orange
+- **test** *success* - Flash green
+- **test** *fail* - Flash red
+- **test** *warn* - Flash orange
 
 ## Planned Commands
 
