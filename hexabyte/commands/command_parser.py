@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from hexabyte.hexabyte_app import HexabyteApp
 
 
-class InvalidCommandError(ValueError):
+class InvalidCommandError(Exception):
     """Error generated from invalid command strings."""
 
     def __init__(self, cmd: str, msg: str | None = None) -> None:

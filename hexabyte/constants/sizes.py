@@ -6,6 +6,7 @@ NIBBLE_BITS = 4 * BIT
 BYTE_BITS = 8 * BIT
 KB = 128 * BYTE_BITS
 MB = 1024 * KB
+BYTE_MAX = 255
 
 # 32-bit Sizes
 WORD32_SZ = 2

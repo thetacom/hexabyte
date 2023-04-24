@@ -43,31 +43,41 @@ Hexabyte can operate in three distinct modes:
 - `Ctrl+g` - Show/Hide help screen
 - `Ctrl+c` - Quit program
 
-## Editor Shortcuts
+## Editor
+
+### Shortcuts
 
 - `Ctrl+n` - Cycle view mode (hex, ascii, binary)
 - `Ctrl+o` - Cycle offset display style (hex, decimal, off)
 - `Ctrl+s` - Save changes to disk
 
-## Commands
+### Commands
 
+- **goto** *BYTE_OFFSET*
+  - Jump active editor to specified byte offset. Accepts offset in decimal, hex, and binary.
+  - **goto** *byte* *BYTE_OFFSET*
+  - **goto** *bit* *BIT_OFFSET*
+- **set** *byte_offset* *value*
+  - Set the byte value at specified offset.
+  - **set** *byte* *byte_offset* *value*
+  - **set** *bit* *byte_offset* *bit_offset* *value*
+- **undo**
+  - Undo the last action performed.
+  - **undo** *[QTY]*
+- **redo**
+  - Redo the last action that was undone.
+  - **redo** *[QTY]*
+
+## Command Prompt
 - **test** *success*
   - Flash green
 - **test** *fail*
   - Flash red
 - **test** *warn*
   - Flash orange
-- **goto** *[ bit | byte ]* *OFFSET*
-  - Jump active editor to specified byte offset. Accepts offset in decimal, hex, and binary.
-- **undo** *[QTY]*
-  - Undo the last action performed.
-- **redo** *[QTY]*
-  - Redo the last action that was undone.
 
-### Planned
+## Planned Commands
 
-- **set** *offset* *value*
-  - Set the byte value at specified offset.
 - **select** *offset* *length*
   - Select a chunk of data at specified offset.
 - **move** *offset*
@@ -89,7 +99,7 @@ Hexabyte can operate in three distinct modes:
 
 ## Example Configuration File
 
-`~/.config/hexabyte/config.toml`
+Default Location: `~/.config/hexabyte/config.toml`
 
 ```toml
 [general]

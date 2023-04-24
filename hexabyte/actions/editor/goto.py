@@ -22,9 +22,9 @@ class Goto(ReversibleEditorAction):
 
     goto 0x1000
 
-    goto bit 0x1000
-
     goto byte 0x1000
+
+    goto bit 0x1000
     """
 
     CMD = "goto"
@@ -36,7 +36,7 @@ class Goto(ReversibleEditorAction):
         """Initialize action."""
         super().__init__(argv)
         try:
-            if self.argc == 1:
+            if self.argc == self.MIN_ARGS:
                 self.offset_type = OffsetType("byte")
                 self.offset = str_to_int(argv[0]) * BYTE_BITS
             else:

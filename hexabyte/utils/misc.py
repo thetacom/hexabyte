@@ -17,3 +17,13 @@ def str_to_int(val_str: str) -> int:
 def str_to_class(class_name: str) -> type:
     """Return a class from a class name string."""
     return getattr(modules[__name__], class_name)
+
+
+def set_bit(value: int, position: int):
+    """Set bit at specified position in value."""
+    return value | (1 << position)
+
+
+def clear_bit(value: int, position: int):
+    """Clear bit at specified position in value."""
+    return value & ~(1 << position)

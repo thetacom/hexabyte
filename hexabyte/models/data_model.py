@@ -58,10 +58,15 @@ class DataModel:
         """Return the number of selected bytes."""
         return self._selected
 
-    def read(self, offset: int = 0, length: int | None = None) -> bytearray:
+    def read(self, byte_offset: int = 0, byte_length: int | None = None) -> bytearray:
         """Return a bytearray of the specified range."""
-        return self._source.read(offset, length)
+        self.cursor.byte = byte_offset
+        return self._source.read(self.cursor.byte, byte_length)
 
     def save(self, new_filename: Path | None = None) -> None:
         """Save the current data to file."""
         self._source.save(new_filename)
+
+    def write(self, offset: int, data: bytes, insert: bool = False) -> None:
+        """Write data to data at specified location."""
+        self._source.write(offset, data, insert)
