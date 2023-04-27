@@ -1,0 +1,1 @@
+{"config":{"lang":["en"],"separator":"[\\s\\-]+","pipeline":["stopWordFilter"]},"docs":[{"location":"","title":"Hexabyte Documentation","text":"<p>A modern, robust, and extensible commandline hex editor.</p>"}]}
