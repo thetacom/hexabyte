@@ -15,10 +15,10 @@ from hexabyte.actions import editor as editor_actions
 from hexabyte.actions.action_handler import ActionHandler
 from hexabyte.commands import Command, register
 from hexabyte.components import ByteView
-from hexabyte.constants import DisplayMode, FileMode
+from hexabyte.constants import DisplayMode
 from hexabyte.constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
 from hexabyte.models import DataModel
-from hexabyte.utils.config import Config
+from hexabyte.utils import context
 
 ACTIONS: list[type[Action]] = [
     editor_actions.Goto,
@@ -149,20 +149,17 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     def __init__(
         self,
-        file_mode: FileMode,
         model: DataModel,
         start_offset: int = 0,
         name: str | None = None,
         id: str | None = None,  # pylint: disable=redefined-builtin
         classes: str | None = None,
         disabled: bool = False,
-        config: Config = Config(),
     ) -> None:
         """Initialize `Editor` widget.
 
         Args:
         ----
-        file_mode: Indicates normal or diff mode.
         model: The model containing data to be rendered.
         start_offset: Optional start offset of cursor. Default is 0.
         config: Settings loaded from config file.
@@ -172,14 +169,12 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         disabled: Whether the editor is disabled or not.
         """
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
-        self.file_mode = file_mode
         self.model = model
-        self.config = config
 
-        max_undo = self.config.settings.get("general", {}).get("max-undo")
+        max_undo = context.config.settings.get("general", {}).get("max-undo")
         self.action_handler = ActionHandler(self, max_undo=max_undo)
 
-        mode_config = self.config.settings.get(self.file_mode.value, {})
+        mode_config = context.config.settings.get(context.file_mode.value, {})
         if id == "primary":
             self.display_mode = DisplayMode(mode_config.get("primary", "hex"))
         else:
@@ -394,7 +389,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
     async def watch_display_mode(self, mode: DisplayMode) -> None:
         """Update view mode of ByteView component."""
         self.cursor_increment = CURSOR_INCREMENTS[mode]
-        mode_config = self.config.settings.get(self.file_mode.value, {})
+        mode_config = context.config.settings.get(context.file_mode.value, {})
         display_mode_config = mode_config.get(self.display_mode.value, {})
         self.view.column_count = display_mode_config.get("column-count")
         self.view.column_size = display_mode_config.get("column-size")

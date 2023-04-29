@@ -1,5 +1,4 @@
 """Hexabyte Appplication Class."""
-from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -10,9 +9,8 @@ from .actions import Action, ActionError
 from .actions.action_handler import ActionHandler
 from .actions.app import Exit
 from .commands import Command, CommandParser, InvalidCommandError, register_actions
-from .constants import FileMode
 from .constants.generic import APP_NAME
-from .utils.config import Config
+from .utils import context
 from .widgets.command_prompt import CommandPrompt
 from .widgets.help_screen import HelpScreen, HelpWindow
 from .widgets.workbench import Workbench
@@ -37,35 +35,22 @@ class HexabyteApp(App):
 
     show_help: reactive[bool] = reactive(False)
 
-    def __init__(
-        self,
-        config: Config,
-        file_mode: FileMode,
-        files: list[Path],
-        **kwargs,
-    ) -> None:
+    def __init__(self, **kwargs) -> None:
         """Initialize Application.
 
         If two filenames are specified, app will open in diff mode.
         """
-        self.config = config
-        max_undo = self.config.settings.get("general", {}).get("max-undo")
-        self.action_handler = ActionHandler(self, max_undo=max_undo)
-        self._file_mode = file_mode
         super().__init__(**kwargs)
+        max_undo = context.config.settings.general.get("max-undo")
+        self.action_handler = ActionHandler(self, max_undo=max_undo)
         self.cmd_parser = CommandParser()
         self.cmd_parser.register_app(self)
-        self.workbench = Workbench(self.config, self.file_mode, files)
-
-    @property
-    def file_mode(self) -> FileMode:
-        """Return the application mode."""
-        return self._file_mode
+        self.workbench = Workbench()
 
     def compose(self) -> ComposeResult:
         """Compose main screen."""
         yield self.workbench
-        max_cmd_history = self.config.settings.get("general", {}).get("max-cmd-history")
+        max_cmd_history = context.config.settings.get("general", {}).get("max-cmd-history")
         yield CommandPrompt(max_cmd_history=max_cmd_history, id="cmd-prompt")
         yield HelpScreen(id="help")
 

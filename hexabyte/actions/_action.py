@@ -50,6 +50,7 @@ class Action(ABC):
     @abstractmethod
     def do(self) -> None:  # pylint: disable=invalid-name
         """Implement all changes associated with action."""
+        raise NotImplementedError
 
     @property
     def target(self) -> Any | None:
@@ -82,3 +83,4 @@ class ReversibleAction(Action):
     @abstractmethod
     def undo(self) -> None:
         """Reverse all changes performed by the action."""
+        raise NotImplementedError

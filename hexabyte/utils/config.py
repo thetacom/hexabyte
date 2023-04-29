@@ -2,9 +2,9 @@
 from importlib.resources import files
 from pathlib import Path
 from shutil import copy
-from typing import Any
 
 import toml
+from munch import Munch
 
 from ..constants.generic import CONFIG_FILENAME, DEFAULT_CONFIG_PATH
 
@@ -25,32 +25,34 @@ class Config:
     def __init__(self) -> None:
         """Initialize the application config."""
         self.filepath: Path | None = None
-        self.settings: dict[str, Any] = {
-            "general": {"max-cmd-history": 100, "max-undo": 100},
-            "normal": {
-                "primary": "hex",
-                "offset-style": "hex",
-                "bin": {"column-count": 8, "column-size": 1},
-                "hex": {"column-count": 32, "column-size": 1},
-                "utf8": {"column-count": 1, "column-size": 64},
-            },
-            "split": {
-                "primary": "hex",
-                "secondary": "utf8",
-                "offset-style": "hex",
-                "bin": {"column-count": 4, "column-size": 1},
-                "hex": {"column-count": 4, "column-size": 4},
-                "utf8": {"column-count": 8, "column-size": 4},
-            },
-            "diff": {
-                "primary": "hex",
-                "secondary": "hex",
-                "offset-style": "hex",
-                "bin": {"column-count": 4, "column-size": 1},
-                "hex": {"column-count": 4, "column-size": 4},
-                "utf8": {"column-count": 8, "column-size": 4},
-            },
-        }
+        self.settings: Munch = Munch.fromDict(
+            {
+                "general": {"max-cmd-history": 100, "max-undo": 100},
+                "normal": {
+                    "primary": "hex",
+                    "offset-style": "hex",
+                    "bin": {"column-count": 8, "column-size": 1},
+                    "hex": {"column-count": 32, "column-size": 1},
+                    "utf8": {"column-count": 1, "column-size": 64},
+                },
+                "split": {
+                    "primary": "hex",
+                    "secondary": "utf8",
+                    "offset-style": "hex",
+                    "bin": {"column-count": 4, "column-size": 1},
+                    "hex": {"column-count": 4, "column-size": 4},
+                    "utf8": {"column-count": 8, "column-size": 4},
+                },
+                "diff": {
+                    "primary": "hex",
+                    "secondary": "hex",
+                    "offset-style": "hex",
+                    "bin": {"column-count": 4, "column-size": 1},
+                    "hex": {"column-count": 4, "column-size": 4},
+                    "utf8": {"column-count": 8, "column-size": 4},
+                },
+            }
+        )
 
     def save(self) -> None:
         """Save the active configurations to the config file."""
