@@ -53,7 +53,17 @@ Hexabyte can operate in three distinct modes:
 
 ### Commands
 
-- **goto** *BYTE_OFFSET* - Jump active editor to specified byte offset. Accepts offset in decimal, hex, and binary.
+- **find** *value* - Find a value in data. Accepts string, byte and integer literals.
+Integer literals accept an optional endian parameter.
+  - **find** *STRING*
+  - **find** *"STRING"*
+  - **find** *b"BYTE STRING"*
+  - **find** *INTEGER*
+  - **find** *[ @ | > | < | ! ]* *INTEGER*
+- **findnext** - Find the next occurrence of last search.
+- **findprev** - Find the prev occurrence of last search.
+- **goto** *BYTE_OFFSET* - Jump active editor to specified byte offset.
+Accepts offset in decimal, hex, and binary.
   - **goto** *byte* *BYTE_OFFSET*
   - **goto** *bit* *BIT_OFFSET*
 - **insert** *BYTE_OFFSET* *BYTE_VALUE* - Insert a byte value at specified offset.
@@ -64,6 +74,10 @@ Hexabyte can operate in three distinct modes:
   - **undo** *[QTY]*
 - **redo** - Redo the last action that was undone.
   - **redo** *[QTY]*
+- **open** *(primary | secondary)* *filename* - Open a file into the specified editor.
+- **revert** - Revert all unsaved data modifications.
+- **save** - Save data changes to file.
+- **saveas** *new_filename* - Save data changes to a new file.
 
 ## Command Prompt
 - **test** *success* - Flash green
@@ -76,20 +90,8 @@ Hexabyte can operate in three distinct modes:
   - Select a chunk of data at specified offset.
 - **move** *offset*
   - Move selected data to specified offset.
-- **find** *( str | hex | int | bin )* *value*
-  - Find a value in data.
-- **findnext**
-  - Find the next occurrence of previous search.
 - **match** *( str | hex | int | bin )* *pattern*
   - Highlight all matches to pattern.
-- **revert**
-  - Revert all unsaved data modifications.
-- **save**
-  - Save data changes to file.
-- **saveas** *new_filename*
-  - Save data changes to a new file.
-- **open** *(primary | secondary)* *filename*
-  - Open a file into the specified editor.
 
 ## Example Configuration File
 

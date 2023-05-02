@@ -21,6 +21,9 @@ from hexabyte.models import DataModel
 from hexabyte.utils import context
 
 ACTIONS: list[type[Action]] = [
+    editor_actions.Find,
+    editor_actions.FindNext,
+    editor_actions.FindPrev,
     editor_actions.Goto,
     editor_actions.Insert,
     editor_actions.Open,

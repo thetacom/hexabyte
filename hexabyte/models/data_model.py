@@ -58,6 +58,13 @@ class DataModel:
         self.cursor.byte = byte_offset
         self._source.replace(self.cursor.byte, byte_length, b"")
 
+    def find(self, sub: bytes, start: int = 0, reverse=False) -> int:
+        """Search data for query bytes and return byte offset.
+
+        Returns -1 if not found.
+        """
+        return self._source.find(sub, start, reverse)
+
     def open(self, filepath: Path) -> None:
         """Open a new data source."""
         if not filepath.exists():

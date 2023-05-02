@@ -17,6 +17,12 @@ class SimpleDataSource(DataSource):
         with open(self._filepath, "rb") as source:
             self._data = bytearray(source.read())
 
+    def find(self, sub: bytes, start: int = 0, reverse: bool = False) -> int:
+        """Search data for query bytes and return byte offset or -1 if not found."""
+        if reverse:
+            return self._data.rfind(sub, 0, start)
+        return self._data.find(sub, start)
+
     def read(self, offset: int = 0, length: int | None = None) -> bytearray:
         """Return a bytearray of the specified range."""
         if length is not None:

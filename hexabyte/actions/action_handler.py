@@ -1,6 +1,8 @@
 """Action Handler Module."""
 from collections import deque
 
+from hexabyte.utils import context
+
 from ._action import Action, HandlerAction, ReversibleAction
 
 
@@ -18,24 +20,16 @@ class ActionHandler:
         self.max_undo = max_undo
         self.undo_history: deque[ReversibleAction] = deque(maxlen=max_undo)
         self.redo_history: deque[ReversibleAction] = deque(maxlen=max_undo)
-        self.previous_action: Action | None = None
 
     def do(self, action: Action) -> None:  # pylint: disable=invalid-name
-        """Process and perform action.
-
-        Selection Operations
-        SELECT(offset, len)
-        MOV(dst_offset)
-        CUT()
-        COPY()
-        """
+        """Process and perform action."""
         action.target = self.target
         action.do()
         if isinstance(action, HandlerAction):
             return
         if isinstance(action, ReversibleAction):
             self.undo_history.append(action)
-        self.previous_action = action
+        context.previous_action = action
         self.redo_history.clear()
 
     def redo(self) -> None:

@@ -92,7 +92,14 @@ class HexabyteApp(App):
         """Handle an editor command."""
         prompt = self.query_one("#cmd-prompt", CommandPrompt)
         try:
-            actions = self.cmd_parser.parse(event.cmd)
+            if event.cmd:
+                if event.cmd.lower().startswith("invalid"):
+                    return
+                actions = self.cmd_parser.parse(event.cmd)
+            elif context.get("previous_action", None) is not None:
+                actions = [context.previous_action]
+            else:
+                raise InvalidCommandError("", "No Previous Action")
             for action in actions:
                 if action.TARGET == "app":
                     self.do(action)

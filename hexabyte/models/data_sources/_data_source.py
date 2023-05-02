@@ -38,6 +38,11 @@ class DataSource(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def find(self, sub: bytes, start: int = 0, reverse: bool = False) -> int | None:
+        """Search data for query bytes and return byte offset if found."""
+        raise NotImplementedError
+
+    @abstractmethod
     def read(self, offset: int = 0, length: int | None = None) -> bytearray:
         """Return a bytearray of the specified range."""
         raise NotImplementedError
