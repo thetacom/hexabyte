@@ -45,8 +45,8 @@ class Set(ReversibleEditorAction):
 
     def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize action."""
-        super().__init__(argv)
         try:
+            super().__init__(argv)
             self.offset = Cursor(0)
             if self.argc == self.MIN_ARGS:
                 self.offset_type = OffsetType("byte")

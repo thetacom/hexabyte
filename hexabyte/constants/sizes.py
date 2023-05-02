@@ -9,6 +9,8 @@ MB = 1024 * KB
 BYTE_MAX = 255
 
 # 32-bit Sizes
+BYTE_SZ = 1
+
 WORD32_SZ = 2
 WORD32_BITS = BYTE_BITS * WORD32_SZ  # 2 bytes
 

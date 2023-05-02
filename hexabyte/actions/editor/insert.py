@@ -25,14 +25,13 @@ class Insert(ReversibleEditorAction):
     """
 
     CMD = "insert"
-
     MIN_ARGS = 2
     MAX_ARGS = 2
 
     def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize action."""
-        super().__init__(argv)
         try:
+            super().__init__(argv)
             self.offset = Cursor(0)
             self.offset.bit = str_to_int(argv[0]) * BYTE_BITS
             self.value = str_to_int(argv[1])

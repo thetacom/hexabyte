@@ -28,14 +28,13 @@ class Goto(ReversibleEditorAction):
     """
 
     CMD = "goto"
-
     MIN_ARGS = 1
     MAX_ARGS = 2
 
     def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize action."""
-        super().__init__(argv)
         try:
+            super().__init__(argv)
             if self.argc == self.MIN_ARGS:
                 self.offset_type = OffsetType("byte")
                 self.offset = str_to_int(argv[0]) * BYTE_BITS

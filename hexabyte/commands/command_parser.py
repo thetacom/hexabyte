@@ -51,7 +51,7 @@ class CommandParser:  # pylint: disable=too-few-public-methods
         cmd = cmd.lower()
         action_class = self._cmd_map.get(cmd)
         if action_class is None:
-            raise InvalidCommandError(" ".join([cmd, *arguments]), "No registered action")
+            raise InvalidCommandError(" ".join([cmd, *arguments]), "Invalid Command")
         action = action_class(arguments)
 
         return action

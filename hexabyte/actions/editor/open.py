@@ -24,14 +24,13 @@ class Open(EditorAction):
     """
 
     CMD = "open"
-
     MIN_ARGS = 1
     MAX_ARGS = 1
 
     def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize action."""
-        super().__init__(argv)
         try:
+            super().__init__(argv)
             self.new_filepath = Path(argv[0])
             if not self.new_filepath.exists():
                 raise FileNotFoundError()

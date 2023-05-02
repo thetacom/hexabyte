@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from hexabyte.commands import InvalidCommandError
 from hexabyte.utils.misc import str_to_int
 
 from .._action import ActionError
@@ -22,11 +23,14 @@ class Undo(EditorHandlerAction):
 
     def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize action."""
-        super().__init__(argv)
-        if self.argc == 0:
-            self.count = 1
-        else:
-            self.count = str_to_int(argv[0])
+        try:
+            super().__init__(argv)
+            if self.argc == 0:
+                self.count = 1
+            else:
+                self.count = str_to_int(argv[0])
+        except ValueError as err:
+            raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
     def target(self) -> Editor | None:
