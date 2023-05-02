@@ -4,9 +4,9 @@ hilbertcurve==2.0.5 ; python_version >= "3.10" and python_version < "4.0" \
 importlib-metadata==6.6.0 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:43dd286a2cd8995d5eaef7fee2066340423b818ed3fd70adf0bad5f1fac53fed \
     --hash=sha256:92501cdf9cc66ebd3e612f1b4f0c0765dfa42f0fa38ffb319b6bd84dd675d705
-linkify-it-py==2.0.1 ; python_version >= "3.10" and python_version < "4.0" \
-    --hash=sha256:6cbdbd04c9ce3f3d18cd5fe432a33617dbf6eb4342e3da60ae24e917d37ec837 \
-    --hash=sha256:87fca2e28504adc3db7782561158fdb7c4a90570784bb147d79546866c094309
+linkify-it-py==2.0.2 ; python_version >= "3.10" and python_version < "4.0" \
+    --hash=sha256:19f3060727842c254c808e99d465c80c49d2c7306788140987a1a7a29b0d6ad2 \
+    --hash=sha256:a3a24428f6c96f27370d7fe61d2ac0be09017be5190d68d8658233171f1b6541
 markdown-it-py==2.2.0 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:5a35f8d1870171d9acc47b99612dc146129b631baf04970128b568f190d0cc30 \
     --hash=sha256:7c9a5e412688bc771c67432cbfebcdd686c93ce6484913dccf06cb5a0bea35a1

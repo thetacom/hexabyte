@@ -16,6 +16,8 @@
 [![Pre-Commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v1.json)](https://github.com/charliermarsh/ruff)
 
+![Hexabyte](imgs/logo/hexabyte.png)
+
 A modern, robust, and extensible commandline hex editor.
 
 ## User
@@ -45,6 +47,18 @@ options:
                         Specify config location. Default: ~/.config/hexabyte/config.toml
   -s, --split           Display a single file in two split screen editors.
 ```
+
+![hello_world ELF hex view](imgs/hello_world_hex.png)
+
+![hello_world ELF utf8 view](imgs/hello_world_utf8.png)
+
+![hello_world ELF binary view](imgs/hello_world_binary.png)
+
+![hello_world ELF command view](imgs/hello_world_cmd.png)
+
+![hello_world ELF entropy panel](imgs/hello_world_entropy.png)
+
+![Help Screen](imgs/help_screen.png)
 
 ## Developer
 
