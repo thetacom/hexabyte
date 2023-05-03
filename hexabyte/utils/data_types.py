@@ -61,7 +61,7 @@ class Selection:
         return self.offset
 
     @classmethod
-    def reduce(cls, selections: Iterable[Selection]) -> Iterable[Selection]:
+    def reduce(cls, selections: Iterable[Selection]) -> list[Selection]:
         """Sort and merge selections where applicable."""
         selections = sorted(selections)
         reduced_selections: list[Selection] = []

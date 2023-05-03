@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from .clear import Clear
 from .delete import Delete
 from .find import Find, FindNext, FindPrev
 from .goto import Goto
@@ -13,13 +14,16 @@ from .redo import Redo
 from .revert import Revert
 from .save import Save
 from .save_as import SaveAs
+from .select import Select
 from .set import Set
 from .undo import Undo
+from .unselect import Unselect
 
 if TYPE_CHECKING:
     from .._action import Action
 
 EDITOR_ACTIONS: list[type[Action]] = [
+    Clear,
     Delete,
     Find,
     FindNext,
@@ -33,7 +37,9 @@ EDITOR_ACTIONS: list[type[Action]] = [
     Set,
     Save,
     SaveAs,
+    Select,
     Undo,
+    Unselect,
 ]
 
 __all__ = [

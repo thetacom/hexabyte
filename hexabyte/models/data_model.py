@@ -4,7 +4,6 @@ Provides the interface for interacting with raw file data.
 """
 from __future__ import annotations
 
-from collections.abc import Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -37,6 +36,8 @@ class DataModel:
         filepath: Path,
     ) -> None:
         """Initialize the data model."""
+        self._selections: list[Selection] = []
+        self._reduced = True
         self.open(filepath)
 
     def __len__(self) -> int:
@@ -51,7 +52,21 @@ class DataModel:
     @property
     def selected_bytes(self) -> int:
         """Return the number of selected bytes."""
-        return sum(map(len, self.selections))
+        return sum(map(len, self._selections))
+
+    @property
+    def selections(self) -> list[Selection]:
+        """Return the reduced list of selected data segments.
+
+        Adjacent or overlapping selections are merged when selections are retrieved.
+        """
+        if not self._reduced:
+            self._selections = Selection.reduce(self._selections)
+        return self._selections
+
+    def clear(self) -> None:
+        """Clear all active data selections."""
+        self._selections = []
 
     def delete(self, byte_offset: int, byte_length: int = 1) -> None:
         """Delete byte(s) a specified offset."""
@@ -74,7 +89,6 @@ class DataModel:
         #     self._source = SimpleDataSource(filepath)
         # else:
         #     self._source = PagedDataSource(filepath, self.BLOCK_SIZE)
-        self.selections: Iterable[Selection] = []
         self.cursor = Cursor(max_bytes=len(self))
 
     def read(self, byte_offset: int = 0, byte_length: int | None = None) -> bytearray:
@@ -89,6 +103,28 @@ class DataModel:
     def save(self, new_filename: Path | None = None) -> None:
         """Save the current data to file."""
         self._source.save(new_filename)
+
+    def select(self, offset: int, length: int = 1) -> None:
+        """Add a data selection."""
+        self._selections.append(Selection(offset, length))
+        self._reduced = False
+
+    def unselect(self, offset: int, length: int = 1) -> None:
+        """Remove all selections within specified range."""
+        unselect_range = Selection(offset, length)
+        new_selections = []
+        for selection in self._selections:
+            if selection in unselect_range:
+                # selection is contained by unselect range
+                continue
+            if selection.offset in unselect_range:
+                # selection needs sliced
+                continue
+            if unselect_range in selection:
+                # selection potentially needs double sliced
+                continue
+            new_selections.append(selection)
+        self._selections = new_selections
 
     def write(self, offset: int, data: bytes, insert: bool = False) -> None:
         """Write data to data at specified location."""

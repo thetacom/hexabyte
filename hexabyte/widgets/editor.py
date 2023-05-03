@@ -350,7 +350,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         line_data = self.model.read(offset, self.view.line_byte_length)
         # Crop the strip so that is covers the visible area
         strip = (
-            Strip(self.view.generate_line(self._console, offset, line_data))
+            Strip(self.view.generate_line(self._console, offset, line_data, self.model.selections))
             .extend_cell_length(self.content_size.width - self.scrollbar_gutter.width)
             .crop(scroll_x, scroll_x + self.size.width)
         )
