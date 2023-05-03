@@ -58,6 +58,8 @@ options:
 
 ![hello_world ELF entropy panel](imgs/hello_world_entropy.png)
 
+![Mach-O Diff with entropy panel](imgs/bin_bash_diff_entropy.png)
+
 ![Help Screen](imgs/help_screen.png)
 
 ## Developer
