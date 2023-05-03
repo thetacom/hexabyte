@@ -55,6 +55,7 @@ Hexabyte can operate in three distinct modes:
 
 ### Commands
 
+- **clear** - Clear all data selections.
 - **delete** - Delete data. Optionally specify delete length and offset.
   - **delete**
   - **delete** *[BYTE_OFFSET]* *LENGTH*
@@ -85,6 +86,8 @@ SRC_OFFSET and insert at DST_OFFSET. Overwrites DST_QTY bytes if specified.
 - **revert** - Revert all unsaved data modifications.
 - **save** - Save data changes to file.
 - **saveas** *new_filename* - Save data changes to a new file.
+- **select** *BYTE_OFFSET* *[LENGTH]* - Add a data selection.
+- **unselect** *BYTE_OFFSET* *[LENGTH]* - Remove all selections within specified range.
 
 ## Command Prompt
 - **test** *success* - Flash green
