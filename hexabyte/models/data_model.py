@@ -82,6 +82,10 @@ class DataModel:
         self.cursor.byte = byte_offset
         return self._source.read(self.cursor.byte, byte_length)
 
+    def replace(self, offset: int, length: int, data: bytes) -> None:
+        """Replace a portion of data with a new data sequence."""
+        self._source.replace(offset, length, data)
+
     def save(self, new_filename: Path | None = None) -> None:
         """Save the current data to file."""
         self._source.save(new_filename)

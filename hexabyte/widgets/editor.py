@@ -11,29 +11,14 @@ from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
 from hexabyte.actions import Action
-from hexabyte.actions import editor as editor_actions
 from hexabyte.actions.action_handler import ActionHandler
+from hexabyte.actions.editor import EDITOR_ACTIONS
 from hexabyte.commands import Command, register
 from hexabyte.components import ByteView
 from hexabyte.constants import DisplayMode
 from hexabyte.constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
 from hexabyte.models import DataModel
 from hexabyte.utils import context
-
-ACTIONS: list[type[Action]] = [
-    editor_actions.Find,
-    editor_actions.FindNext,
-    editor_actions.FindPrev,
-    editor_actions.Goto,
-    editor_actions.Insert,
-    editor_actions.Open,
-    editor_actions.Redo,
-    editor_actions.Revert,
-    editor_actions.Set,
-    editor_actions.Save,
-    editor_actions.SaveAs,
-    editor_actions.Undo,
-]
 
 CURSOR_INCREMENTS = {
     DisplayMode.HEX: NIBBLE_BITS,
@@ -42,7 +27,7 @@ CURSOR_INCREMENTS = {
 }
 
 
-@register(ACTIONS)
+@register(EDITOR_ACTIONS)
 class Editor(ScrollView):  # pylint: disable=too-many-public-methods
     """An editor container."""
 

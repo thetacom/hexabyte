@@ -32,7 +32,5 @@ class Save(EditorHandlerAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        if not isinstance(self.target, Editor):
-            raise ActionError(f"Invalid target type for save action - {type(self.target)}")
         self.target.model.save()
         self.applied = True

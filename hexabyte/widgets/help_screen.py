@@ -53,6 +53,9 @@ Hexabyte can operate in three distinct modes:
 
 ### Commands
 
+- **delete** - Delete data. Optionally specify delete length and offset.
+  - **delete**
+  - **delete** *[BYTE_OFFSET]* *LENGTH*
 - **find** *value* - Find a value in data. Accepts string, byte and integer literals.
 Integer literals accept an optional endian parameter.
   - **find** *STRING*
