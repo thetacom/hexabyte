@@ -50,6 +50,8 @@ Hexabyte can operate in three distinct modes:
 - `Ctrl+n` - Cycle view mode (hex, ascii, binary)
 - `Ctrl+o` - Cycle offset display style (hex, decimal, off)
 - `Ctrl+s` - Save changes to disk
+- `Ctrl+y` - Redo
+- `Ctrl+z` - Undo
 
 ### Commands
 
@@ -70,6 +72,8 @@ Accepts offset in decimal, hex, and binary.
   - **goto** *byte* *BYTE_OFFSET*
   - **goto** *bit* *BIT_OFFSET*
 - **insert** *BYTE_OFFSET* *BYTE_VALUE* - Insert a byte value at specified offset.
+- **move** *SRC_OFFSET* *DST_OFFSET* *SRC_QTY* *[DST_QTY]* - Move SRC_QRY bytes from
+SRC_OFFSET and insert at DST_OFFSET. Overwrites DST_QTY bytes if specified.
 - **set** *BYTE_OFFSET* *BYTE_VALUE* - Set the byte value at specified offset.
   - **set** *byte* *BYTE_OFFSET* *BYTE_VALUE*
   - **set** *bit* *BYTE_OFFSET* *BIT_OFFSET* *BIT_VALUE*

@@ -7,6 +7,7 @@ from .delete import Delete
 from .find import Find, FindNext, FindPrev
 from .goto import Goto
 from .insert import Insert
+from .move import Move
 from .open import Open
 from .redo import Redo
 from .revert import Revert
@@ -25,6 +26,7 @@ EDITOR_ACTIONS: list[type[Action]] = [
     FindPrev,
     Goto,
     Insert,
+    Move,
     Open,
     Redo,
     Revert,
