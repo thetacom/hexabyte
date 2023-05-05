@@ -4,8 +4,13 @@ from textual.containers import Container, Vertical
 from textual.reactive import reactive
 from textual.widgets import Footer, Header
 
-from ..constants import FileMode
-from . import Editor, Sidebar
+from hexabyte.constants import FileMode
+from hexabyte.constants.generic import DIFF_FILE_COUNT
+from hexabyte.models import DataModel
+from hexabyte.utils import context
+
+from .editor import Editor
+from .sidebar import Sidebar
 
 
 class Body(Container):  # pylint: disable=too-few-public-methods
@@ -25,8 +30,26 @@ class Workbench(Vertical):
     Workbench Body {
         width: 100%;
         layout: grid;
-        grid-size: 6 1;
+        grid-size: 18 1;
         grid-gutter: 0;
+    }
+    Workbench Editor {
+        layer: base;
+        column-span: 18;
+    }
+    Workbench Editor.with-sidebar {
+        column-span: 12;
+    }
+    Workbench Editor.split {
+        column-span: 9;
+    }
+    Workbench Editor.split.with-sidebar {
+        column-span: 6;
+    }
+    Workbench Sidebar {
+        layer: base;
+        column-span: 6;
+        height: 100%;
     }
     """
 
@@ -35,42 +58,65 @@ class Workbench(Vertical):
 
     def __init__(
         self,
-        mode: FileMode,
-        left_editor: Editor,
-        right_editor: Editor,
         **kwargs,
     ) -> None:
         """Initialize Workbench."""
         super().__init__(**kwargs)
-        self._mode = mode
-        self.left_editor = left_editor
-        self.right_editor = right_editor
-        self.sidebar = Sidebar(id="sidebar")
+        self.editors = []
+        if context.file_mode != FileMode.DIFF:
+            model = DataModel(context.files[0])
+            if context.file_mode == FileMode.NORMAL:
+                self.sub_title = f"NORMAL MODE: {model.filepath.name}"
+                self.editors.append(Editor(model, id="primary"))
+            elif context.file_mode == FileMode.SPLIT:
+                self.sub_title = f"SPLIT MODE: {model.filepath.name} <-> {model.filepath.name}"
+                self.editors.append(Editor(model, classes="split", id="primary"))
+                self.editors.append(Editor(model, classes="split", id="secondary"))
+        else:
+            if len(context.files) != DIFF_FILE_COUNT:
+                raise ValueError("Two files must be loaded for diff mode.")
+            model1 = DataModel(context.files[0])
+            model2 = DataModel(context.files[1])
+            self.sub_title = f"DIFF MODE: {model1.filepath.name} <-> {model2.filepath.name}"
+            self.editors.append(Editor(model1, classes="split", id="primary"))
+            self.editors.append(Editor(model2, classes="split", id="secondary"))
 
     def compose(self) -> ComposeResult:
         """Compose sidebar widgets."""
         yield Header(show_clock=True)
         with Body():
-            yield self.left_editor
-            yield self.right_editor
-            yield self.sidebar
+            yield from self.editors
+            yield Sidebar(id="sidebar")
         yield Footer()
-
-    async def watch_active_editor(self):
-        """Watch active editor to update sidebar."""
-        if self.active_editor is not None:
-            self.sidebar.active_editor = self.active_editor
-        else:
-            self.sidebar.active_editor = None
-
-    async def watch_show_sidebar(self, visibility: bool) -> None:
-        """Toggle sidebar view visibility if show_sidebar flag changes."""
-        self.sidebar.display = visibility
-        if self.sidebar.display:
-            self.query("Editor").add_class("with-sidebar")
-        else:
-            self.query("Editor").remove_class("with-sidebar")
 
     def on_editor_selected(self, message: Editor.Selected) -> None:
         """Update global state when switching editors."""
         self.active_editor = message.editor
+
+    def on_mount(self) -> None:
+        """Perform on_mount tasks."""
+        editor = self.query_one("#primary", Editor)
+        editor.focus()
+
+    def watch_active_editor(self):
+        """Watch active editor to update sidebar."""
+        sidebar = self.query_one("#sidebar", Sidebar)
+        if self.active_editor is not None:
+            sidebar.active_editor = self.active_editor
+        else:
+            sidebar.active_editor = None
+
+    def watch_show_sidebar(self, visibility: bool) -> None:
+        """Toggle sidebar view visibility if show_sidebar flag changes."""
+        sidebar = self.query_one("#sidebar", Sidebar)
+        sidebar.display = visibility
+        if sidebar.display:
+            self.query("Editor").add_class("with-sidebar")
+        else:
+            self.query("Editor").remove_class("with-sidebar")
+
+    def update_view_styles(self) -> None:
+        """Update text style of view component."""
+        editors = self.query("Editor").results(Editor)
+        for editor in editors:
+            editor.update_view_style()

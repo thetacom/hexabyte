@@ -1,10 +1,10 @@
-name: Release
+name: (Pre-)Release
 
 on:
   create:
   push:
     tags:
-      - v*
+      - 'v*'
 
 permissions:
   contents: write
@@ -24,7 +24,16 @@ jobs:
     - run: poetry --version
     - name: Build package
       run: poetry build
-    - name: Release
+    - name: Create Pre-Release
+      if: ${{ endsWith( github.ref_name, 'pre' )}}
+      uses: softprops/action-gh-release@v1
+      with:
+        draft: true
+        prerelease: true
+        files: |
+          dist/*
+    - name: Create Release
+      if: ${{ !endsWith( github.ref_name, 'pre' )}}
       uses: softprops/action-gh-release@v1
       with:
         draft: true

@@ -1,5 +1,5 @@
 """Constants Package."""
 
-from .modes import DisplayMode, FileMode
+from .enums import DisplayMode, FileMode
 
 __all__ = ["DisplayMode", "FileMode"]

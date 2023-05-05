@@ -1,14 +1,5 @@
 # Hexabyte - Commandline Hex Editor
 
-[![Version](https://img.shields.io/pypi/v/hexabyte.svg)](https://pypi.python.org/pypi/hexabyte)
-[![Status](https://img.shields.io/pypi/status/hexabyte)](https://pypi.python.org/pypi/hexabyte)
-[![Wheel](https://img.shields.io/pypi/wheel/hexabyte)](https://pypi.org/project/hexabyte/)
-[![Downloads](https://img.shields.io/pypi/dm/hexabyte)](https://pypi.python.org/pypi/hexabyte)
-[![License](https://img.shields.io/pypi/l/hexabyte.svg)](https://pypi.python.org/pypi/hexabyte)
-[![Python Implementation](https://img.shields.io/pypi/implementation/hexabyte)](https://pypi.org/project/hexabyte/)
-[![Python Version](https://img.shields.io/pypi/pyversions/hexabyte)](https://pypi.org/project/hexabyte/)
-[![Release](https://github.com/thetacom/hexabyte/actions/workflows/release.yml/badge.svg)](https://github.com/thetacom/hexabyte/actions/)
-
 A modern, robust, and extensible commandline hex editor.
 
 ## Usage
@@ -17,11 +8,17 @@ A modern, robust, and extensible commandline hex editor.
 ~/$ pip install hexabyte
 ...
 ~/$ hexabyte --help
-Usage: hexabyte [OPTIONS] FILENAME1 [FILENAME2]
+usage: hexabyte [-h] [-c CONFIG_FILEPATH] [-s] [files ...]
 
-  Start the hexabyte application.
+Hexabyte can operate in three distinct modes. Single file mode opens a single file with a single editor. Split screen mode opens a single file with a split screen view. Diff
+mode opens two files side by side.
 
-Options:
-  -c, --config PATH  [default: ~/.config/hexabyte/config.toml]
-  --help             Show this message and exit.
+positional arguments:
+  files                 Specify 1 or 2 filenames
+
+options:
+  -h, --help            show this help message and exit
+  -c CONFIG_FILEPATH, --config CONFIG_FILEPATH
+                        Specify config location. Default: ~/.config/hexabyte/config.toml
+  -s, --split           Display a single file in two split screen editors.
 ```

@@ -10,10 +10,15 @@ from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
-from ..components.byte_view import ByteView
-from ..constants import DisplayMode
-from ..constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
-from ..models import DataModel
+from hexabyte.actions import Action
+from hexabyte.actions.action_handler import ActionHandler
+from hexabyte.actions.editor import EDITOR_ACTIONS
+from hexabyte.commands import Command, register
+from hexabyte.components import ByteView
+from hexabyte.constants import DisplayMode
+from hexabyte.constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
+from hexabyte.models import DataModel
+from hexabyte.utils import context
 
 CURSOR_INCREMENTS = {
     DisplayMode.HEX: NIBBLE_BITS,
@@ -22,7 +27,8 @@ CURSOR_INCREMENTS = {
 }
 
 
-class Editor(ScrollView):
+@register(EDITOR_ACTIONS)
+class Editor(ScrollView):  # pylint: disable=too-many-public-methods
     """An editor container."""
 
     can_focus = True
@@ -40,6 +46,8 @@ class Editor(ScrollView):
         Binding("ctrl+n", "next_view", "Next View Mode", show=True),
         Binding("ctrl+o", "toggle_offsets", "Offset Style", show=True),
         Binding("ctrl+s", "save", "Save File", show=True),
+        Binding("ctrl+z", "undo", "Undo Action", show=False),
+        Binding("ctrl+y", "redo", "Redo Action", show=False),
     ]
     """
     | Key(s) | Description |
@@ -56,7 +64,9 @@ class Editor(ScrollView):
     | delete,ctrl+d | Delete the character to the right of the cursor. |
     | ctrl+n | Next view mode. |
     | ctrl+o | Offset Style. |
-    | ctrl+s | Save file. |.
+    | ctrl+s | Save file. |
+    | ctrl+z | Undo. |
+    | ctrl+y | Redo. |.
     """
 
     COMPONENT_CLASSES: ClassVar[set[str]] = {"text"}
@@ -68,8 +78,6 @@ class Editor(ScrollView):
 
     DEFAULT_CSS = """
     Editor {
-        layer: base;
-        column-span: 6;
         background: $boost;
         color: $text;
         border: tall $background;
@@ -77,25 +85,16 @@ class Editor(ScrollView):
     Editor:focus {
         border: tall $secondary;
     }
-    Editor.with-sidebar {
-        column-span: 4;
-    }
-    Editor.dual {
-        column-span: 3;
-    }
-    Editor.dual.with-sidebar {
-        column-span: 2;
-    }
     Editor>.text {
         background: $surface;
         color: $text;
     }
     """
 
-    mode: reactive[DisplayMode] = reactive(DisplayMode.HEX)
+    display_mode: reactive[DisplayMode] = reactive(DisplayMode.HEX)
     highlighter: reactive[Highlighter | None] = reactive(None)
-    show_offsets: reactive[bool] = reactive(True)
-    hex_offsets: reactive[bool] = reactive(True)
+    show_offsets: reactive[bool] = reactive(True, init=False)
+    hex_offsets: reactive[bool] = reactive(True, init=False)
     cursor: reactive[int] = reactive(0)  # Cursor bit position
     cursor_blink: reactive[bool] = reactive(True)
     _cursor_visible: reactive[bool] = reactive(True)
@@ -139,7 +138,6 @@ class Editor(ScrollView):
     def __init__(
         self,
         model: DataModel,
-        view_mode: DisplayMode = DisplayMode.HEX,
         start_offset: int = 0,
         name: str | None = None,
         id: str | None = None,  # pylint: disable=redefined-builtin
@@ -151,8 +149,8 @@ class Editor(ScrollView):
         Args:
         ----
         model: The model containing data to be rendered.
-        view_mode: An optional view mode. Default DisplayMode.HEX.
         start_offset: Optional start offset of cursor. Default is 0.
+        config: Settings loaded from config file.
         name: Optional name for the editor widget.
         id: Optional ID for the widget.
         classes: Optional initial classes for the widget.
@@ -160,13 +158,34 @@ class Editor(ScrollView):
         """
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
         self.model = model
+
+        max_undo = context.config.settings.get("general", {}).get("max-undo")
+        self.action_handler = ActionHandler(self, max_undo=max_undo)
+
+        mode_config = context.config.settings.get(context.file_mode.value, {})
+        if id == "primary":
+            self.display_mode = DisplayMode(mode_config.get("primary", "hex"))
+        else:
+            self.display_mode = DisplayMode(mode_config.get("secondary", "utf8"))
+        offset_style = mode_config.get("offset-style")
+        self.hex_offsets = not offset_style == "dec"
+        self.show_offsets = not offset_style == "off"
+        display_mode_config = mode_config.get(self.display_mode.value, {})
+        column_count = display_mode_config.get("column-count")
+        column_size = display_mode_config.get("column-size")
         self.view_modes = cycle(DisplayMode)
         # Synch modes cycle with specified view
-        while next(self.view_modes) is not view_mode:
+        while next(self.view_modes) is not self.display_mode:
             continue
-        self.mode = view_mode
-        self.cursor_increment = CURSOR_INCREMENTS[self.mode]
-        self.view = ByteView(data=self.model.read(), view_mode=view_mode)
+        self.cursor_increment = CURSOR_INCREMENTS[self.display_mode]
+        self.view = ByteView(
+            data=self.model.read(),
+            view_mode=self.display_mode,
+            column_count=column_count,
+            column_size=column_size,
+            offsets=self.show_offsets,
+            hex_offsets=self.hex_offsets,
+        )
         self.virtual_size = self.view.size
         self.cursor = start_offset
 
@@ -180,13 +199,21 @@ class Editor(ScrollView):
         """Return the y position of cursor."""
         return self.cursor // self.view.line_bit_length
 
+    def goto(self, new_offset: int) -> None:
+        """Generate a goto command to track cursor movement.
+
+        new_offset should be a bit offset, NOT a byte offset.
+        """
+        cmd = f"goto bit {new_offset}"
+        self.post_message(Command(cmd))
+
     def _toggle_cursor(self) -> None:
         """Toggle visibility of cursor."""
         self._cursor_visible = not self._cursor_visible
 
     def action_next_view(self) -> None:
         """Cycle editor to next view mode."""
-        self.mode = next(self.view_modes)
+        self.display_mode = next(self.view_modes)
 
     def action_toggle_offsets(self) -> None:
         """Cycle line offset style."""
@@ -200,39 +227,52 @@ class Editor(ScrollView):
 
     def action_cursor_down(self) -> None:
         """Move the cursor down."""
-        self.cursor += self.view.line_bit_length
+        self.goto(self.cursor + self.view.line_bit_length)
 
     def action_cursor_up(self) -> None:
         """Move the cursor up."""
-        self.cursor -= self.view.line_bit_length
+        self.goto(self.cursor - self.view.line_bit_length)
 
     def action_cursor_left(self) -> None:
         """Move the cursor one position to the left."""
-        self.cursor -= self.cursor_increment
+        self.goto(self.cursor - self.cursor_increment)
 
     def action_cursor_right(self) -> None:
         """Move the cursor one position to the right."""
-        self.cursor += self.cursor_increment
+        self.goto(self.cursor + self.cursor_increment)
 
     def action_cursor_end(self) -> None:
         """Move the cursor to the end of the input."""
-        self.cursor = (self.cursor // self.view.line_bit_length + 1) * self.view.line_bit_length - 1
+        self.goto((self.cursor // self.view.line_bit_length + 1) * self.view.line_bit_length - 1)
 
     def action_cursor_home(self) -> None:
         """Move the cursor to the start of the input."""
-        self.cursor = self.cursor // self.view.line_bit_length * self.view.line_bit_length
+        self.goto(self.cursor // self.view.line_bit_length * self.view.line_bit_length)
 
     def action_cursor_page_up(self) -> None:
         """Move the cursor up a page."""
-        self.cursor -= self.view.line_bit_length * self.size.height
+        self.goto(self.cursor - self.view.line_bit_length * self.size.height)
 
     def action_cursor_page_down(self) -> None:
         """Move the cursor down a page."""
-        self.cursor += self.view.line_bit_length * self.size.height
+        self.goto(self.cursor + self.view.line_bit_length * self.size.height)
+
+    def action_redo(self) -> None:
+        """Redo action."""
+        self.action_handler.redo()
 
     def action_save(self) -> None:
         """Save data to file."""
-        self.model.save()
+        self.post_message(Command("save"))
+
+    def action_undo(self) -> None:
+        """Undo action."""
+        self.action_handler.undo()
+
+    def do(self, action: Action) -> None:  # pylint: disable=invalid-name
+        """Process and perform action."""
+        action.target = self
+        self.action_handler.do(action)
 
     def insert_at_cursor(self, text: str) -> None:
         """Insert character at the cursor, move the cursor to the end of the new text.
@@ -249,12 +289,16 @@ class Editor(ScrollView):
     def on_click(self, click: Click) -> None:
         """Handle click events."""
         if click.button == 1:
-            if click.x > self.view.offsets_column_width + 1:
-                y_portion = (self.scroll_offset.y + click.y - 1) * self.view.line_bit_length
-                data_x = click.x - self.view.offsets_column_width - 2
-                adjusted_x = data_x - data_x // (self.view.BYTE_REPR_LEN[self.mode] * self.view.column_size)
+            x_offset, y_offset = self.scroll_offset
+            x = click.x + x_offset
+            y = click.y + y_offset
+            if x > self.view.offsets_column_width + 1:
+                y_portion = (y - 1) * self.view.line_bit_length
+                data_x = x - self.view.offsets_column_width - 2
+                spaces_count = data_x // (self.view.BYTE_REPR_LEN[self.display_mode] * self.view.column_size + 1)
+                adjusted_x = data_x - spaces_count
                 x_portion = adjusted_x * self.cursor_increment
-                self.cursor = y_portion + x_portion
+                self.goto(y_portion + x_portion)
 
     def on_focus(self) -> None:
         """Handle focus events."""
@@ -270,16 +314,18 @@ class Editor(ScrollView):
             self.blink_timer.reset()
 
         # Do key bindings first
+        if event.key == "escape" or event.character == ":":
+            return
         if await self.handle_key(event):
             event.prevent_default()
             event.stop()
             return
         if event.is_printable:
-            event.prevent_default()
-            event.stop()
             if event.character is not None:
-                if event.key in ByteView.VALID_CHARS[self.mode]:
+                if event.key in ByteView.VALID_CHARS[self.display_mode]:
                     self.insert_at_cursor(event.character)
+                    event.prevent_default()
+                    event.stop()
 
     def on_mount(self) -> None:
         """Mount child widgets."""
@@ -303,8 +349,10 @@ class Editor(ScrollView):
         offset = y * self.view.line_byte_length
         line_data = self.model.read(offset, self.view.line_byte_length)
         # Crop the strip so that is covers the visible area
+        highlights = [self.model.selection] if self.model.selection else []
+        highlights.extend(self.model.highlights)
         strip = (
-            Strip(self.view.generate_line(self._console, offset, line_data))
+            Strip(self.view.generate_line(self._console, offset, line_data, highlights))
             .extend_cell_length(self.content_size.width - self.scrollbar_gutter.width)
             .crop(scroll_x, scroll_x + self.size.width)
         )
@@ -328,18 +376,13 @@ class Editor(ScrollView):
         """Update highlighter property of ByteView component."""
         self.view.highlighter = self.highlighter
 
-    async def watch_mode(self, mode: DisplayMode) -> None:
+    async def watch_display_mode(self, mode: DisplayMode) -> None:
         """Update view mode of ByteView component."""
         self.cursor_increment = CURSOR_INCREMENTS[mode]
-        if mode == DisplayMode.HEX:
-            self.view.column_count = 4
-            self.view.column_size = 4
-        elif mode == DisplayMode.BIN:
-            self.view.column_count = 4
-            self.view.column_size = 1
-        elif mode == DisplayMode.UTF8:
-            self.view.column_count = 8
-            self.view.column_size = 4
+        mode_config = context.config.settings.get(context.file_mode.value, {})
+        display_mode_config = mode_config.get(self.display_mode.value, {})
+        self.view.column_count = display_mode_config.get("column-count")
+        self.view.column_size = display_mode_config.get("column-size")
         self.view.view_mode = mode
         self.virtual_size = self.view.size
 

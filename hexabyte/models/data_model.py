@@ -2,11 +2,21 @@
 
 Provides the interface for interacting with raw file data.
 """
-from pathlib import Path
+from __future__ import annotations
 
-from ..constants.sizes import KB, MB
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+from rich.style import Style
+
+from hexabyte.constants.sizes import KB, MB
+from hexabyte.utils.data_types import DataSegment
+
 from .cursor import Cursor
 from .data_sources import SimpleDataSource
+
+if TYPE_CHECKING:
+    pass
 
 
 class DataModel:
@@ -28,15 +38,10 @@ class DataModel:
         filepath: Path,
     ) -> None:
         """Initialize the data model."""
-        if not filepath.exists():
-            raise FileNotFoundError
-        self._source = SimpleDataSource(filepath)
-        # if getsize(filepath) <= self.SOURCE_THRESHHOLD:
-        #     self._source = SimpleDataSource(filepath)
-        # else:
-        #     self._source = PagedDataSource(filepath, self.BLOCK_SIZE)
-        self._selected: int = 0
-        self.cursor = Cursor(max_bytes=len(self))
+        self._highlights: list[DataSegment] = []
+        self._selection: DataSegment | None = None
+        self._reduced = True
+        self.open(filepath)
 
     def __len__(self) -> int:
         """Return length of data."""
@@ -48,32 +53,107 @@ class DataModel:
         return self._source.filepath
 
     @property
-    def selected(self) -> int:
+    def highlighted_bytes(self) -> int:
+        """Return the number of highlighted bytes."""
+        return sum(map(len, self._highlights))
+
+    @property
+    def selected_bytes(self) -> int:
         """Return the number of selected bytes."""
-        return self._selected
+        if self._selection:
+            return len(self._selection)
+        return 0
 
-    # def commands(self, commands: List[Command]) -> None:
-    #     """Process a list of one or more commands."""
-    #     # Supported commands:
-    #
-    #     # Cursor Operations
-    #     # GOTO(offset)
-    #
-    #     # Data Operations
-    #     # UPDATE(offset, data)
-    #     # INSERT(offset, data)
-    #     # DELETE(offset, len)
-    #
-    #     # Selection Operations
-    #     # SELECT(offset, len)
-    #     # MOV(dst_offset)
-    #     # CUT()
-    #     # COPY()
+    @property
+    def highlights(self) -> list[DataSegment]:
+        """Return the reduced list of highlighted data segments.
 
-    def read(self, offset: int = 0, length: int | None = None) -> bytearray:
+        Adjacent or overlapping selections are merged when selections are retrieved.
+        """
+        if not self._reduced:
+            self._highlights = DataSegment.reduce(self._highlights)
+        return self._highlights
+
+    @property
+    def selection(self) -> DataSegment | None:
+        """Return selected DataSegment."""
+        return self._selection
+
+    def clear(self) -> None:
+        """Remove all highlights and selection."""
+        self.clear_highlights()
+        self.clear_selection()
+
+    def clear_highlights(self) -> None:
+        """Clear all data highlights."""
+        self._highlights = []
+
+    def clear_selection(self) -> None:
+        """Clear selection."""
+        self._selection = None
+
+    def delete(self, byte_offset: int, byte_length: int = 1) -> None:
+        """Delete byte(s) a specified offset."""
+        self.cursor.byte = byte_offset
+        self._source.replace(self.cursor.byte, byte_length, b"")
+
+    def find(self, sub: bytes, start: int = 0, reverse=False) -> int:
+        """Search data for query bytes and return byte offset.
+
+        Returns -1 if not found.
+        """
+        return self._source.find(sub, start, reverse)
+
+    def highlight(self, offset: int, length: int = 1) -> None:
+        """Add a highlighted data range."""
+        self._highlights.append(DataSegment(offset, length))
+        self._reduced = False
+
+    def open(self, filepath: Path) -> None:
+        """Open a new data source."""
+        if not filepath.exists():
+            raise FileNotFoundError
+        self._source = SimpleDataSource(filepath)
+        # if getsize(filepath) <= self.SOURCE_THRESHHOLD:
+        #     self._source = SimpleDataSource(filepath)
+        # else:
+        #     self._source = PagedDataSource(filepath, self.BLOCK_SIZE)
+        self.cursor = Cursor(max_bytes=len(self))
+
+    def read(self, byte_offset: int = 0, byte_length: int | None = None) -> bytearray:
         """Return a bytearray of the specified range."""
-        return self._source.read(offset, length)
+        self.cursor.byte = byte_offset
+        return self._source.read(self.cursor.byte, byte_length)
+
+    def replace(self, offset: int, length: int, data: bytes) -> None:
+        """Replace a portion of data with a new data sequence."""
+        self._source.replace(offset, length, data)
 
     def save(self, new_filename: Path | None = None) -> None:
         """Save the current data to file."""
         self._source.save(new_filename)
+
+    def select(self, offset: int, length: int = 1) -> None:
+        """Select a data range."""
+        self._selection = DataSegment(offset, length, style=Style(reverse=True, bgcolor="blue"))
+
+    def unhighlight(self, offset: int, length: int = 1) -> None:
+        """Remove all highlights within specified range."""
+        unhighlight_range = DataSegment(offset, length)
+        new_highlights = []
+        for highlight in self._highlights:
+            if highlight in unhighlight_range:
+                # highlight is contained by unselect range
+                continue
+            if highlight.offset in unhighlight_range:
+                # highlight needs sliced
+                continue
+            if unhighlight_range in highlight:
+                # highlight potentially needs double sliced
+                continue
+            new_highlights.append(highlight)
+        self._highlights = new_highlights
+
+    def write(self, offset: int, data: bytes, insert: bool = False) -> None:
+        """Write data to data at specified location."""
+        self._source.write(offset, data, insert)

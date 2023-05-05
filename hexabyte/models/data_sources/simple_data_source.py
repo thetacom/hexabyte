@@ -17,14 +17,21 @@ class SimpleDataSource(DataSource):
         with open(self._filepath, "rb") as source:
             self._data = bytearray(source.read())
 
+    def find(self, sub: bytes, start: int = 0, reverse: bool = False) -> int:
+        """Search data for query bytes and return byte offset or -1 if not found."""
+        if reverse:
+            return self._data.rfind(sub, 0, start)
+        return self._data.find(sub, start)
+
     def read(self, offset: int = 0, length: int | None = None) -> bytearray:
         """Return a bytearray of the specified range."""
         if length is not None:
             return bytearray(self._data[offset : offset + length])
         return bytearray(self._data[offset:])
 
-    def replace(self, offset: int, length: int, data: bytearray) -> None:
+    def replace(self, offset: int, length: int, data: bytes) -> None:
         """Replace a portion of data with a new data sequence."""
+        self._data[offset : offset + length] = data
 
     def save(self, new_filepath: Path | None = None) -> None:
         """Save the current data to file.
@@ -44,7 +51,7 @@ class SimpleDataSource(DataSource):
         else:
             self._filepath = dest_filepath
 
-    def write(self, offset: int, data: bytes | bytearray, insert: bool = False) -> None:
+    def write(self, offset: int, data: bytes | bytes, insert: bool = False) -> None:
         """Write the provided data starting at the specified offset.
 
         Params:

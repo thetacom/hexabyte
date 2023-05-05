@@ -5,7 +5,9 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import ContentSwitcher, Placeholder, Tab, Tabs
 
-from . import Editor, EntropyPanel, InfoPanel
+from .editor import Editor
+from .entropy_panel import EntropyPanel
+from .info_panel import InfoPanel
 
 
 class Sidebar(Vertical):
@@ -14,9 +16,6 @@ class Sidebar(Vertical):
     DEFAULT_CSS = """
     Sidebar {
         background: $accent;
-        layer: base;
-        column-span: 2;
-        height: 100%;
     }
     Sidebar Tabs {
         background: $accent-darken-2;
@@ -35,8 +34,8 @@ class Sidebar(Vertical):
         """Compose sidebar tabs."""
         yield Tabs(
             Tab("Info", id=f"{self.id}-info"),
-            Tab("Structures", id=f"{self.id}-structures"),
             Tab("Entropy", id=f"{self.id}-entropy"),
+            Tab("Structures", id=f"{self.id}-structures"),
         )
         with ContentSwitcher(initial=f"{self.id}-info-panel"):
             yield InfoPanel(id=f"{self.id}-info-panel", classes="panel")

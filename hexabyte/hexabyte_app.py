@@ -1,81 +1,124 @@
 """Hexabyte Appplication Class."""
-from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.reactive import reactive
+from textual.widgets import Input
 
-from .config import Config
-from .constants import DisplayMode, FileMode
-from .constants.generic import APP_NAME, DIFF_MODEL_COUNT
-from .models import DataModel
-from .widgets import Editor, Workbench
+from .actions import Action, ActionError
+from .actions.action_handler import ActionHandler
+from .actions.app import Exit
+from .commands import Command, CommandParser, InvalidCommandError, register_actions
+from .constants.generic import APP_NAME
+from .utils import context
+from .widgets.command_prompt import CommandPrompt
+from .widgets.help_screen import HelpScreen, HelpWindow
+from .widgets.workbench import Workbench
+
+ACTIONS = [Exit]
 
 
+@register_actions(ACTIONS)
 class HexabyteApp(App):
     """Hexabyte Application Class."""
 
     TITLE = APP_NAME.title()
     CSS_PATH = "hexabyte_app.css"
     BINDINGS = [
-        Binding("ctrl+c,ctrl+q", "app.quit", "Quit", show=True),
-        Binding("ctrl+d", "toggle_dark", "Toggle Dark Mode", show=True),
-        Binding("ctrl+b", "toggle_sidebar", "Toggle Sidebar", show=True),
+        Binding("ctrl+c,ctrl+q", "app.quit", "Quit", show=False),
+        Binding("ctrl+d", "toggle_dark", "Light/Dark Mode", show=False),
+        Binding("ctrl+b", "toggle_sidebar", "Toggle Sidebar", show=False),
+        Binding("ctrl+g", "toggle_help", "Show/Hide Help", show=True),
+        Binding(":", "cmd_mode_enter", "Command Mode", show=False),
+        Binding("escape", "cmd_mode_exit", "Exit Command Mode", show=False),
     ]
 
-    def __init__(
-        self,
-        config: Config,
-        files: list[Path],
-        **kwargs,
-    ) -> None:
+    show_help: reactive[bool] = reactive(False)
+
+    def __init__(self, **kwargs) -> None:
         """Initialize Application.
 
         If two filenames are specified, app will open in diff mode.
         """
-        self.config = config
-        self.models = [DataModel(files[0])]
-        if len(files) > 1:
-            self._mode = FileMode.DIFF
-            self.models.append(DataModel(files[1]))
-        else:
-            self._mode = FileMode.NORMAL
         super().__init__(**kwargs)
-
-        # Create an editors
-        if self._mode is FileMode.NORMAL:
-            self.sub_title = f"NORMAL MODE: {self.models[0].filepath.name}"
-            left_editor = Editor(self.models[0], view_mode=DisplayMode.HEX, classes="dual", id="editor1")
-            right_editor = Editor(self.models[0], view_mode=DisplayMode.UTF8, classes="dual", id="editor2")
-        else:
-            if len(self.models) != DIFF_MODEL_COUNT:
-                raise ValueError("Two files must be loaded for diff mode.")
-            self.sub_title = f"DIFF MODE: {self.models[0].filepath.name} <-> {self.models[1].filepath.name}"
-            left_editor = Editor(self.models[0], view_mode=DisplayMode.HEX, classes="dual", id="editor1")
-            right_editor = Editor(self.models[1], view_mode=DisplayMode.HEX, classes="dual", id="editor2")
-
-        self.workbench = Workbench(self._mode, left_editor, right_editor)
-
-    @property
-    def mode(self) -> FileMode:
-        """Return the application mode."""
-        return self._mode
+        max_undo = context.config.settings.general.get("max-undo")
+        self.action_handler = ActionHandler(self, max_undo=max_undo)
+        self.cmd_parser = CommandParser()
+        self.cmd_parser.register_app(self)
+        self.workbench = Workbench()
 
     def compose(self) -> ComposeResult:
         """Compose main screen."""
         yield self.workbench
+        max_cmd_history = context.config.settings.get("general", {}).get("max-cmd-history")
+        yield CommandPrompt(max_cmd_history=max_cmd_history, id="cmd-prompt")
+        yield HelpScreen(id="help")
 
-    def on_mount(self) -> None:
-        """Perform initial actions after mount."""
-        editor = self.query_one("#editor1", Editor)
-        editor.focus()
+    def action_cmd_mode_enter(self) -> None:
+        """Enter command mode."""
+        prompt = self.query_one("#cmd-prompt", CommandPrompt)
+        prompt.display = True
+        prompt_input = prompt.query_one("Input", Input)
+        prompt_input.focus()
+
+    def action_cmd_mode_exit(self) -> None:
+        """Exit command mode."""
+        prompt = self.query_one("#cmd-prompt", CommandPrompt)
+        prompt.display = False
+        if self.workbench.active_editor is not None:
+            self.workbench.active_editor.focus()
+        else:
+            self.workbench.focus()
 
     def action_toggle_dark(self) -> None:
         """Toggle dark mode."""
         super().action_toggle_dark()
-        editors = self.query("Editor").results(Editor)
-        for editor in editors:
-            editor.update_view_style()
+        workbench = self.query_one("Workbench", Workbench)
+        workbench.update_view_styles()
 
-    async def action_toggle_sidebar(self) -> None:
+    def action_toggle_help(self) -> None:
+        """Toggle visibility of sidebar."""
+        self.show_help = not self.show_help
+
+    def action_toggle_sidebar(self) -> None:
         """Toggle visibility of sidebar."""
         self.workbench.show_sidebar = not self.workbench.show_sidebar
+
+    def do(self, action: Action) -> None:  # pylint: disable=invalid-name
+        """Process and perform action."""
+        self.action_handler.do(action)
+
+    def on_command(self, event: Command) -> None:
+        """Handle an editor command."""
+        prompt = self.query_one("#cmd-prompt", CommandPrompt)
+        try:
+            if event.cmd:
+                if event.cmd.lower().startswith("invalid"):
+                    return
+                actions = self.cmd_parser.parse(event.cmd)
+            elif context.get("previous_action", None) is not None:
+                actions = [context.previous_action]
+            else:
+                raise InvalidCommandError("", "No Previous Action")
+            for action in actions:
+                if action.TARGET == "app":
+                    self.do(action)
+                elif action.TARGET == "editor":
+                    workbench = self.query_one("Workbench", Workbench)
+                    if workbench.active_editor is None:
+                        raise ValueError("No active editor")
+                    workbench.active_editor.do(action)
+                else:
+                    raise InvalidCommandError(event.cmd, f"Unsupported target - {action.TARGET}")
+            prompt.command_success()
+        except InvalidCommandError as err:
+            prompt.command_warn(str(err))
+        except ActionError as err:
+            prompt.command_error(str(err))
+
+    def watch_show_help(self, visibility: bool) -> None:
+        """Toggle help screen visibility if show_help flag changes."""
+        help_screen = self.query_one("#help", HelpScreen)
+        help_screen.display = visibility
+        window = help_screen.query_one("HelpWindow", HelpWindow)
+        window.focus()

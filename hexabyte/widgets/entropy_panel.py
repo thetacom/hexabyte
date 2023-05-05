@@ -8,9 +8,10 @@ from textual.strip import Strip
 
 from hexabyte.components import HCView
 from hexabyte.constants.sizes import BYTE_BITS
-from hexabyte.utils import Entropy
+from hexabyte.utils.entropy import Entropy
 from hexabyte.utils.misc import map_range
-from hexabyte.widgets import Editor
+
+from .editor import Editor
 
 ENTROPY_LOW_BOUND = 0.3
 ENTROPY_HIGH_BOUND = 0.6
@@ -21,6 +22,12 @@ class EntropyPanel(ScrollView):
 
     editor: reactive[Editor | None] = reactive(None, init=False)
     entropy: reactive[Entropy | None] = reactive(None)
+
+    DEFAULT_CSS = """
+    EntropyPanel {
+        background: $background;
+    }
+    """
 
     def __init__(
         self,
@@ -48,9 +55,11 @@ class EntropyPanel(ScrollView):
             scroll_x, scroll_y = self.scroll_offset
             y = click.y + scroll_y
             x = click.x + scroll_x
+            if x > self.view.width:
+                return
             idx = self.view.coord2idx(x, y)
             bit_offset = idx * self.entropy.chunk_size * BYTE_BITS
-            self.editor.cursor = bit_offset
+            self.editor.goto(bit_offset)
 
     def render_line(self, y: int) -> Strip:
         """Render editor content line."""

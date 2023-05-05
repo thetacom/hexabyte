@@ -30,22 +30,32 @@ class DataSource(ABC):
     @abstractmethod
     def __len__(self) -> int:
         """Return the total data size."""
+        raise NotImplementedError
 
     @abstractmethod
     def __post_init__(self) -> None:
         """Perform post init actions."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def find(self, sub: bytes, start: int = 0, reverse: bool = False) -> int | None:
+        """Search data for query bytes and return byte offset if found."""
+        raise NotImplementedError
 
     @abstractmethod
     def read(self, offset: int = 0, length: int | None = None) -> bytearray:
         """Return a bytearray of the specified range."""
+        raise NotImplementedError
 
     @abstractmethod
     def replace(self, offset: int, length: int, data: bytearray) -> None:
         """Replace a portion of data with a new data sequence."""
+        raise NotImplementedError
 
     @abstractmethod
     def save(self, new_filepath: Path) -> None:
         """Save data source."""
+        raise NotImplementedError
 
     @abstractmethod
     def write(self, offset: int, data: bytes | bytearray, insert: bool = False) -> None:
@@ -57,3 +67,4 @@ class DataSource(ABC):
         insert - Specifies whether new data is inserted between or overwrites
         existing data.
         """
+        raise NotImplementedError
