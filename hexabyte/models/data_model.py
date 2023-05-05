@@ -7,8 +7,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from rich.style import Style
+
 from hexabyte.constants.sizes import KB, MB
-from hexabyte.utils.data_types import Selection
+from hexabyte.utils.data_types import DataSegment
 
 from .cursor import Cursor
 from .data_sources import SimpleDataSource
@@ -36,7 +38,8 @@ class DataModel:
         filepath: Path,
     ) -> None:
         """Initialize the data model."""
-        self._selections: list[Selection] = []
+        self._highlights: list[DataSegment] = []
+        self._selection: DataSegment | None = None
         self._reduced = True
         self.open(filepath)
 
@@ -50,23 +53,44 @@ class DataModel:
         return self._source.filepath
 
     @property
-    def selected_bytes(self) -> int:
-        """Return the number of selected bytes."""
-        return sum(map(len, self._selections))
+    def highlighted_bytes(self) -> int:
+        """Return the number of highlighted bytes."""
+        return sum(map(len, self._highlights))
 
     @property
-    def selections(self) -> list[Selection]:
-        """Return the reduced list of selected data segments.
+    def selected_bytes(self) -> int:
+        """Return the number of selected bytes."""
+        if self._selection:
+            return len(self._selection)
+        return 0
+
+    @property
+    def highlights(self) -> list[DataSegment]:
+        """Return the reduced list of highlighted data segments.
 
         Adjacent or overlapping selections are merged when selections are retrieved.
         """
         if not self._reduced:
-            self._selections = Selection.reduce(self._selections)
-        return self._selections
+            self._highlights = DataSegment.reduce(self._highlights)
+        return self._highlights
+
+    @property
+    def selection(self) -> DataSegment | None:
+        """Return selected DataSegment."""
+        return self._selection
 
     def clear(self) -> None:
-        """Clear all active data selections."""
-        self._selections = []
+        """Remove all highlights and selection."""
+        self.clear_highlights()
+        self.clear_selection()
+
+    def clear_highlights(self) -> None:
+        """Clear all data highlights."""
+        self._highlights = []
+
+    def clear_selection(self) -> None:
+        """Clear selection."""
+        self._selection = None
 
     def delete(self, byte_offset: int, byte_length: int = 1) -> None:
         """Delete byte(s) a specified offset."""
@@ -79,6 +103,11 @@ class DataModel:
         Returns -1 if not found.
         """
         return self._source.find(sub, start, reverse)
+
+    def highlight(self, offset: int, length: int = 1) -> None:
+        """Add a highlighted data range."""
+        self._highlights.append(DataSegment(offset, length))
+        self._reduced = False
 
     def open(self, filepath: Path) -> None:
         """Open a new data source."""
@@ -105,26 +134,25 @@ class DataModel:
         self._source.save(new_filename)
 
     def select(self, offset: int, length: int = 1) -> None:
-        """Add a data selection."""
-        self._selections.append(Selection(offset, length))
-        self._reduced = False
+        """Select a data range."""
+        self._selection = DataSegment(offset, length, style=Style(reverse=True, bgcolor="blue"))
 
-    def unselect(self, offset: int, length: int = 1) -> None:
-        """Remove all selections within specified range."""
-        unselect_range = Selection(offset, length)
-        new_selections = []
-        for selection in self._selections:
-            if selection in unselect_range:
-                # selection is contained by unselect range
+    def unhighlight(self, offset: int, length: int = 1) -> None:
+        """Remove all highlights within specified range."""
+        unhighlight_range = DataSegment(offset, length)
+        new_highlights = []
+        for highlight in self._highlights:
+            if highlight in unhighlight_range:
+                # highlight is contained by unselect range
                 continue
-            if selection.offset in unselect_range:
-                # selection needs sliced
+            if highlight.offset in unhighlight_range:
+                # highlight needs sliced
                 continue
-            if unselect_range in selection:
-                # selection potentially needs double sliced
+            if unhighlight_range in highlight:
+                # highlight potentially needs double sliced
                 continue
-            new_selections.append(selection)
-        self._selections = new_selections
+            new_highlights.append(highlight)
+        self._highlights = new_highlights
 
     def write(self, offset: int, data: bytes, insert: bool = False) -> None:
         """Write data to data at specified location."""

@@ -1,4 +1,4 @@
-"""Unselect Action."""
+"""Unhighlight Action."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -15,16 +15,16 @@ if TYPE_CHECKING:
     from hexabyte.widgets.editor import Editor
 
 
-class Unselect(EditorAction):
-    """Unselect Action.
+class Unhighlight(EditorAction):
+    """Unhighlight Action.
 
     Supports a one arg and two arg form:
 
-    unselect BYTE_OFFSET [BYTE_LENGTH]
-    > unselect 0x100 0x10
+    unhighlight BYTE_OFFSET [BYTE_LENGTH]
+    > unhighlight 0x100 0x10
     """
 
-    CMD = "unselect"
+    CMD = "unhighlight"
     MIN_ARGS = 1
     MAX_ARGS = 2
 
@@ -51,6 +51,6 @@ class Unselect(EditorAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        self.target.model.unselect(self.offset.byte, self.length)
+        self.target.model.unhighlight(self.offset.byte, self.length)
         self.target.refresh()
         self.applied = True

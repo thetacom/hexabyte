@@ -1,19 +1,19 @@
 """Unit tests for custom data types."""
 import pytest
 
-from hexabyte.utils.data_types import Selection
+from hexabyte.utils.data_types import DataSegment
 
 
 def test_selection_construction():
     """Test selection construction."""
-    selection = Selection(100)
+    selection = DataSegment(100)
     assert selection.start == 100
     assert selection.length == 1
     assert len(selection) == 1
     assert selection.end == 100
     assert selection.after == 101
 
-    selection = Selection(0x100, 0x100)
+    selection = DataSegment(0x100, 0x100)
     assert selection.start == 256
     assert selection.length == 256
     assert len(selection) == 256
@@ -24,14 +24,14 @@ def test_selection_construction():
 def test_selection_invalid_construction() -> None:
     """Test selection construction with invalid parameters."""
     with pytest.raises(ValueError):
-        Selection(-100)
+        DataSegment(-100)
     with pytest.raises(ValueError):
-        Selection(100, -1)
+        DataSegment(100, -1)
 
 
 def test_selection_attributes() -> None:
     """Test that all calculated attributes are correct."""
-    selection = Selection(0x100, 0x100)
+    selection = DataSegment(0x100, 0x100)
     assert selection.offset == 256
     assert selection.length == 256
     assert selection.end == 511
@@ -40,11 +40,11 @@ def test_selection_attributes() -> None:
 
 def test_selection_comparisons() -> None:
     """Test that rich comparisons behave correctly."""
-    selection1 = Selection(0, 32)
-    selection2 = Selection(0, 32)
-    selection3 = Selection(0, 64)
-    selection4 = Selection(64, 32)
-    selection5 = Selection(64, 64)
+    selection1 = DataSegment(0, 32)
+    selection2 = DataSegment(0, 32)
+    selection3 = DataSegment(0, 64)
+    selection4 = DataSegment(64, 32)
+    selection5 = DataSegment(64, 64)
     assert selection1 == selection2
     assert selection1 != selection3
     assert selection1 < selection3
@@ -58,11 +58,11 @@ def test_selection_comparisons() -> None:
 
 def test_selection_contains() -> None:
     """Test selection contains behavior."""
-    selection1 = Selection(0, 32)
-    selection2 = Selection(0, 32)
-    selection3 = Selection(0, 64)
-    selection4 = Selection(64, 32)
-    selection5 = Selection(64, 64)
+    selection1 = DataSegment(0, 32)
+    selection2 = DataSegment(0, 32)
+    selection3 = DataSegment(0, 64)
+    selection4 = DataSegment(64, 32)
+    selection5 = DataSegment(64, 64)
     assert 0 in selection1
     assert 31 in selection1
     assert 32 not in selection1
@@ -79,74 +79,74 @@ def test_selection_contains() -> None:
 
 def test_selection_reduce1() -> None:
     """Test reduce of empty set and single item."""
-    before: list[Selection] = []
-    after: list[Selection] = []
-    selections = Selection.reduce(before)
+    before: list[DataSegment] = []
+    after: list[DataSegment] = []
+    selections = DataSegment.reduce(before)
     assert selections == after
-    before = [Selection(0, 64)]
-    after = [Selection(0, 64)]
-    selections = Selection.reduce(before)
+    before = [DataSegment(0, 64)]
+    after = [DataSegment(0, 64)]
+    selections = DataSegment.reduce(before)
     assert selections == after
 
 
 def test_selection_reduce2() -> None:
     """Test reduce of matching selections."""
-    before = [Selection(0, 64), Selection(0, 64)]
-    after = [Selection(0, 64)]
-    selections = Selection.reduce(before)
+    before = [DataSegment(0, 64), DataSegment(0, 64)]
+    after = [DataSegment(0, 64)]
+    selections = DataSegment.reduce(before)
     assert selections == after
 
 
 def test_selection_reduce3() -> None:
     """Test reduce for nested selections."""
-    before = [Selection(0, 32), Selection(0, 64)]
-    after = [Selection(0, 64)]
-    selections = Selection.reduce(before)
+    before = [DataSegment(0, 32), DataSegment(0, 64)]
+    after = [DataSegment(0, 64)]
+    selections = DataSegment.reduce(before)
     assert selections == after
 
 
 def test_selection_reduce4() -> None:
     """Test reduce for nested selections."""
-    before = [Selection(0, 64), Selection(0, 32)]
-    after = [Selection(0, 64)]
-    selections = Selection.reduce(before)
+    before = [DataSegment(0, 64), DataSegment(0, 32)]
+    after = [DataSegment(0, 64)]
+    selections = DataSegment.reduce(before)
     assert selections == after
 
     # Same test but ordered differently
     before.reverse()
-    selections = Selection.reduce(before)
+    selections = DataSegment.reduce(before)
     assert selections == after
 
 
 def test_selection_reduce5() -> None:
     """Test reduce of adjacent selections."""
-    before = [Selection(0, 32), Selection(32, 32)]
-    after = [Selection(0, 64)]
-    selections = Selection.reduce(before)
+    before = [DataSegment(0, 32), DataSegment(32, 32)]
+    after = [DataSegment(0, 64)]
+    selections = DataSegment.reduce(before)
     assert selections == after
 
 
 def test_selection_reduce6() -> None:
     """Test reduce of overlapping selections."""
-    before = [Selection(0, 32), Selection(16, 32)]
-    after = [Selection(0, 48)]
-    selections = Selection.reduce(before)
+    before = [DataSegment(0, 32), DataSegment(16, 32)]
+    after = [DataSegment(0, 48)]
+    selections = DataSegment.reduce(before)
     assert selections == after
 
     # Same test but ordered differently
     before.reverse()
-    selections = Selection.reduce(before)
+    selections = DataSegment.reduce(before)
     assert selections == after
 
 
 def test_selection_reduce7() -> None:
     """Test reduce for consecutive merges."""
-    before = [Selection(0, 32), Selection(16, 32), Selection(8, 16), Selection(32, 32), Selection(96, 8)]
-    after = [Selection(0, 64), Selection(96, 8)]
-    selections = Selection.reduce(before)
+    before = [DataSegment(0, 32), DataSegment(16, 32), DataSegment(8, 16), DataSegment(32, 32), DataSegment(96, 8)]
+    after = [DataSegment(0, 64), DataSegment(96, 8)]
+    selections = DataSegment.reduce(before)
     assert selections == after
 
     # Same test but ordered differently
     before.reverse()
-    selections = Selection.reduce(before)
+    selections = DataSegment.reduce(before)
     assert selections == after

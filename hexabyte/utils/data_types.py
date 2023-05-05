@@ -5,14 +5,17 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import total_ordering
 
+from rich.style import Style
+
 
 @total_ordering
 @dataclass
-class Selection:
+class DataSegment:
     """Data selection."""
 
     offset: int
     length: int = 1
+    style: Style | None = None
 
     def __post_init__(self) -> None:
         """Validate parameters."""
@@ -21,23 +24,23 @@ class Selection:
         if self.length < 1:
             raise ValueError("Length must be greater than 0.")
 
-    def __contains__(self, val: int | Selection) -> bool:
+    def __contains__(self, val: int | DataSegment) -> bool:
         """Determine if offset is in range."""
         if isinstance(val, int):
             return self.offset <= val < self.offset + self.length
-        if isinstance(val, Selection):
+        if isinstance(val, DataSegment):
             return self.offset <= val.offset and self.end >= val.end
         raise NotImplementedError
 
     def __eq__(self, other):
-        """Determine if other item is equal to Selection instance."""
-        if not isinstance(other, Selection):
+        """Determine if other item is equal to DataSegment instance."""
+        if not isinstance(other, DataSegment):
             return NotImplemented
         return (self.offset, self.length) == (other.offset, other.length)
 
     def __lt__(self, other):
-        """Determine if other item is less than the Selection instance."""
-        if not isinstance(other, Selection):
+        """Determine if other item is less than the DataSegment instance."""
+        if not isinstance(other, DataSegment):
             return NotImplemented
         return (self.offset, self.length) < (other.offset, other.length)
 
@@ -61,11 +64,11 @@ class Selection:
         return self.offset
 
     @classmethod
-    def reduce(cls, selections: Iterable[Selection]) -> list[Selection]:
+    def reduce(cls, selections: Iterable[DataSegment]) -> list[DataSegment]:
         """Sort and merge selections where applicable."""
         selections = sorted(selections)
-        reduced_selections: list[Selection] = []
-        prev_selection: Selection | None = None
+        reduced_selections: list[DataSegment] = []
+        prev_selection: DataSegment | None = None
         for selection in selections:
             # Capture first selection as previous selection
             if prev_selection is None:
@@ -83,7 +86,7 @@ class Selection:
             if selection.start >= prev_selection.start and selection.start <= prev_selection.after:
                 new_end = max([prev_selection.end, selection.end])
                 new_length = new_end - prev_selection.start + 1
-                prev_selection = Selection(prev_selection.start, new_length)
+                prev_selection = DataSegment(prev_selection.start, new_length)
                 continue
 
             # Items cannot be combined, move to next selection

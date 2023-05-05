@@ -1,4 +1,4 @@
-"""Select Action."""
+"""Highlight Action."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -15,17 +15,17 @@ if TYPE_CHECKING:
     from hexabyte.widgets.editor import Editor
 
 
-class Select(EditorAction):
-    """Select Action.
+class Highlight(EditorAction):
+    """Highlight Action.
 
     Supports a one arg and two arg form:
 
-    select BYTE_OFFSET [BYTE_LENGTH]
-    > select 0x100
-    > select 0x100 0x10
+    highlight BYTE_OFFSET [BYTE_LENGTH]
+    > highlight 0x100
+    > highlight 0x100 0x10
     """
 
-    CMD = "select"
+    CMD = "highlight"
     MIN_ARGS = 1
     MAX_ARGS = 2
 
@@ -52,6 +52,6 @@ class Select(EditorAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        self.target.model.select(self.offset.byte, self.length)
+        self.target.model.highlight(self.offset.byte, self.length)
         self.target.refresh()
         self.applied = True

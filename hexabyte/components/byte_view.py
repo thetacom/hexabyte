@@ -16,7 +16,7 @@ from textual.geometry import Size
 from hexabyte.constants import DisplayMode
 from hexabyte.constants.sizes import BYTE_BITS, NIBBLE_BITS
 from hexabyte.models.cursor import Cursor
-from hexabyte.utils.data_types import Selection
+from hexabyte.utils.data_types import DataSegment
 
 NUMBERS_COLUMN_DEFAULT_PADDING = 3
 
@@ -60,7 +60,7 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
         padding: PaddingDimensions = 0,
         cursor: Cursor = Cursor(),
         text_style: Style = Style(),
-        selection_style: Style = Style(reverse=True),
+        highlight_style: Style = Style(reverse=True),
         highlighter: Highlighter | None = None,
     ) -> None:
         """Initialize ByteView Component."""
@@ -75,9 +75,9 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
         self.cursor = cursor
         self.cursor_visible = False
         self.text_style = text_style
-        self.selection_style = selection_style
+        self.highlight_style = highlight_style
         self.highlighter = highlighter
-        self.selections: list[Selection] = []
+        self.highlights: list[DataSegment] = []
 
     @property
     def line_bit_length(self) -> int:
@@ -165,30 +165,30 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
             yield segments
 
     def generate_line(
-        self, _console: Console, offset: int, data: bytes, selections: list[Selection], end: str = ""
+        self, _console: Console, offset: int, data: bytes, highlights: list[DataSegment], end: str = ""
     ) -> Iterable[Segment]:
         """Generate a single view line."""
         if self.offsets:
             offset_txt = hex(offset) if self.hex_offsets else str(offset)
             offset_column = str(offset_txt).rjust(self.offsets_column_width - 2) + " | "
             yield Segment(offset_column, style=self.offset_style)
-        text = self.generate_text(offset, data, selections)
+        text = self.generate_text(offset, data, highlights)
         if self.highlighter is not None:
             text = self.highlighter(text)
         yield from text.render(_console, end=end)
 
-    def generate_text(self, offset: int, data: bytes, selections: list[Selection]) -> Text:
+    def generate_text(self, offset: int, data: bytes, highlights: list[DataSegment]) -> Text:
         """Generate a text line from data."""
         text = Text()
         if self.view_mode is DisplayMode.BIN:
-            text = self._generate_bin_text(offset, data, selections)
+            text = self._generate_bin_text(offset, data, highlights)
         if self.view_mode is DisplayMode.HEX:
-            text = self._generate_hex_text(offset, data, selections)
+            text = self._generate_hex_text(offset, data, highlights)
         if self.view_mode is DisplayMode.UTF8:
-            text = self._generate_utf8_text(offset, data, selections)
+            text = self._generate_utf8_text(offset, data, highlights)
         return text
 
-    def _generate_bin_text(self, offset: int, data: bytes, selections: list[Selection]) -> Text:
+    def _generate_bin_text(self, offset: int, data: bytes, highlights: list[DataSegment]) -> Text:
         """Generate binary text from data."""
         text = Text()
         byte_position = offset
@@ -202,15 +202,18 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
                     txt = Text(f"{bite:>08b}", self.text_style)
                 if self.cursor_visible and self.cursor is not None and byte_position == self.cursor.byte:
                     txt.stylize(self.cursor_style, self.cursor.remainder_bits, self.cursor.remainder_bits + 1)
-                for selection in selections:
-                    if byte_position in selection:
-                        txt.stylize(self.selection_style)
+                for highlight in highlights:
+                    if byte_position in highlight:
+                        if highlight.style:
+                            txt.stylize(highlight.style)
+                        else:
+                            txt.stylize(self.highlight_style)
                 text.append(txt)
                 byte_position += 1
             text.append(" ")
         return text
 
-    def _generate_hex_text(self, offset: int, data: bytes, selections: list[Selection]) -> Text:
+    def _generate_hex_text(self, offset: int, data: bytes, highlights: list[DataSegment]) -> Text:
         """Generate hexadecimal text from data."""
         text = Text()
         byte_position = offset
@@ -225,15 +228,18 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
                 if self.cursor_visible and self.cursor is not None and byte_position == self.cursor.byte:
                     start = self.cursor.remainder_bits // NIBBLE_BITS
                     txt.stylize(self.cursor_style, start, start + 1)
-                for selection in selections:
-                    if byte_position in selection:
-                        txt.stylize(self.selection_style)
+                for highlight in highlights:
+                    if byte_position in highlight:
+                        if highlight.style:
+                            txt.stylize(highlight.style)
+                        else:
+                            txt.stylize(self.highlight_style)
                 text.append(txt)
                 byte_position += 1
             text.append(" ")
         return text
 
-    def _generate_utf8_text(self, offset: int, data: bytes, selections: list[Selection]) -> Text:
+    def _generate_utf8_text(self, offset: int, data: bytes, highlights: list[DataSegment]) -> Text:
         """Generate utf8 text from data."""
         text = Text()
         byte_position = offset
@@ -247,9 +253,12 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
                     txt = Text(chr(bite), self.text_style)
                 if self.cursor_visible and self.cursor is not None and byte_position == self.cursor.byte:
                     txt.stylize(self.cursor_style)
-                for selection in selections:
-                    if byte_position in selection:
-                        txt.stylize(self.selection_style)
+                for highlight in highlights:
+                    if byte_position in highlight:
+                        if highlight.style:
+                            txt.stylize(highlight.style)
+                        else:
+                            txt.stylize(self.highlight_style)
                 text.append(txt)
                 byte_position += 1
             text.append(" ")

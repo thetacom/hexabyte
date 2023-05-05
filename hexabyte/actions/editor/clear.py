@@ -15,25 +15,34 @@ if TYPE_CHECKING:
 class Clear(EditorAction):
     """Clear Action.
 
-    Supports a one arg and two arg form:
+    Supports a zero arg and one arg form:
 
-    clear 0x1000
-
-    clear byte 0x1000
-
-    clear bit 0x1000
+    clear [ all | highlights | selection ]
+    > clear
+    > clear all
+    > clear highlights
+    > clear selection
     """
 
     CMD = "clear"
     MIN_ARGS = 0
-    MAX_ARGS = 0
+    MAX_ARGS = 1
+
+    VALID_ARGS = ["all", "highlights", "selection"]
 
     def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize action."""
         try:
             super().__init__(argv)
+            if self.argc == 1:
+                if argv[0] in self.VALID_ARGS:
+                    self.type = argv[0]
+                else:
+                    raise ValueError(f"Invalid clear type - {argv[0]}")
+            else:
+                self.type = "all"
         except ValueError as err:
-            raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
+            raise InvalidCommandError(" ".join([self.CMD, *argv]), str(err)) from err
 
     @property
     def target(self) -> Editor | None:
@@ -49,6 +58,13 @@ class Clear(EditorAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        self.target.model.clear()
+        if self.type == "all":
+            self.target.model.clear()
+        elif self.type == "selection":
+            self.target.model.clear_selection()
+        elif self.type == "highlights":
+            self.target.model.clear_highlights()
+        else:
+            raise ActionError(f"Invalid clear type - {self.type}")
         self.target.refresh()
         self.applied = True

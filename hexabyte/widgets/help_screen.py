@@ -55,7 +55,7 @@ Hexabyte can operate in three distinct modes:
 
 ### Commands
 
-- **clear** - Clear all data selections.
+- **clear** *[ **all** | highlights | selection ]* - Clear all data highlights and/or selection.
 - **delete** - Delete data. Optionally specify delete length and offset.
   - **delete**
   - **delete** *[BYTE_OFFSET]* *LENGTH*
@@ -65,13 +65,14 @@ Integer literals accept an optional endian parameter.
   - **find** *"STRING"*
   - **find** *b"BYTE STRING"*
   - **find** *INTEGER*
-  - **find** *[ @ | > | < | ! ]* *INTEGER*
+  - **find** *[ **@** | > | < | ! ]* *INTEGER*
 - **findnext** - Find the next occurrence of last search.
 - **findprev** - Find the prev occurrence of last search.
 - **goto** *BYTE_OFFSET* - Jump active editor to specified byte offset.
 Accepts offset in decimal, hex, and binary.
   - **goto** *byte* *BYTE_OFFSET*
   - **goto** *bit* *BIT_OFFSET*
+- **highlight** *BYTE_OFFSET* *[LENGTH]* - Highlight a segment of data. Multiple allowed.
 - **insert** *BYTE_OFFSET* *BYTE_VALUE* - Insert a byte value at specified offset.
 - **move** *SRC_OFFSET* *DST_OFFSET* *SRC_QTY* *[DST_QTY]* - Move SRC_QRY bytes from
 SRC_OFFSET and insert at DST_OFFSET. Overwrites DST_QTY bytes if specified.
@@ -86,8 +87,8 @@ SRC_OFFSET and insert at DST_OFFSET. Overwrites DST_QTY bytes if specified.
 - **revert** - Revert all unsaved data modifications.
 - **save** - Save data changes to file.
 - **saveas** *new_filename* - Save data changes to a new file.
-- **select** *BYTE_OFFSET* *[LENGTH]* - Add a data selection.
-- **unselect** *BYTE_OFFSET* *[LENGTH]* - Remove all selections within specified range.
+- **select** *BYTE_OFFSET* *[LENGTH]* - Select a segment of data. Only one active selection allowed.
+- **unhighlight** *BYTE_OFFSET* *[LENGTH]* - Remove all highlights within specified range.
 
 ## Command Prompt
 - **test** *success* - Flash green

@@ -7,6 +7,7 @@ from .clear import Clear
 from .delete import Delete
 from .find import Find, FindNext, FindPrev
 from .goto import Goto
+from .highlight import Highlight
 from .insert import Insert
 from .move import Move
 from .open import Open
@@ -17,7 +18,7 @@ from .save_as import SaveAs
 from .select import Select
 from .set import Set
 from .undo import Undo
-from .unselect import Unselect
+from .unhighlight import Unhighlight
 
 if TYPE_CHECKING:
     from .._action import Action
@@ -29,6 +30,7 @@ EDITOR_ACTIONS: list[type[Action]] = [
     FindNext,
     FindPrev,
     Goto,
+    Highlight,
     Insert,
     Move,
     Open,
@@ -39,7 +41,7 @@ EDITOR_ACTIONS: list[type[Action]] = [
     SaveAs,
     Select,
     Undo,
-    Unselect,
+    Unhighlight,
 ]
 
 __all__ = [
