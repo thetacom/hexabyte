@@ -59,7 +59,7 @@ Hexabyte can operate in three distinct modes:
 - **delete** - Delete data. Optionally specify delete length and offset.
   - **delete**
   - **delete** *[BYTE_OFFSET]* *LENGTH*
-- **find** *value* - Find a value in data. Accepts string, byte and integer literals.
+- **find** *FIND_LITERAL* - Find a value in data. Accepts string, byte and integer literals.
 Integer literals accept an optional endian parameter.
   - **find** *STRING*
   - **find** *"STRING"*
@@ -83,7 +83,13 @@ SRC_OFFSET and insert at DST_OFFSET. Overwrites DST_QTY bytes if specified.
   - **undo** *[QTY]*
 - **redo** - Redo the last action that was undone.
   - **redo** *[QTY]*
-- **open** *(primary | secondary)* *filename* - Open a file into the specified editor.
+- **replace** *FIND_LITERAL* *REPLACE_LITERAL* - Replace a value in data. Accepts string, byte and integer literals.
+Integer literals accept an optional endian parameter.
+  - **replace** *( STRING | b"BYTE STRING" | INTEGER )* *( STRING | b"BYTE STRING" | INTEGER )*
+  - **replace** *[ **@** | > | < | ! ]* *FIND_INTEGER* *REPLACE_INTEGER*
+- **replacenext** - Replace the next occurrence of last find/replace.
+- **replaceprev** - Replace the prev occurrence of last find/replace.
+- **open** *( primary | secondary )* *filename* - Open a file into the specified editor.
 - **revert** - Revert all unsaved data modifications.
 - **save** - Save data changes to file.
 - **saveas** *new_filename* - Save data changes to a new file.
@@ -97,12 +103,13 @@ SRC_OFFSET and insert at DST_OFFSET. Overwrites DST_QTY bytes if specified.
 
 ## Planned Commands
 
-- **select** *offset* *length*
-  - Select a chunk of data at specified offset.
-- **move** *offset*
-  - Move selected data to specified offset.
-- **match** *( str | hex | int | bin )* *pattern*
-  - Highlight all matches to pattern.
+- **copy** - Copy current selection to clipboard.
+- **cut** - Cut current selection to clipboard.
+- **paste** *[ insert ]* - Paste clipboard contents at current offset. Overwrites by default.
+- **match** *sequence* *[mask]* - Highlight all data segments that match the masked byte sequence.
+  - **match** *b'abc'*
+  - **match** *b'abc'* *b'\\xff\\xff\\xff'*
+  - **match** *b'abc'* *b'\\xf0\\x0f\\xf0'*
 
 ## Example Configuration File
 
