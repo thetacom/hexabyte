@@ -204,7 +204,10 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
         new_offset should be a bit offset, NOT a byte offset.
         """
-        cmd = f"goto bit {new_offset}"
+        self._send_cmd(f"goto bit {new_offset}")
+
+    def _send_cmd(self, cmd: str) -> None:
+        """Send a command message."""
         self.post_message(Command(cmd))
 
     def _toggle_cursor(self) -> None:
@@ -257,6 +260,24 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         """Move the cursor down a page."""
         self.goto(self.cursor + self.view.line_bit_length * self.size.height)
 
+    def action_delete_left(self) -> None:
+        """Delete data to left of cursor."""
+        if self.display_mode == DisplayMode.HEX:
+            pass
+        elif self.display_mode == DisplayMode.BIN:
+            pass
+        elif self.display_mode == DisplayMode.UTF8:
+            pass
+
+    def action_delete_right(self) -> None:
+        """Delete data to right of cursor."""
+        if self.display_mode == DisplayMode.HEX:
+            pass
+        elif self.display_mode == DisplayMode.BIN:
+            pass
+        elif self.display_mode == DisplayMode.UTF8:
+            pass
+
     def action_redo(self) -> None:
         """Redo action."""
         self.action_handler.redo()
@@ -274,13 +295,31 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         action.target = self
         self.action_handler.do(action)
 
-    def insert_at_cursor(self, text: str) -> None:
+    def insert_at_cursor(self, char: str) -> None:
         """Insert character at the cursor, move the cursor to the end of the new text.
 
         Args:
         ----
-        text: New text to insert.
+        char: New character to insert.
         """
+        # if text not in ByteView.VALID_CHARS[self.display_mode]:
+        #     raise ValueError("Invalid Character")
+        self.model.cursor.bit = self.cursor
+        current_value = self.model.read(1)[0]
+        if self.display_mode == DisplayMode.HEX:
+            hex_value = hex(current_value)
+            if self.model.cursor.remainder_bits < NIBBLE_BITS:
+                new_value = hex_value[:2] + char + hex_value[-1:]
+            else:
+                new_value = hex_value[:3] + char
+            cmd = f"set {self.model.cursor.byte} {new_value}"
+        elif self.display_mode == DisplayMode.BIN:
+            cmd = f"set bit {self.model.cursor.byte} {self.model.cursor.remainder_bits} {char}"
+        elif self.display_mode == DisplayMode.UTF8:
+            cmd = f"set {self.model.cursor.byte} {hex(ord(char))}"
+        else:
+            cmd = f"set {self.model.cursor.byte} {hex(current_value)}"
+        self._send_cmd(cmd)
 
     def on_blur(self) -> None:
         """Handle blur events."""
@@ -322,10 +361,11 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
             return
         if event.is_printable:
             if event.character is not None:
-                if event.key in ByteView.VALID_CHARS[self.display_mode]:
+                if event.character.lower() in ByteView.VALID_CHARS[self.display_mode]:
                     self.insert_at_cursor(event.character)
                     event.prevent_default()
                     event.stop()
+                    self.cursor += self.cursor_increment
 
     def on_mount(self) -> None:
         """Mount child widgets."""
@@ -347,7 +387,8 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         scroll_x, scroll_y = self.scroll_offset
         y += scroll_y
         offset = y * self.view.line_byte_length
-        line_data = self.model.read(offset, self.view.line_byte_length)
+        self.model.seek(offset)
+        line_data = self.model.read(self.view.line_byte_length)
         # Crop the strip so that is covers the visible area
         highlights = [self.model.selection] if self.model.selection else []
         highlights.extend(self.model.highlights)

@@ -60,10 +60,14 @@ class Move(ReversibleEditorAction):
             raise ActionError("Action target not set.")
         model = self.target.model
         if self.dst_qty > 0:
-            self.overwritten_data = model.read(self.dst.byte, self.dst_qty)
-        data = model.read(self.src.byte, self.src_qty)
-        model.replace(self.src.byte, self.src_qty, b"")
-        model.replace(self.dst.byte, self.dst_qty, data)
+            model.seek(self.dst.byte)
+            self.overwritten_data = model.read(self.dst_qty)
+        model.seek(self.src.byte)
+        data = model.read(self.src_qty)
+        model.seek(self.src.byte)
+        model.replace(self.src_qty, b"")
+        model.seek(self.dst.byte)
+        model.replace(self.dst_qty, data)
         self.target.refresh()
         self.applied = True
 
@@ -72,7 +76,10 @@ class Move(ReversibleEditorAction):
         if self.target is None:
             raise UndoError("Action target not set.")
         model = self.target.model
-        data = model.read(self.dst.byte, self.src_qty)
-        model.replace(self.dst.byte, self.src_qty, self.overwritten_data)
-        model.replace(self.src.byte, 0, data)
+        model.seek(self.dst.byte)
+        data = model.read(self.src_qty)
+        model.seek(self.dst.byte)
+        model.replace(self.src_qty, self.overwritten_data)
+        model.seek(self.src.byte)
+        model.replace(0, data)
         self.applied = False

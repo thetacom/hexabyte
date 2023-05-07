@@ -54,7 +54,9 @@ class Insert(ReversibleEditorAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        self.target.model.write(self.offset.byte, pack("@B", self.value), insert=True)
+        model = self.target.model
+        model.seek(self.offset.byte)
+        model.write(pack("@B", self.value), insert=True)
         self.target.refresh()
         self.applied = True
 
@@ -62,5 +64,7 @@ class Insert(ReversibleEditorAction):
         """Undo action."""
         if self.target is None:
             raise UndoError("Action target not insert.")
-        self.target.model.delete(self.offset.byte)
+        model = self.target.model
+        model.seek(self.offset.byte)
+        model.delete()
         self.applied = False

@@ -31,8 +31,8 @@ class Set(ReversibleEditorAction):
     set bit BYTE_OFFSET BIT_OFFSET BIT_VALUE
     BIT_OFFSET == 0-7
     BIT_VALUE == 0 | 1
-    >>> set bit 0x1000 0
-    >>> set bit 0x1000 1
+    >>> set bit 0x1000 4 0
+    >>> set bit 0x1000 7 1
     """
 
     CMD = "set"
@@ -63,7 +63,7 @@ class Set(ReversibleEditorAction):
                     if self.argc != self.BIT_MODE_ARGS:
                         raise ValueError(f"Expected {self.BIT_MODE_ARGS}, got {self.argc}")
                     self.offset.bit = str_to_int(argv[1]) * BYTE_BITS
-                    self.offset.bit += str_to_int(argv[2])
+                    self.offset.bit += 7 - str_to_int(argv[2])
                     self.value = str_to_int(argv[3])
             if self.offset_type == OffsetType.BIT and self.value not in (0, 1):
                 raise ValueError(f"Invalid bit value - {self.value}")
@@ -72,7 +72,7 @@ class Set(ReversibleEditorAction):
 
             self.previous_value = 0
         except ValueError as err:
-            raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
+            raise InvalidCommandError(" ".join([self.CMD, *argv]), str(err)) from err
 
     @property
     def target(self) -> Editor | None:
@@ -89,16 +89,19 @@ class Set(ReversibleEditorAction):
         if self.target is None:
             raise ActionError("Action target not set.")
         model = self.target.model
-        self.previous_value = unpack("@B", model.read(self.offset.byte, 1))[0]
+        model.seek(self.offset.byte)
+        self.previous_value = unpack("@B", model.read(1))[0]
         if self.offset_type == OffsetType.BIT:
             bit_position = self.offset.remainder_bits
             if self.value == 0:
                 value = clear_bit(self.previous_value, bit_position)
             else:
                 value = set_bit(self.previous_value, bit_position)
-            model.write(self.offset.byte, pack("@B", value))
+            model.seek(self.offset.byte)
+            model.write(pack("@B", value))
         else:
-            model.write(self.offset.byte, pack("@B", self.value))
+            model.seek(self.offset.byte)
+            model.write(pack("@B", self.value))
         self.target.refresh()
         self.applied = True
 
@@ -106,5 +109,7 @@ class Set(ReversibleEditorAction):
         """Undo action."""
         if self.target is None:
             raise UndoError("Action target not set.")
-        self.target.model.write(self.offset.byte, pack("@B", self.previous_value))
+        model = self.target.model
+        model.seek(self.offset.byte)
+        model.write(pack("@B", self.previous_value))
         self.applied = False

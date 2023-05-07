@@ -78,11 +78,11 @@ class Find(EditorAction):
         if self.target is None:
             raise ActionError("Action target not set.")
         model = self.target.model
-        pos = model.find(self.find_bytes, self.target.cursor // BYTE_BITS)
-        if pos == -1:
+        offset = model.find(self.find_bytes, self.target.cursor // BYTE_BITS)
+        if offset == -1:
             raise InvalidCommandError(f"{self.find_bytes!r} not found")
         self.previous_offset = self.target.cursor
-        self.target.cursor = pos * BYTE_BITS
+        self.target.cursor = offset * BYTE_BITS
         context.find_bytes = self.find_bytes
         self.applied = True
 
@@ -111,11 +111,11 @@ class FindNext(Find):
         if self.target is None:
             raise ActionError("Action target not set.")
         model = self.target.model
-        pos = model.find(self.find_bytes, self.target.cursor // BYTE_BITS + 1)
-        if pos == -1:
+        offset = model.find(self.find_bytes, self.target.cursor // BYTE_BITS + 1)
+        if offset == -1:
             raise InvalidCommandError(f"{self.find_bytes!r} not found")
         self.previous_offset = self.target.cursor
-        self.target.cursor = pos * BYTE_BITS
+        self.target.cursor = offset * BYTE_BITS
         context.find_bytes = self.find_bytes
         self.applied = True
 
@@ -136,9 +136,9 @@ class FindPrev(FindNext):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        pos = self.target.model.find(context.find_bytes, start=self.target.cursor // BYTE_BITS - 1, reverse=True)
-        if pos == -1:
+        offset = self.target.model.find(context.find_bytes, start=self.target.cursor // BYTE_BITS - 1, reverse=True)
+        if offset == -1:
             raise InvalidCommandError(f"{context.find_bytes!r} not found")
         self.previous_offset = self.target.cursor
-        self.target.cursor = pos * BYTE_BITS
+        self.target.cursor = offset * BYTE_BITS
         self.applied = True

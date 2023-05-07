@@ -94,7 +94,8 @@ class Replace(ReversibleEditorAction):
             raise InvalidCommandError(f"{self.find_bytes!r} not found")
         length = len(self.find_bytes)
         self.previous_offset = self.target.cursor
-        model.replace(self.offset, length, self.replace_bytes)
+        model.seek(self.offset)
+        model.replace(length, self.replace_bytes)
         self.target.cursor = self.offset * BYTE_BITS + length
         context.find_bytes = self.find_bytes
         context.replace_bytes = self.replace_bytes
@@ -105,7 +106,9 @@ class Replace(ReversibleEditorAction):
         """Undo action."""
         if self.target is None:
             raise UndoError("Action target not set.")
-        self.target.model.replace(self.offset, len(self.replace_bytes), self.find_bytes)
+        model = self.target.model
+        model.seek(self.offset)
+        model.replace(len(self.replace_bytes), self.find_bytes)
         self.target.cursor = self.previous_offset
         self.applied = False
 
@@ -155,7 +158,8 @@ class ReplacePrev(ReplaceNext):
             raise InvalidCommandError(f"{self.find_bytes!r} not found")
         length = len(self.find_bytes)
         self.previous_offset = self.target.cursor
-        model.replace(self.offset, length, self.replace_bytes)
+        model.seek(self.offset)
+        model.replace(length, self.replace_bytes)
         self.target.cursor = self.offset * BYTE_BITS + length
         context.find_bytes = self.find_bytes
         context.replace_bytes = self.replace_bytes

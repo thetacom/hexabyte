@@ -68,8 +68,9 @@ class Delete(ReversibleEditorAction):
         model = self.target.model
         if self.offset is None:
             self.offset = Cursor(self.target.cursor)
-        self.deleted_data = model.read(self.offset.byte, self.qty)
-        model.replace(self.offset.byte, self.qty, b"")
+        model.seek(self.offset.byte)
+        self.deleted_data = model.read(self.qty)
+        model.replace(self.qty, b"")
         self.target.refresh()
         self.applied = True
 
@@ -79,5 +80,7 @@ class Delete(ReversibleEditorAction):
             raise UndoError("Action target not set.")
         if self.offset is None:
             raise UndoError("Offset not set.")
-        self.target.model.write(self.offset.byte, self.deleted_data, insert=True)
+        model = self.target.model
+        model.seek(self.offset.byte)
+        model.write(self.deleted_data, insert=True)
         self.applied = False

@@ -52,6 +52,8 @@ class Select(EditorAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        self.target.model.select(self.offset.byte, self.length)
+        model = self.target.model
+        model.seek(self.offset.byte)
+        model.select(self.length)
         self.target.refresh()
         self.applied = True
