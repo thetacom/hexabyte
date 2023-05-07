@@ -307,7 +307,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         self.model.cursor.bit = self.cursor
         current_value = self.model.read(1)[0]
         if self.display_mode == DisplayMode.HEX:
-            hex_value = hex(current_value)
+            hex_value = format(current_value, "#04x")
             if self.model.cursor.remainder_bits < NIBBLE_BITS:
                 new_value = hex_value[:2] + char + hex_value[-1:]
             else:
