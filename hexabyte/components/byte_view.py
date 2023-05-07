@@ -42,7 +42,7 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
     BYTE_REPR_LEN = {DisplayMode.HEX: 2, DisplayMode.BIN: 8, DisplayMode.UTF8: 1}
 
     VALID_CHARS = {
-        DisplayMode.HEX: "0123456789ABCDEF",
+        DisplayMode.HEX: "0123456789abcdef",
         DisplayMode.BIN: "01",
         DisplayMode.UTF8: printable,
     }

@@ -92,10 +92,9 @@ class DataModel:
         """Clear selection."""
         self._selection = None
 
-    def delete(self, byte_offset: int, byte_length: int = 1) -> None:
+    def delete(self, length: int = 1) -> None:
         """Delete byte(s) a specified offset."""
-        self.cursor.byte = byte_offset
-        self._source.replace(self.cursor.byte, byte_length, b"")
+        self._source.replace(self.cursor.byte, length, b"")
 
     def find(self, sub: bytes, start: int = 0, reverse=False) -> int:
         """Search data for query bytes and return byte offset.
@@ -104,9 +103,9 @@ class DataModel:
         """
         return self._source.find(sub, start, reverse)
 
-    def highlight(self, offset: int, length: int = 1) -> None:
+    def highlight(self, length: int = 1) -> None:
         """Add a highlighted data range."""
-        self._highlights.append(DataSegment(offset, length))
+        self._highlights.append(DataSegment(self.cursor.byte, length))
         self._reduced = False
 
     def open(self, filepath: Path) -> None:
@@ -120,26 +119,29 @@ class DataModel:
         #     self._source = PagedDataSource(filepath, self.BLOCK_SIZE)
         self.cursor = Cursor(max_bytes=len(self))
 
-    def read(self, byte_offset: int = 0, byte_length: int | None = None) -> bytearray:
+    def read(self, length: int | None = None) -> bytearray:
         """Return a bytearray of the specified range."""
-        self.cursor.byte = byte_offset
-        return self._source.read(self.cursor.byte, byte_length)
+        return self._source.read(self.cursor.byte, length)
 
-    def replace(self, offset: int, length: int, data: bytes) -> None:
+    def replace(self, length: int, data: bytes) -> None:
         """Replace a portion of data with a new data sequence."""
-        self._source.replace(offset, length, data)
+        self._source.replace(self.cursor.byte, length, data)
 
     def save(self, new_filename: Path | None = None) -> None:
         """Save the current data to file."""
         self._source.save(new_filename)
 
-    def select(self, offset: int, length: int = 1) -> None:
-        """Select a data range."""
-        self._selection = DataSegment(offset, length, style=Style(reverse=True, bgcolor="blue"))
+    def seek(self, offset: int) -> None:
+        """Move cursor to offset."""
+        self.cursor.byte = offset
 
-    def unhighlight(self, offset: int, length: int = 1) -> None:
+    def select(self, length: int = 1) -> None:
+        """Select a data range."""
+        self._selection = DataSegment(self.cursor.byte, length, style=Style(reverse=True, bgcolor="blue"))
+
+    def unhighlight(self, length: int = 1) -> None:
         """Remove all highlights within specified range."""
-        unhighlight_range = DataSegment(offset, length)
+        unhighlight_range = DataSegment(self.cursor.byte, length)
         new_highlights = []
         for highlight in self._highlights:
             if highlight in unhighlight_range:
@@ -154,6 +156,6 @@ class DataModel:
             new_highlights.append(highlight)
         self._highlights = new_highlights
 
-    def write(self, offset: int, data: bytes, insert: bool = False) -> None:
+    def write(self, data: bytes, insert: bool = False) -> None:
         """Write data to data at specified location."""
-        self._source.write(offset, data, insert)
+        self._source.write(self.cursor.byte, data, insert)

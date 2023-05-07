@@ -52,6 +52,8 @@ class Highlight(EditorAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        self.target.model.highlight(self.offset.byte, self.length)
+        model = self.target.model
+        model.seek(self.offset.byte)
+        model.highlight(self.length)
         self.target.refresh()
         self.applied = True

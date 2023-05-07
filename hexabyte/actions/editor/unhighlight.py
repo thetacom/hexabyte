@@ -51,6 +51,8 @@ class Unhighlight(EditorAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        self.target.model.unhighlight(self.offset.byte, self.length)
+        model = self.target.model
+        model.seek(self.offset.byte)
+        model.unhighlight(self.length)
         self.target.refresh()
         self.applied = True

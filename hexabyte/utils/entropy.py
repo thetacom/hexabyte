@@ -69,7 +69,8 @@ class Entropy:
         return log_table
 
     def _create_histogram(self, offset: int) -> dict[int, int]:
-        chunk = self.model.read(offset, self.chunk_size)
+        self.model.seek(offset)
+        chunk = self.model.read(self.chunk_size)
         histogram: dict[int, int] = {}
         for val in chunk:
             if val in histogram:
