@@ -6,10 +6,10 @@ from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
-from hexabyte.components import HCView
 from hexabyte.constants.sizes import BYTE_BITS
 from hexabyte.utils.entropy import Entropy
 from hexabyte.utils.misc import map_range
+from hexabyte.view_components import HCView
 
 from .editor import Editor
 

@@ -4,7 +4,7 @@ Transforms binary data into a entropy value.
 """
 import math
 
-from ..models.data_model import DataModel
+from hexabyte.data_model import DataModel
 
 
 class Entropy:

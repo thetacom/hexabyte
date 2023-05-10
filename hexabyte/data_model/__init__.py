@@ -1,28 +1,25 @@
-"""Data Model Class.
-
-Provides the interface for interacting with raw file data.
-"""
-from __future__ import annotations
-
+"""Hexabyte Data Model Package."""
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from rich.style import Style
 
+from hexabyte.actions import Action
+from hexabyte.actions.action_handler import ActionHandler
+from hexabyte.actions.model import MODEL_ACTIONS
+from hexabyte.commands import register
 from hexabyte.constants.sizes import KB, MB
+from hexabyte.data_sources import SimpleDataSource
+from hexabyte.utils import context
 from hexabyte.utils.data_types import DataSegment
 
 from .cursor import Cursor
-from .data_sources import SimpleDataSource
-
-if TYPE_CHECKING:
-    pass
 
 
+@register(MODEL_ACTIONS)
 class DataModel:
     """Data Model Class.
 
-    Provides a translation layer for interfacing with data.
+    Provides a translation layer for interacting with data.
 
     Params
     ------
@@ -38,6 +35,9 @@ class DataModel:
         filepath: Path,
     ) -> None:
         """Initialize the data model."""
+        max_undo = context.config.settings.get("general", {}).get("max-undo")
+        self.action_handler = ActionHandler(self, max_undo=max_undo)
+
         self._highlights: list[DataSegment] = []
         self._selection: DataSegment | None = None
         self._reduced = True
@@ -96,6 +96,11 @@ class DataModel:
         """Delete byte(s) a specified offset."""
         self._source.replace(self.cursor.byte, length, b"")
 
+    def do(self, action: Action) -> None:  # pylint: disable=invalid-name
+        """Process and perform action."""
+        action.target = self
+        self.action_handler.do(action)
+
     def find(self, sub: bytes, start: int = 0, reverse=False) -> int:
         """Search data for query bytes and return byte offset.
 
@@ -121,7 +126,16 @@ class DataModel:
 
     def read(self, length: int | None = None) -> bytearray:
         """Return a bytearray of the specified range."""
-        return self._source.read(self.cursor.byte, length)
+        data = self._source.read(self.cursor.byte, length)
+        self.cursor.byte += len(data)
+        return data
+
+    def read_at(self, offset: int, length: int | None = None) -> bytearray:
+        """Return a bytearray of the specified range and location.
+
+        Does not affect cursor.
+        """
+        return self._source.read(offset, length)
 
     def replace(self, length: int, data: bytes) -> None:
         """Replace a portion of data with a new data sequence."""
@@ -159,3 +173,6 @@ class DataModel:
     def write(self, data: bytes, insert: bool = False) -> None:
         """Write data to data at specified location."""
         self._source.write(self.cursor.byte, data, insert)
+
+
+__all__ = ["Cursor", "DataModel"]

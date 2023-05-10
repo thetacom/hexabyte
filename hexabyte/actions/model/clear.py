@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 from hexabyte.commands.command_parser import InvalidCommandError
 
 from .._action import ActionError
-from ._editor_action import EditorAction
+from ._model_action import ModelAction
 
 if TYPE_CHECKING:
-    from hexabyte.widgets.editor import Editor
+    from hexabyte.data_model import DataModel
 
 
-class Clear(EditorAction):
+class Clear(ModelAction):
     """Clear Action.
 
     Supports a zero arg and one arg form:
@@ -45,12 +45,12 @@ class Clear(EditorAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv]), str(err)) from err
 
     @property
-    def target(self) -> Editor | None:
+    def target(self) -> DataModel | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: Editor | None) -> None:
+    def target(self, target: DataModel | None) -> None:
         """Set action target."""
         self._target = target
 
@@ -59,12 +59,11 @@ class Clear(EditorAction):
         if self.target is None:
             raise ActionError("Action target not set.")
         if self.type == "all":
-            self.target.model.clear()
+            self.target.clear()
         elif self.type == "selection":
-            self.target.model.clear_selection()
+            self.target.clear_selection()
         elif self.type == "highlights":
-            self.target.model.clear_highlights()
+            self.target.clear_highlights()
         else:
             raise ActionError(f"Invalid clear type - {self.type}")
-        self.target.refresh()
         self.applied = True

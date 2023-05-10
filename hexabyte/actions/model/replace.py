@@ -11,13 +11,13 @@ from hexabyte.utils.context import context
 from hexabyte.utils.misc import int_fmt_str
 
 from .._action import ActionError, UndoError
-from ._editor_action import ReversibleEditorAction
+from ._model_action import ReversibleModelAction
 
 if TYPE_CHECKING:
-    from hexabyte.widgets.editor import Editor
+    from hexabyte.data_model import DataModel
 
 
-class Replace(ReversibleEditorAction):
+class Replace(ReversibleModelAction):
     r"""Replace Action.
 
     Supports a two and three arg forms:
@@ -64,12 +64,12 @@ class Replace(ReversibleEditorAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
-    def target(self) -> Editor | None:
+    def target(self) -> DataModel | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: Editor | None) -> None:
+    def target(self, target: DataModel | None) -> None:
         """Set action target."""
         self._target = target
 
@@ -88,28 +88,27 @@ class Replace(ReversibleEditorAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target.model
-        self.offset = model.find(self.find_bytes, self.target.cursor // BYTE_BITS)
+        model = self.target
+        self.offset = model.find(self.find_bytes, self.target.cursor.byte)
         if self.offset == -1:
             raise InvalidCommandError(f"{self.find_bytes!r} not found")
         length = len(self.find_bytes)
-        self.previous_offset = self.target.cursor
+        self.previous_offset = self.target.cursor.bit
         model.seek(self.offset)
         model.replace(length, self.replace_bytes)
-        self.target.cursor = self.offset * BYTE_BITS + length
+        self.target.cursor.bit = self.offset * BYTE_BITS + length
         context.find_bytes = self.find_bytes
         context.replace_bytes = self.replace_bytes
-        self.target.refresh()
         self.applied = True
 
     def undo(self) -> None:
         """Undo action."""
         if self.target is None:
             raise UndoError("Action target not set.")
-        model = self.target.model
+        model = self.target
         model.seek(self.offset)
         model.replace(len(self.replace_bytes), self.find_bytes)
-        self.target.cursor = self.previous_offset
+        self.target.cursor.bit = self.previous_offset
         self.applied = False
 
 
@@ -127,7 +126,7 @@ class ReplaceNext(Replace):
 
     def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize action."""
-        super(ReversibleEditorAction, self).__init__(argv)
+        super(ReversibleModelAction, self).__init__(argv)
         if context.get("find_bytes") is None or context.get("replace_bytes") is None:
             raise InvalidCommandError(" ".join([self.CMD, *argv]))
         self.find_bytes = context.find_bytes
@@ -152,16 +151,15 @@ class ReplacePrev(ReplaceNext):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target.model
-        self.offset = model.find(context.find_bytes, start=self.target.cursor // BYTE_BITS - 1, reverse=True)
+        model = self.target
+        self.offset = model.find(context.find_bytes, start=self.target.cursor.byte - 1, reverse=True)
         if self.offset == -1:
             raise InvalidCommandError(f"{self.find_bytes!r} not found")
         length = len(self.find_bytes)
-        self.previous_offset = self.target.cursor
+        self.previous_offset = self.target.cursor.bit
         model.seek(self.offset)
         model.replace(length, self.replace_bytes)
-        self.target.cursor = self.offset * BYTE_BITS + length
+        self.target.cursor.bit = self.offset * BYTE_BITS + length
         context.find_bytes = self.find_bytes
         context.replace_bytes = self.replace_bytes
-        self.target.refresh()
         self.applied = True

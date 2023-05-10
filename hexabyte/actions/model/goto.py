@@ -9,13 +9,13 @@ from hexabyte.constants.sizes import BYTE_BITS
 from hexabyte.utils.misc import str_to_int
 
 from .._action import ActionError, UndoError
-from ._editor_action import ReversibleEditorAction
+from ._model_action import ReversibleModelAction
 
 if TYPE_CHECKING:
-    from hexabyte.widgets.editor import Editor
+    from hexabyte.data_model import DataModel
 
 
-class Goto(ReversibleEditorAction):
+class Goto(ReversibleModelAction):
     """Goto Action.
 
     Supports a one arg and two arg form:
@@ -24,7 +24,7 @@ class Goto(ReversibleEditorAction):
 
     goto byte 0x1000
 
-    goto bit 0x1000
+    goto bit 0x8000
     """
 
     CMD = "goto"
@@ -49,12 +49,12 @@ class Goto(ReversibleEditorAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
-    def target(self) -> Editor | None:
+    def target(self) -> DataModel | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: Editor | None) -> None:
+    def target(self, target: DataModel | None) -> None:
         """Set action target."""
         self._target = target
 
@@ -62,13 +62,13 @@ class Goto(ReversibleEditorAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        self.previous_offset = self.target.cursor
-        self.target.cursor = self.offset
+        self.previous_offset = self.target.cursor.bit
+        self.target.cursor.bit = self.offset
         self.applied = True
 
     def undo(self) -> None:
         """Undo action."""
         if self.target is None:
             raise UndoError("Action target not set.")
-        self.target.cursor = self.previous_offset
+        self.target.cursor.bit = self.previous_offset
         self.applied = False

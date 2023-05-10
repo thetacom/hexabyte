@@ -10,15 +10,12 @@ from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
-from hexabyte.actions import Action
-from hexabyte.actions.action_handler import ActionHandler
-from hexabyte.actions.editor import EDITOR_ACTIONS
-from hexabyte.commands import Command, register
-from hexabyte.components import ByteView
+from hexabyte.commands import Command
 from hexabyte.constants import DisplayMode
 from hexabyte.constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
-from hexabyte.models import DataModel
+from hexabyte.data_model import DataModel
 from hexabyte.utils import context
+from hexabyte.view_components import ByteView
 
 CURSOR_INCREMENTS = {
     DisplayMode.HEX: NIBBLE_BITS,
@@ -27,7 +24,6 @@ CURSOR_INCREMENTS = {
 }
 
 
-@register(EDITOR_ACTIONS)
 class Editor(ScrollView):  # pylint: disable=too-many-public-methods
     """An editor container."""
 
@@ -159,9 +155,6 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
         self.model = model
 
-        max_undo = context.config.settings.get("general", {}).get("max-undo")
-        self.action_handler = ActionHandler(self, max_undo=max_undo)
-
         mode_config = context.config.settings.get(context.file_mode.value, {})
         if id == "primary":
             self.display_mode = DisplayMode(mode_config.get("primary", "hex"))
@@ -179,7 +172,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
             continue
         self.cursor_increment = CURSOR_INCREMENTS[self.display_mode]
         self.view = ByteView(
-            data=self.model.read(),
+            data=self.model.read_at(0),
             view_mode=self.display_mode,
             column_count=column_count,
             column_size=column_size,
@@ -204,11 +197,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
         new_offset should be a bit offset, NOT a byte offset.
         """
-        self._send_cmd(f"goto bit {new_offset}")
-
-    def _send_cmd(self, cmd: str) -> None:
-        """Send a command message."""
-        self.post_message(Command(cmd))
+        self.send_cmd(f"goto bit {new_offset}")
 
     def _toggle_cursor(self) -> None:
         """Toggle visibility of cursor."""
@@ -280,20 +269,15 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     def action_redo(self) -> None:
         """Redo action."""
-        self.action_handler.redo()
+        self.model.action_handler.redo()
 
     def action_save(self) -> None:
         """Save data to file."""
-        self.post_message(Command("save"))
+        self.send_cmd("save")
 
     def action_undo(self) -> None:
         """Undo action."""
-        self.action_handler.undo()
-
-    def do(self, action: Action) -> None:  # pylint: disable=invalid-name
-        """Process and perform action."""
-        action.target = self
-        self.action_handler.do(action)
+        self.model.action_handler.undo()
 
     def insert_at_cursor(self, char: str) -> None:
         """Insert character at the cursor, move the cursor to the end of the new text.
@@ -305,21 +289,18 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         # if text not in ByteView.VALID_CHARS[self.display_mode]:
         #     raise ValueError("Invalid Character")
         self.model.cursor.bit = self.cursor
-        current_value = self.model.read(1)[0]
+        current_value = self.model.read_at(self.model.cursor.byte, 1)[0]
         if self.display_mode == DisplayMode.HEX:
-            hex_value = format(current_value, "#04x")
-            if self.model.cursor.remainder_bits < NIBBLE_BITS:
-                new_value = hex_value[:2] + char + hex_value[-1:]
-            else:
-                new_value = hex_value[:3] + char
-            cmd = f"set {self.model.cursor.byte} {new_value}"
+            nibble = self.model.cursor.remainder_bits // NIBBLE_BITS
+            cmd = f"set nibble {self.model.cursor.byte} {nibble} 0x{char}"
         elif self.display_mode == DisplayMode.BIN:
             cmd = f"set bit {self.model.cursor.byte} {self.model.cursor.remainder_bits} {char}"
         elif self.display_mode == DisplayMode.UTF8:
             cmd = f"set {self.model.cursor.byte} {hex(ord(char))}"
         else:
             cmd = f"set {self.model.cursor.byte} {hex(current_value)}"
-        self._send_cmd(cmd)
+        cmd = "; ".join([cmd, f"goto bit {self.model.cursor.bit + self.cursor_increment}"])
+        self.send_cmd(cmd)
 
     def on_blur(self) -> None:
         """Handle blur events."""
@@ -365,7 +346,6 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
                     self.insert_at_cursor(event.character)
                     event.prevent_default()
                     event.stop()
-                    self.cursor += self.cursor_increment
 
     def on_mount(self) -> None:
         """Mount child widgets."""
@@ -387,8 +367,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         scroll_x, scroll_y = self.scroll_offset
         y += scroll_y
         offset = y * self.view.line_byte_length
-        self.model.seek(offset)
-        line_data = self.model.read(self.view.line_byte_length)
+        line_data = self.model.read_at(offset, self.view.line_byte_length)
         # Crop the strip so that is covers the visible area
         highlights = [self.model.selection] if self.model.selection else []
         highlights.extend(self.model.highlights)
@@ -398,6 +377,10 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
             .crop(scroll_x, scroll_x + self.size.width)
         )
         return strip
+
+    def send_cmd(self, cmd: str) -> None:
+        """Send a command message."""
+        self.post_message(Command(cmd))
 
     def update_view_style(self) -> None:
         """Update text style of view component."""

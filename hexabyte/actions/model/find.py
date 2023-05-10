@@ -6,18 +6,17 @@ from ast import literal_eval
 from typing import TYPE_CHECKING
 
 from hexabyte.commands.command_parser import InvalidCommandError
-from hexabyte.constants.sizes import BYTE_BITS
 from hexabyte.utils.context import context
 from hexabyte.utils.misc import int_fmt_str
 
 from .._action import ActionError
-from ._editor_action import EditorAction
+from ._model_action import ModelAction
 
 if TYPE_CHECKING:
-    from hexabyte.widgets.editor import Editor
+    from hexabyte.data_model import DataModel
 
 
-class Find(EditorAction):
+class Find(ModelAction):
     r"""Find Action.
 
     Supports a one arg and two arg form:
@@ -64,12 +63,12 @@ class Find(EditorAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
-    def target(self) -> Editor | None:
+    def target(self) -> DataModel | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: Editor | None) -> None:
+    def target(self, target: DataModel | None) -> None:
         """Set action target."""
         self._target = target
 
@@ -77,12 +76,12 @@ class Find(EditorAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target.model
-        offset = model.find(self.find_bytes, self.target.cursor // BYTE_BITS)
+        model = self.target
+        offset = model.find(self.find_bytes, self.target.cursor.byte)
         if offset == -1:
             raise InvalidCommandError(f"{self.find_bytes!r} not found")
-        self.previous_offset = self.target.cursor
-        self.target.cursor = offset * BYTE_BITS
+        self.previous_offset = self.target.cursor.byte
+        self.target.cursor.byte = offset
         context.find_bytes = self.find_bytes
         self.applied = True
 
@@ -110,12 +109,12 @@ class FindNext(Find):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target.model
-        offset = model.find(self.find_bytes, self.target.cursor // BYTE_BITS + 1)
+        model = self.target
+        offset = model.find(self.find_bytes, self.target.cursor.byte + 1)
         if offset == -1:
             raise InvalidCommandError(f"{self.find_bytes!r} not found")
-        self.previous_offset = self.target.cursor
-        self.target.cursor = offset * BYTE_BITS
+        self.previous_offset = self.target.cursor.byte
+        self.target.cursor.byte = offset
         context.find_bytes = self.find_bytes
         self.applied = True
 
@@ -136,9 +135,9 @@ class FindPrev(FindNext):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        offset = self.target.model.find(context.find_bytes, start=self.target.cursor // BYTE_BITS - 1, reverse=True)
+        offset = self.target.find(context.find_bytes, start=self.target.cursor.byte - 1, reverse=True)
         if offset == -1:
             raise InvalidCommandError(f"{context.find_bytes!r} not found")
-        self.previous_offset = self.target.cursor
-        self.target.cursor = offset * BYTE_BITS
+        self.previous_offset = self.target.cursor.byte
+        self.target.cursor.byte = offset
         self.applied = True

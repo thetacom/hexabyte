@@ -17,7 +17,7 @@ from rich.text import Text
 from textual.color import Color
 from textual.geometry import Size
 
-from hexabyte.models.cursor import Cursor
+from hexabyte.data_model.cursor import Cursor
 from hexabyte.utils.misc import map_range
 
 HC_DIMENSIONS = 2

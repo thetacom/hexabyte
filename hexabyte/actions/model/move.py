@@ -5,17 +5,17 @@ from typing import TYPE_CHECKING
 
 from hexabyte.commands.command_parser import InvalidCommandError
 from hexabyte.constants.sizes import BYTE_BITS
-from hexabyte.models.cursor import Cursor
+from hexabyte.data_model.cursor import Cursor
 from hexabyte.utils.misc import str_to_int
 
 from .._action import ActionError, UndoError
-from ._editor_action import ReversibleEditorAction
+from ._model_action import ReversibleModelAction
 
 if TYPE_CHECKING:
-    from hexabyte.widgets.editor import Editor
+    from hexabyte.data_model import DataModel
 
 
-class Move(ReversibleEditorAction):
+class Move(ReversibleModelAction):
     """Move Action.
 
     move SRC_OFFSET DST_OFFSET BYTE_QTY [DST_QTY]
@@ -45,12 +45,12 @@ class Move(ReversibleEditorAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
-    def target(self) -> Editor | None:
+    def target(self) -> DataModel | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: Editor) -> None:
+    def target(self, target: DataModel) -> None:
         """Move action target."""
         self._target = target
 
@@ -58,7 +58,7 @@ class Move(ReversibleEditorAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target.model
+        model = self.target
         if self.dst_qty > 0:
             model.seek(self.dst.byte)
             self.overwritten_data = model.read(self.dst_qty)
@@ -68,14 +68,13 @@ class Move(ReversibleEditorAction):
         model.replace(self.src_qty, b"")
         model.seek(self.dst.byte)
         model.replace(self.dst_qty, data)
-        self.target.refresh()
         self.applied = True
 
     def undo(self) -> None:
         """Undo action."""
         if self.target is None:
             raise UndoError("Action target not set.")
-        model = self.target.model
+        model = self.target
         model.seek(self.dst.byte)
         data = model.read(self.src_qty)
         model.seek(self.dst.byte)

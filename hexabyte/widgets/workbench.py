@@ -6,7 +6,7 @@ from textual.widgets import Footer, Header
 
 from hexabyte.constants import FileMode
 from hexabyte.constants.generic import DIFF_FILE_COUNT
-from hexabyte.models import DataModel
+from hexabyte.data_model import DataModel
 from hexabyte.utils import context
 
 from .editor import Editor

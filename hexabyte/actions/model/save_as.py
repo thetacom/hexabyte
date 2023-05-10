@@ -5,13 +5,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from .._action import ActionError
-from ._editor_action import EditorHandlerAction
+from ._model_action import ModelHandlerAction
 
 if TYPE_CHECKING:
-    from hexabyte.widgets.editor import Editor
+    from hexabyte.data_model import DataModel
 
 
-class SaveAs(EditorHandlerAction):
+class SaveAs(ModelHandlerAction):
     """Save Action."""
 
     CMD = "saveas"
@@ -25,12 +25,12 @@ class SaveAs(EditorHandlerAction):
         self.new_filepath = Path(argv[0])
 
     @property
-    def target(self) -> Editor | None:
+    def target(self) -> DataModel | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: Editor | None) -> None:
+    def target(self, target: DataModel | None) -> None:
         """Set action target."""
         self._target = target
 
@@ -38,5 +38,5 @@ class SaveAs(EditorHandlerAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        self.target.model.save(self.new_filepath)
+        self.target.save(self.new_filepath)
         self.applied = True

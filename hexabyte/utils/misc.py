@@ -2,7 +2,7 @@
 from math import log2
 from sys import modules
 
-from hexabyte.constants.sizes import BYTE_SZ, DWORD32_SZ, QWORD32_SZ, WORD32_SZ
+from hexabyte.constants.sizes import BYTE_SZ, DWORD32_SZ, NIBBLE_BITS, QWORD32_SZ, WORD32_SZ
 
 
 def int_fmt_str(val: int, endian: str = "@", signed: bool = False) -> str:
@@ -44,3 +44,16 @@ def set_bit(value: int, position: int):
 def clear_bit(value: int, position: int):
     """Clear bit at specified position in value."""
     return value & ~(1 << position)
+
+
+def set_nibble(value: int, nibble: int, position: int):
+    """Set nibble in value."""
+    if nibble < 0 or nibble >= 2**NIBBLE_BITS:
+        raise ValueError("Nibble value must be between 0 and 15 inclusively")
+    value = clear_nibble(value, position)
+    return value | (nibble << position * NIBBLE_BITS)
+
+
+def clear_nibble(value: int, position: int):
+    """Clear nibble in value."""
+    return value & ~(0xF << position * NIBBLE_BITS)

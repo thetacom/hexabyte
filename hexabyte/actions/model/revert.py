@@ -1,30 +1,35 @@
-"""Save Action."""
+"""Revert Action."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 from .._action import ActionError
-from ._editor_action import EditorHandlerAction
+from ._model_action import ModelAction
 
 if TYPE_CHECKING:
-    from hexabyte.widgets.editor import Editor
+    from hexabyte.data_model import DataModel
 
 
-class Save(EditorHandlerAction):
-    """Save Action."""
+class Revert(ModelAction):
+    """Revert Action.
 
-    CMD = "save"
+    Revert an editor data from file:
+
+    revert
+    """
+
+    CMD = "revert"
 
     MIN_ARGS = 0
     MAX_ARGS = 0
 
     @property
-    def target(self) -> Editor | None:
+    def target(self) -> DataModel | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: Editor | None) -> None:
+    def target(self, target: DataModel | None) -> None:
         """Set action target."""
         self._target = target
 
@@ -32,5 +37,5 @@ class Save(EditorHandlerAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        self.target.model.save()
+        self.target.open(self.target.filepath)
         self.applied = True
