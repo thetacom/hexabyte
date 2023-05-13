@@ -1,29 +1,29 @@
-"""Hexabyte Data Model Package."""
+"""Hexabyte Data Api Package."""
 from pathlib import Path
 
 from rich.style import Style
 
 from hexabyte.actions import Action
 from hexabyte.actions.action_handler import ActionHandler
-from hexabyte.actions.model import MODEL_ACTIONS
+from hexabyte.actions.api import API_ACTIONS
 from hexabyte.commands import register
 from hexabyte.constants.sizes import KB, MB
 from hexabyte.data_sources import SimpleDataSource
 from hexabyte.utils import context
 from hexabyte.utils.data_types import DataSegment
 
-from .cursor import Cursor
+from .utils.cursor import Cursor
 
 
-@register(MODEL_ACTIONS)
-class DataModel:
-    """Data Model Class.
+@register(API_ACTIONS)
+class DataAPI:
+    """Data Api Class.
 
     Provides a translation layer for interacting with data.
 
     Params
     ------
-    filename - The filename of the file that will back the data model.
+    filename - The filename of the file that will back the data api.
     block_size - Specified the block size to slice original file data.
     """
 
@@ -34,7 +34,7 @@ class DataModel:
         self,
         filepath: Path,
     ) -> None:
-        """Initialize the data model."""
+        """Initialize the data api."""
         max_undo = context.config.settings.get("general", {}).get("max-undo")
         self.action_handler = ActionHandler(self, max_undo=max_undo)
 
@@ -175,4 +175,4 @@ class DataModel:
         self._source.write(self.cursor.byte, data, insert)
 
 
-__all__ = ["Cursor", "DataModel"]
+__all__ = ["Cursor", "DataAPI"]

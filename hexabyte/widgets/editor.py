@@ -10,10 +10,10 @@ from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
+from hexabyte.api import DataAPI
 from hexabyte.commands import Command
 from hexabyte.constants import DisplayMode
 from hexabyte.constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
-from hexabyte.data_model import DataModel
 from hexabyte.utils import context
 from hexabyte.view_components import ByteView
 
@@ -133,7 +133,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     def __init__(
         self,
-        model: DataModel,
+        api: DataAPI,
         start_offset: int = 0,
         name: str | None = None,
         id: str | None = None,  # pylint: disable=redefined-builtin
@@ -144,7 +144,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
         Args:
         ----
-        model: The model containing data to be rendered.
+        api: The api containing data to be rendered.
         start_offset: Optional start offset of cursor. Default is 0.
         config: Settings loaded from config file.
         name: Optional name for the editor widget.
@@ -153,8 +153,8 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         disabled: Whether the editor is disabled or not.
         """
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
-        self.model = model
-
+        self.api = api
+        self.cursor = self.api.cursor.bit = start_offset
         mode_config = context.config.settings.get(context.file_mode.value, {})
         if id == "primary":
             self.display_mode = DisplayMode(mode_config.get("primary", "hex"))
@@ -172,7 +172,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
             continue
         self.cursor_increment = CURSOR_INCREMENTS[self.display_mode]
         self.view = ByteView(
-            data=self.model.read_at(0),
+            data=self.api.read_at(0),
             view_mode=self.display_mode,
             column_count=column_count,
             column_size=column_size,
@@ -180,12 +180,11 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
             hex_offsets=self.hex_offsets,
         )
         self.virtual_size = self.view.size
-        self.cursor = start_offset
 
     @property
     def _cursor_at_end(self) -> bool:
         """Flag to indicate if the cursor is at the end."""
-        return self.cursor >= len(self.model) * BYTE_BITS
+        return self.cursor >= len(self.api) * BYTE_BITS
 
     @property
     def _cursor_y(self) -> int:
@@ -269,7 +268,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     def action_redo(self) -> None:
         """Redo action."""
-        self.model.action_handler.redo()
+        self.api.action_handler.redo()
 
     def action_save(self) -> None:
         """Save data to file."""
@@ -277,7 +276,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     def action_undo(self) -> None:
         """Undo action."""
-        self.model.action_handler.undo()
+        self.api.action_handler.undo()
 
     def insert_at_cursor(self, char: str) -> None:
         """Insert character at the cursor, move the cursor to the end of the new text.
@@ -288,18 +287,18 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         """
         # if text not in ByteView.VALID_CHARS[self.display_mode]:
         #     raise ValueError("Invalid Character")
-        self.model.cursor.bit = self.cursor
-        current_value = self.model.read_at(self.model.cursor.byte, 1)[0]
+        self.api.cursor.bit = self.cursor
+        current_value = self.api.read_at(self.api.cursor.byte, 1)[0]
         if self.display_mode == DisplayMode.HEX:
-            nibble = self.model.cursor.remainder_bits // NIBBLE_BITS
-            cmd = f"set nibble {self.model.cursor.byte} {nibble} 0x{char}"
+            nibble = self.api.cursor.remainder_bits // NIBBLE_BITS
+            cmd = f"set nibble {self.api.cursor.byte} {nibble} 0x{char}"
         elif self.display_mode == DisplayMode.BIN:
-            cmd = f"set bit {self.model.cursor.byte} {self.model.cursor.remainder_bits} {char}"
+            cmd = f"set bit {self.api.cursor.byte} {self.api.cursor.remainder_bits} {char}"
         elif self.display_mode == DisplayMode.UTF8:
-            cmd = f"set {self.model.cursor.byte} {hex(ord(char))}"
+            cmd = f"set {self.api.cursor.byte} {hex(ord(char))}"
         else:
-            cmd = f"set {self.model.cursor.byte} {hex(current_value)}"
-        cmd = "; ".join([cmd, f"goto bit {self.model.cursor.bit + self.cursor_increment}"])
+            cmd = f"set {self.api.cursor.byte} {hex(current_value)}"
+        cmd = "; ".join([cmd, f"goto bit {self.api.cursor.bit + self.cursor_increment}"])
         self.send_cmd(cmd)
 
     def on_blur(self) -> None:
@@ -322,7 +321,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     def on_focus(self) -> None:
         """Handle focus events."""
-        self.cursor = self.model.cursor.bit
+        self.cursor = self.api.cursor.bit
         if self.cursor_blink:
             self.blink_timer.resume()
         self.post_message(self.Selected(self))
@@ -364,13 +363,14 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     def render_line(self, y: int) -> Strip:
         """Render editor content line."""
+        self.view.cursor.bit = self.api.cursor.bit
         scroll_x, scroll_y = self.scroll_offset
         y += scroll_y
         offset = y * self.view.line_byte_length
-        line_data = self.model.read_at(offset, self.view.line_byte_length)
+        line_data = self.api.read_at(offset, self.view.line_byte_length)
         # Crop the strip so that is covers the visible area
-        highlights = [self.model.selection] if self.model.selection else []
-        highlights.extend(self.model.highlights)
+        highlights = [self.api.selection] if self.api.selection else []
+        highlights.extend(self.api.highlights)
         strip = (
             Strip(self.view.generate_line(self._console, offset, line_data, highlights))
             .extend_cell_length(self.content_size.width - self.scrollbar_gutter.width)
@@ -389,7 +389,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     def validate_cursor(self, cursor: int) -> int:
         """Validate updated cursor position."""
-        return min(max(0, cursor), len(self.model) * BYTE_BITS)
+        return min(max(0, cursor), len(self.api) * BYTE_BITS)
 
     async def watch_hex_offsets(self, val: bool) -> None:
         """Update hex_offsets property of ByteView component."""
@@ -420,7 +420,6 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
 
     async def watch_cursor(self) -> None:
         """React to cursor changes."""
-        self.model.cursor.bit = self.cursor
         self.view.cursor.bit = self.cursor
         scroll_y = self.scroll_offset.y
         cursor_y = self._cursor_y

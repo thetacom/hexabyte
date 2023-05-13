@@ -50,7 +50,7 @@ class Sidebar(Vertical):
         self.query_one(ContentSwitcher).current = f"{event.tab.id}-panel"
 
     def watch_active_editor(self, editor: Editor):
-        """React to active model change."""
+        """React to active api change."""
         info_panel = self.query_one(f"#{self.id}-info-panel", InfoPanel)
         info_panel.editor = editor
         entropy_panel = self.query_one(f"#{self.id}-entropy-panel", EntropyPanel)

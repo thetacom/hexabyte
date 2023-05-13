@@ -18,12 +18,12 @@ class PagedDataSource(DataSource):
     Provides a data management layer for interfacing with files.
 
     Params:
-    filname - The filename of the file that will back the data model.
+    filname - The filename of the file that will back the data api.
     block_size - Specified the block size to slice original file data.
-    auto_reduce - Determines if a data model will automatically reduce memory footprint
+    auto_reduce - Determines if data source will automatically reduce memory footprint
         after threshhold is reached.
     auto_reduce_threshhold - The number of loaded clean block that will trigger the
-        data model to perform a reduce operation.
+        data source to perform a reduce operation.
     """
 
     def __init__(
@@ -64,7 +64,7 @@ class PagedDataSource(DataSource):
 
     @property
     def _block_count(self) -> int:
-        """Return the model block count based on size."""
+        """Return the api block count based on size."""
         return len(self._blocks)
 
     def __len__(self) -> int:

@@ -76,7 +76,7 @@ class EntropyPanel(ScrollView):
     def watch_editor(self, new_editor: Editor) -> None:
         """React to changed editor."""
         if new_editor is not None:
-            self.entropy = Entropy(new_editor.model, chunk_size=32)
+            self.entropy = Entropy(new_editor.api, chunk_size=32)
             self.view.data = self.entropy.values
             self.virtual_size = self.view.size
             self.refresh()

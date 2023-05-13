@@ -4,9 +4,9 @@ from textual.containers import Container, Vertical
 from textual.reactive import reactive
 from textual.widgets import Footer, Header
 
+from hexabyte.api import DataAPI
 from hexabyte.constants import FileMode
 from hexabyte.constants.generic import DIFF_FILE_COUNT
-from hexabyte.data_model import DataModel
 from hexabyte.utils import context
 
 from .editor import Editor
@@ -64,22 +64,22 @@ class Workbench(Vertical):
         super().__init__(**kwargs)
         self.editors = []
         if context.file_mode != FileMode.DIFF:
-            model = DataModel(context.files[0])
+            api = DataAPI(context.files[0])
             if context.file_mode == FileMode.NORMAL:
-                self.sub_title = f"NORMAL MODE: {model.filepath.name}"
-                self.editors.append(Editor(model, id="primary"))
+                self.sub_title = f"NORMAL MODE: {api.filepath.name}"
+                self.editors.append(Editor(api, id="primary"))
             elif context.file_mode == FileMode.SPLIT:
-                self.sub_title = f"SPLIT MODE: {model.filepath.name} <-> {model.filepath.name}"
-                self.editors.append(Editor(model, classes="split", id="primary"))
-                self.editors.append(Editor(model, classes="split", id="secondary"))
+                self.sub_title = f"SPLIT MODE: {api.filepath.name} <-> {api.filepath.name}"
+                self.editors.append(Editor(api, classes="split", id="primary"))
+                self.editors.append(Editor(api, classes="split", id="secondary"))
         else:
             if len(context.files) != DIFF_FILE_COUNT:
                 raise ValueError("Two files must be loaded for diff mode.")
-            model1 = DataModel(context.files[0])
-            model2 = DataModel(context.files[1])
-            self.sub_title = f"DIFF MODE: {model1.filepath.name} <-> {model2.filepath.name}"
-            self.editors.append(Editor(model1, classes="split", id="primary"))
-            self.editors.append(Editor(model2, classes="split", id="secondary"))
+            api1 = DataAPI(context.files[0])
+            api2 = DataAPI(context.files[1])
+            self.sub_title = f"DIFF MODE: {api1.filepath.name} <-> {api2.filepath.name}"
+            self.editors.append(Editor(api1, classes="split", id="primary"))
+            self.editors.append(Editor(api2, classes="split", id="secondary"))
 
     def compose(self) -> ComposeResult:
         """Compose sidebar widgets."""

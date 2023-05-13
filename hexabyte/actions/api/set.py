@@ -7,17 +7,17 @@ from typing import TYPE_CHECKING
 from hexabyte.commands.command_parser import InvalidCommandError
 from hexabyte.constants.enums import OffsetType
 from hexabyte.constants.sizes import BIT, BYTE_BITS, BYTE_MAX, NIBBLE_BITS
-from hexabyte.data_model.cursor import Cursor
+from hexabyte.utils.cursor import Cursor
 from hexabyte.utils.misc import clear_bit, set_bit, set_nibble, str_to_int
 
 from .._action import ActionError, UndoError
-from ._model_action import ReversibleModelAction
+from ._api_action import ReversibleApiAction
 
 if TYPE_CHECKING:
-    from hexabyte.data_model import DataModel
+    from hexabyte.api import DataAPI
 
 
-class Set(ReversibleModelAction):
+class Set(ReversibleApiAction):
     """Set Action.
 
     Supports two, three, and four arg forms:
@@ -98,12 +98,12 @@ class Set(ReversibleModelAction):
         self.value = str_to_int(argv[1])
 
     @property
-    def target(self) -> DataModel | None:
+    def target(self) -> DataAPI | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: DataModel) -> None:
+    def target(self, target: DataAPI) -> None:
         """Set action target."""
         self._target = target
 
@@ -111,35 +111,35 @@ class Set(ReversibleModelAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target
-        model.seek(self.offset.byte)
-        self.previous_value = unpack("@B", model.read(1))[0]
+        api = self.target
+        api.seek(self.offset.byte)
+        self.previous_value = unpack("@B", api.read(1))[0]
         if self.offset_type == OffsetType.BIT:
             bit_position = self.offset.remainder_bits
             if self.value == 0:
                 value = clear_bit(self.previous_value, bit_position)
             else:
                 value = set_bit(self.previous_value, bit_position)
-            model.seek(self.offset.byte)
-            model.write(pack("@B", value))
-            model.cursor.bit += BIT
+            api.seek(self.offset.byte)
+            api.write(pack("@B", value))
+            api.cursor.bit += BIT
         elif self.offset_type == OffsetType.NIBBLE:
             nibble = self.offset.remainder_bits // NIBBLE_BITS
             value = set_nibble(self.previous_value, self.value, nibble)
-            model.seek(self.offset.byte)
-            model.write(pack("@B", value))
-            model.cursor.bit += NIBBLE_BITS
+            api.seek(self.offset.byte)
+            api.write(pack("@B", value))
+            api.cursor.bit += NIBBLE_BITS
         else:
-            model.seek(self.offset.byte)
-            model.write(pack("@B", self.value))
-            model.cursor.byte += 1
+            api.seek(self.offset.byte)
+            api.write(pack("@B", self.value))
+            api.cursor.byte += 1
         self.applied = True
 
     def undo(self) -> None:
         """Undo action."""
         if self.target is None:
             raise UndoError("Action target not set.")
-        model = self.target
-        model.seek(self.offset.byte)
-        model.write(pack("@B", self.previous_value))
+        api = self.target
+        api.seek(self.offset.byte)
+        api.write(pack("@B", self.previous_value))
         self.applied = False

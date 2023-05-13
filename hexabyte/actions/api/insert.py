@@ -6,17 +6,17 @@ from typing import TYPE_CHECKING
 
 from hexabyte.commands.command_parser import InvalidCommandError
 from hexabyte.constants.sizes import BYTE_BITS, BYTE_MAX
-from hexabyte.data_model.cursor import Cursor
+from hexabyte.utils.cursor import Cursor
 from hexabyte.utils.misc import str_to_int
 
 from .._action import ActionError, UndoError
-from ._model_action import ReversibleModelAction
+from ._api_action import ReversibleApiAction
 
 if TYPE_CHECKING:
-    from hexabyte.data_model import DataModel
+    from hexabyte.api import DataAPI
 
 
-class Insert(ReversibleModelAction):
+class Insert(ReversibleApiAction):
     """Insert Action.
 
     insert BYTE_OFFSET BYTE_VALUE
@@ -41,12 +41,12 @@ class Insert(ReversibleModelAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
-    def target(self) -> DataModel | None:
+    def target(self) -> DataAPI | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: DataModel) -> None:
+    def target(self, target: DataAPI) -> None:
         """Insert action target."""
         self._target = target
 
@@ -54,16 +54,16 @@ class Insert(ReversibleModelAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target
-        model.seek(self.offset.byte)
-        model.write(pack("@B", self.value), insert=True)
+        api = self.target
+        api.seek(self.offset.byte)
+        api.write(pack("@B", self.value), insert=True)
         self.applied = True
 
     def undo(self) -> None:
         """Undo action."""
         if self.target is None:
             raise UndoError("Action target not insert.")
-        model = self.target
-        model.seek(self.offset.byte)
-        model.delete()
+        api = self.target
+        api.seek(self.offset.byte)
+        api.delete()
         self.applied = False

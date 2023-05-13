@@ -10,13 +10,13 @@ from hexabyte.utils.context import context
 from hexabyte.utils.misc import int_fmt_str
 
 from .._action import ActionError
-from ._model_action import ModelAction
+from ._api_action import ApiAction
 
 if TYPE_CHECKING:
-    from hexabyte.data_model import DataModel
+    from hexabyte.api import DataAPI
 
 
-class Find(ModelAction):
+class Find(ApiAction):
     r"""Find Action.
 
     Supports a one arg and two arg form:
@@ -63,12 +63,12 @@ class Find(ModelAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
-    def target(self) -> DataModel | None:
+    def target(self) -> DataAPI | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: DataModel | None) -> None:
+    def target(self, target: DataAPI | None) -> None:
         """Set action target."""
         self._target = target
 
@@ -76,8 +76,8 @@ class Find(ModelAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target
-        offset = model.find(self.find_bytes, self.target.cursor.byte)
+        api = self.target
+        offset = api.find(self.find_bytes, self.target.cursor.byte)
         if offset == -1:
             raise InvalidCommandError(f"{self.find_bytes!r} not found")
         self.previous_offset = self.target.cursor.byte
@@ -109,8 +109,8 @@ class FindNext(Find):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target
-        offset = model.find(self.find_bytes, self.target.cursor.byte + 1)
+        api = self.target
+        offset = api.find(self.find_bytes, self.target.cursor.byte + 1)
         if offset == -1:
             raise InvalidCommandError(f"{self.find_bytes!r} not found")
         self.previous_offset = self.target.cursor.byte

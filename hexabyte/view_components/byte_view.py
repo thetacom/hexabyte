@@ -15,7 +15,7 @@ from textual.geometry import Size
 
 from hexabyte.constants import DisplayMode
 from hexabyte.constants.sizes import BYTE_BITS, NIBBLE_BITS
-from hexabyte.data_model.cursor import Cursor
+from hexabyte.utils.cursor import Cursor
 from hexabyte.utils.data_types import DataSegment
 
 NUMBERS_COLUMN_DEFAULT_PADDING = 3

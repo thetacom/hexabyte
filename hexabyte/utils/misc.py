@@ -2,7 +2,7 @@
 from math import log2
 from sys import modules
 
-from hexabyte.constants.sizes import BYTE_SZ, DWORD32_SZ, NIBBLE_BITS, QWORD32_SZ, WORD32_SZ
+from hexabyte.constants.sizes import BYTE_SZ, DWORD_SZ, NIBBLE_BITS, QWORD_SZ, WORD_SZ
 
 
 def int_fmt_str(val: int, endian: str = "@", signed: bool = False) -> str:
@@ -10,11 +10,11 @@ def int_fmt_str(val: int, endian: str = "@", signed: bool = False) -> str:
     byte_len = int(log2(val)) + 1
     if byte_len <= BYTE_SZ:
         return f"{endian}b" if signed else f"{endian}B"
-    if byte_len <= WORD32_SZ:
+    if byte_len <= WORD_SZ:
         return f"{endian}h" if signed else f"{endian}H"
-    if byte_len <= DWORD32_SZ:
+    if byte_len <= DWORD_SZ:
         return f"{endian}i" if signed else f"{endian}I"
-    if byte_len <= QWORD32_SZ:
+    if byte_len <= QWORD_SZ:
         return f"{endian}q" if signed else f"{endian}Q"
     raise ValueError("Integer value too large")
 

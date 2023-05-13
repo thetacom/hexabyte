@@ -9,13 +9,13 @@ from hexabyte.constants.sizes import BYTE_BITS
 from hexabyte.utils.misc import str_to_int
 
 from .._action import ActionError, UndoError
-from ._model_action import ReversibleModelAction
+from ._api_action import ReversibleApiAction
 
 if TYPE_CHECKING:
-    from hexabyte.data_model import DataModel
+    from hexabyte.api import DataAPI
 
 
-class Goto(ReversibleModelAction):
+class Goto(ReversibleApiAction):
     """Goto Action.
 
     Supports a one arg and two arg form:
@@ -49,12 +49,12 @@ class Goto(ReversibleModelAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
-    def target(self) -> DataModel | None:
+    def target(self) -> DataAPI | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: DataModel | None) -> None:
+    def target(self, target: DataAPI | None) -> None:
         """Set action target."""
         self._target = target
 

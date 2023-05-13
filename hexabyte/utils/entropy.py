@@ -4,15 +4,15 @@ Transforms binary data into a entropy value.
 """
 import math
 
-from hexabyte.data_model import DataModel
+from hexabyte.api import DataAPI
 
 
 class Entropy:
     """Entropy Class."""
 
-    def __init__(self, model: DataModel, chunk_size: int = 16) -> None:
+    def __init__(self, api: DataAPI, chunk_size: int = 16) -> None:
         """Initialize entropy data."""
-        self.model = model
+        self.api = api
         self.chunk_size = chunk_size
 
         # Calculate entropy statistic for each chunk
@@ -50,7 +50,7 @@ class Entropy:
         """Calculate entropy values."""
         # Precalculate logarithms
         log_table: list[float] = self._create_log_table()
-        size = len(self.model)
+        size = len(self.api)
         chunk_count = size // self.chunk_size + 1
         self._entropy = [float(0) for _ in range(chunk_count)]
 
@@ -69,8 +69,8 @@ class Entropy:
         return log_table
 
     def _create_histogram(self, offset: int) -> dict[int, int]:
-        self.model.seek(offset)
-        chunk = self.model.read(self.chunk_size)
+        self.api.seek(offset)
+        chunk = self.api.read(self.chunk_size)
         histogram: dict[int, int] = {}
         for val in chunk:
             if val in histogram:

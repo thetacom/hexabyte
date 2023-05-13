@@ -2,7 +2,7 @@
 import pytest
 
 from hexabyte.data_sources import SimpleDataSource
-from tests.test_contants import Files
+from tests.test_data_constants import Files
 
 TEST_DATA = b"abcdefghijklmnopqrstuvwxyz\x0a\x0b\x0c\x0d\x0e\x0f\x00"
 

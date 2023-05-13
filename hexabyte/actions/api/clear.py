@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 from hexabyte.commands.command_parser import InvalidCommandError
 
 from .._action import ActionError
-from ._model_action import ModelAction
+from ._api_action import ApiAction
 
 if TYPE_CHECKING:
-    from hexabyte.data_model import DataModel
+    from hexabyte.api import DataAPI
 
 
-class Clear(ModelAction):
+class Clear(ApiAction):
     """Clear Action.
 
     Supports a zero arg and one arg form:
@@ -45,12 +45,12 @@ class Clear(ModelAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv]), str(err)) from err
 
     @property
-    def target(self) -> DataModel | None:
+    def target(self) -> DataAPI | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: DataModel | None) -> None:
+    def target(self, target: DataAPI | None) -> None:
         """Set action target."""
         self._target = target
 

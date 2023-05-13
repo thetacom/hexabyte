@@ -1,4 +1,4 @@
-"""Unhighlight Action."""
+"""Select Action."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -7,22 +7,23 @@ from hexabyte.commands.command_parser import InvalidCommandError
 from hexabyte.utils.misc import str_to_int
 
 from .._action import ActionError
-from ._model_action import ModelAction
+from ._api_action import ApiAction
 
 if TYPE_CHECKING:
-    from hexabyte.data_model import DataModel
+    from hexabyte.api import DataAPI
 
 
-class Unhighlight(ModelAction):
-    """Unhighlight Action.
+class Select(ApiAction):
+    """Select Action.
 
     Supports a one arg and two arg form:
 
-    unhighlight BYTE_OFFSET [BYTE_LENGTH]
-    > unhighlight 0x100 0x10
+    select BYTE_OFFSET [BYTE_LENGTH]
+    > select 0x100
+    > select 0x100 0x10
     """
 
-    CMD = "unhighlight"
+    CMD = "select"
     MIN_ARGS = 1
     MAX_ARGS = 2
 
@@ -36,12 +37,12 @@ class Unhighlight(ModelAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
-    def target(self) -> DataModel | None:
+    def target(self) -> DataAPI | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: DataModel | None) -> None:
+    def target(self, target: DataAPI | None) -> None:
         """Set action target."""
         self._target = target
 
@@ -49,7 +50,7 @@ class Unhighlight(ModelAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target
-        model.seek(self.offset)
-        model.unhighlight(self.length)
+        api = self.target
+        api.seek(self.offset)
+        api.select(self.length)
         self.applied = True

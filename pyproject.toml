@@ -29,7 +29,7 @@ packages = [{ include = 'hexabyte' }]
 
 [tool.poetry.dependencies]
 python       = "^3.10"
-textual      = "^0.23.0"
+textual      = "^0.24.1"
 toml         = "^0.10.2"
 python-magic = "^0.4.27"
 hilbertcurve = "^2.0.5"
@@ -40,7 +40,7 @@ black                  = "^23.3.0"
 bandit                 = "^1.7.5"
 coverage               = "^7.2.3"
 deepdiff               = "^6.3.0"
-ipython                = "==8.12.0"
+ipython                = "^8.13.2"
 isort                  = "^5.12.0"
 httpretty              = "^1.1.4"
 livereload             = "^2.6.3"

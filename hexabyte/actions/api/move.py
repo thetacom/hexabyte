@@ -5,17 +5,17 @@ from typing import TYPE_CHECKING
 
 from hexabyte.commands.command_parser import InvalidCommandError
 from hexabyte.constants.sizes import BYTE_BITS
-from hexabyte.data_model.cursor import Cursor
+from hexabyte.utils.cursor import Cursor
 from hexabyte.utils.misc import str_to_int
 
 from .._action import ActionError, UndoError
-from ._model_action import ReversibleModelAction
+from ._api_action import ReversibleApiAction
 
 if TYPE_CHECKING:
-    from hexabyte.data_model import DataModel
+    from hexabyte.api import DataAPI
 
 
-class Move(ReversibleModelAction):
+class Move(ReversibleApiAction):
     """Move Action.
 
     move SRC_OFFSET DST_OFFSET BYTE_QTY [DST_QTY]
@@ -45,12 +45,12 @@ class Move(ReversibleModelAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
-    def target(self) -> DataModel | None:
+    def target(self) -> DataAPI | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: DataModel) -> None:
+    def target(self, target: DataAPI) -> None:
         """Move action target."""
         self._target = target
 
@@ -58,27 +58,27 @@ class Move(ReversibleModelAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target
+        api = self.target
         if self.dst_qty > 0:
-            model.seek(self.dst.byte)
-            self.overwritten_data = model.read(self.dst_qty)
-        model.seek(self.src.byte)
-        data = model.read(self.src_qty)
-        model.seek(self.src.byte)
-        model.replace(self.src_qty, b"")
-        model.seek(self.dst.byte)
-        model.replace(self.dst_qty, data)
+            api.seek(self.dst.byte)
+            self.overwritten_data = api.read(self.dst_qty)
+        api.seek(self.src.byte)
+        data = api.read(self.src_qty)
+        api.seek(self.src.byte)
+        api.replace(self.src_qty, b"")
+        api.seek(self.dst.byte)
+        api.replace(self.dst_qty, data)
         self.applied = True
 
     def undo(self) -> None:
         """Undo action."""
         if self.target is None:
             raise UndoError("Action target not set.")
-        model = self.target
-        model.seek(self.dst.byte)
-        data = model.read(self.src_qty)
-        model.seek(self.dst.byte)
-        model.replace(self.src_qty, self.overwritten_data)
-        model.seek(self.src.byte)
-        model.replace(0, data)
+        api = self.target
+        api.seek(self.dst.byte)
+        data = api.read(self.src_qty)
+        api.seek(self.dst.byte)
+        api.replace(self.src_qty, self.overwritten_data)
+        api.seek(self.src.byte)
+        api.replace(0, data)
         self.applied = False

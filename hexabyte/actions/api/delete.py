@@ -5,17 +5,17 @@ from typing import TYPE_CHECKING
 
 from hexabyte.commands.command_parser import InvalidCommandError
 from hexabyte.constants.sizes import BYTE_BITS
-from hexabyte.data_model.cursor import Cursor
+from hexabyte.utils.cursor import Cursor
 from hexabyte.utils.misc import str_to_int
 
 from .._action import ActionError, UndoError
-from ._model_action import ReversibleModelAction
+from ._api_action import ReversibleApiAction
 
 if TYPE_CHECKING:
-    from hexabyte.data_model import DataModel
+    from hexabyte.api import DataAPI
 
 
-class Delete(ReversibleModelAction):
+class Delete(ReversibleApiAction):
     """Delete Action.
 
     delete
@@ -52,12 +52,12 @@ class Delete(ReversibleModelAction):
             raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
-    def target(self) -> DataModel | None:
+    def target(self) -> DataAPI | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: DataModel) -> None:
+    def target(self, target: DataAPI) -> None:
         """Delete action target."""
         self._target = target
 
@@ -65,12 +65,12 @@ class Delete(ReversibleModelAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target
+        api = self.target
         if self.offset is None:
             self.offset = Cursor(self.target.cursor.byte)
-        model.seek(self.offset.byte)
-        self.deleted_data = model.read(self.qty)
-        model.replace(self.qty, b"")
+        api.seek(self.offset.byte)
+        self.deleted_data = api.read(self.qty)
+        api.replace(self.qty, b"")
         self.applied = True
 
     def undo(self) -> None:
@@ -79,7 +79,7 @@ class Delete(ReversibleModelAction):
             raise UndoError("Action target not set.")
         if self.offset is None:
             raise UndoError("Offset not set.")
-        model = self.target
-        model.seek(self.offset.byte)
-        model.write(self.deleted_data, insert=True)
+        api = self.target
+        api.seek(self.offset.byte)
+        api.write(self.deleted_data, insert=True)
         self.applied = False

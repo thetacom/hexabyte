@@ -71,7 +71,7 @@ class InfoPanel(VerticalScroll):
         """Update file hashes."""
         if self.editor is None:
             return
-        filepath = self.editor.model.filepath
+        filepath = self.editor.api.filepath
         with filepath.open("rb") as f:
             md5_hash = md5(f.read(), usedforsecurity=False).hexdigest()
             sha1_hash = sha1(f.read(), usedforsecurity=False).hexdigest()
@@ -84,7 +84,7 @@ class InfoPanel(VerticalScroll):
         """Update file size info."""
         if self.editor is None:
             return
-        stats = self.editor.model.filepath.stat()
+        stats = self.editor.api.filepath.stat()
         size_value = self.query_one("#size-value", Static)
         file_size = stats.st_size
         mb_size = file_size // MB
@@ -106,7 +106,7 @@ class InfoPanel(VerticalScroll):
         """Update file type."""
         if self.editor is None:
             return
-        filepath = self.editor.model.filepath
+        filepath = self.editor.api.filepath
         type_value = self.query_one("#type-value", Static)
         result = magic.from_file(filepath).replace(", ", "\n - ")
         type_value.update(result)
@@ -117,7 +117,7 @@ class InfoPanel(VerticalScroll):
         if self.editor is None:
             filename.update("No editor selected")
         else:
-            filepath = self.editor.model.filepath
+            filepath = self.editor.api.filepath
             filename.update(filepath.name)
             path = self.query_one("#path-value", Static)
             path.update(f"{filepath.parent}")

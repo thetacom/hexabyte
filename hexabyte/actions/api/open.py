@@ -1,48 +1,49 @@
-"""Highlight Action."""
+"""Open Action."""
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from hexabyte.commands.command_parser import InvalidCommandError
-from hexabyte.utils.misc import str_to_int
 
 from .._action import ActionError
-from ._model_action import ModelAction
+from ._api_action import ApiAction
 
 if TYPE_CHECKING:
-    from hexabyte.data_model import DataModel
+    from hexabyte.api import DataAPI
 
 
-class Highlight(ModelAction):
-    """Highlight Action.
+class Open(ApiAction):
+    """Open Action.
 
-    Supports a one arg and two arg form:
+    Open a new file in editor:
 
-    highlight BYTE_OFFSET [BYTE_LENGTH]
-    > highlight 0x100
-    > highlight 0x100 0x10
+    open FILENAME
+
+    open new_file.txt
     """
 
-    CMD = "highlight"
+    CMD = "open"
     MIN_ARGS = 1
-    MAX_ARGS = 2
+    MAX_ARGS = 1
 
     def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize action."""
         try:
             super().__init__(argv)
-            self.offset = str_to_int(argv[0])
-            self.length = str_to_int(argv[1]) if self.argc == self.MAX_ARGS else 1
-        except ValueError as err:
+            self.new_filepath = Path(argv[0])
+            if not self.new_filepath.exists():
+                raise FileNotFoundError()
+        except FileNotFoundError as err:
             raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
 
     @property
-    def target(self) -> DataModel | None:
+    def target(self) -> DataAPI | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: DataModel | None) -> None:
+    def target(self, target: DataAPI | None) -> None:
         """Set action target."""
         self._target = target
 
@@ -50,7 +51,5 @@ class Highlight(ModelAction):
         """Perform action."""
         if self.target is None:
             raise ActionError("Action target not set.")
-        model = self.target
-        model.seek(self.offset)
-        model.highlight(self.length)
+        self.target.open(self.new_filepath)
         self.applied = True

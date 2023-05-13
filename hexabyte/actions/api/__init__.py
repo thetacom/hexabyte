@@ -1,4 +1,4 @@
-"""DataModel Actions Module."""
+"""DataAPI Actions Module."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -24,7 +24,7 @@ from .unhighlight import Unhighlight
 if TYPE_CHECKING:
     from .._action import Action
 
-MODEL_ACTIONS: list[type[Action]] = [
+API_ACTIONS: list[type[Action]] = [
     Clear,
     Delete,
     Find,
@@ -49,5 +49,5 @@ MODEL_ACTIONS: list[type[Action]] = [
 ]
 
 __all__ = [
-    "MODEL_ACTIONS",
+    "API_ACTIONS",
 ]
