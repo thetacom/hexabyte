@@ -27,7 +27,7 @@ class Config:
         self.filepath: Path | None = None
         self.settings: Munch = Munch.fromDict(
             {
-                "general": {"max-cmd-history": 100, "max-undo": 100},
+                "general": {"max-cmd-history": 100, "max-undo": 100, "plugins": ["info", "entropy"]},
                 "normal": {
                     "primary": "hex",
                     "offset-style": "hex",
@@ -77,5 +77,7 @@ class Config:
         """Initialize new config for a user."""
         if not config_path.exists():
             config_path.mkdir(parents=True, exist_ok=True)
+            plugin_path = config_path / "plugins"
+            plugin_path.mkdir(exist_ok=True)
         src = str(files("hexabyte.assets").joinpath(CONFIG_FILENAME))
         copy(src, config_path / CONFIG_FILENAME)

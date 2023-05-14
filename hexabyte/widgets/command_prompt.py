@@ -52,6 +52,7 @@ class CommandPrompt(Horizontal):  # pylint: disable=too-few-public-methods
     CommandPrompt {
         border: tall $accent;
         height: 5;
+        padding: 0 1;
     }
     CommandPrompt Label {
         dock: left;

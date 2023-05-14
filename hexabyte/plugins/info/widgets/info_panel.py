@@ -6,13 +6,11 @@ from hashlib import md5, sha1
 
 import magic
 from textual.app import ComposeResult
-from textual.containers import Horizontal, VerticalScroll
-from textual.reactive import reactive
+from textual.containers import Horizontal
 from textual.widgets import Label, Static
 
 from hexabyte.constants.sizes import KB, MB
-
-from .editor import Editor
+from hexabyte.widgets.sidebar_panel import SidebarVerticalPanel
 
 
 class InfoItem(Horizontal):  # pylint: disable=too-few-public-methods
@@ -44,7 +42,7 @@ class InfoItem(Horizontal):  # pylint: disable=too-few-public-methods
         yield Static(id=f"{self.name}-value")
 
 
-class InfoPanel(VerticalScroll):
+class InfoPanel(SidebarVerticalPanel):
     """Display file info for selected editor."""
 
     DEFAULT_CSS = """
@@ -52,8 +50,6 @@ class InfoPanel(VerticalScroll):
 
     }
     """
-
-    editor: reactive[Editor | None] = reactive(None, init=False)
 
     def compose(self) -> ComposeResult:
         """Compose child widgets."""

@@ -3,24 +3,23 @@ from rich.color import Color as RichColor
 from textual.color import Color
 from textual.events import Click
 from textual.reactive import reactive
-from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
 from hexabyte.constants.sizes import BYTE_BITS
-from hexabyte.utils.entropy import Entropy
+from hexabyte.plugins.entropy.entropy import Entropy
 from hexabyte.utils.misc import map_range
 from hexabyte.view_components import HCView
+from hexabyte.widgets.sidebar_panel import SidebarScrollPanel
 
-from .editor import Editor
+from ....widgets.editor import Editor
 
 ENTROPY_LOW_BOUND = 0.3
 ENTROPY_HIGH_BOUND = 0.6
 
 
-class EntropyPanel(ScrollView):
+class EntropyPanel(SidebarScrollPanel):
     """Display entropy info for selected editor."""
 
-    editor: reactive[Editor | None] = reactive(None, init=False)
     entropy: reactive[Entropy | None] = reactive(None)
 
     DEFAULT_CSS = """
