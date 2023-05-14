@@ -22,4 +22,5 @@ class OffsetType(Enum):
     """Types of offsets."""
 
     BIT = "bit"
+    NIBBLE = "nibble"
     BYTE = "byte"

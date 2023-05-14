@@ -1,7 +1,7 @@
 [general]
 max-cmd-history = 100
-max-undo = 100
-
+max-undo        = 100
+plugins         = ["info", "entropy"]
 
 [normal]
 primary      = 'hex' # 'hex', 'bin', 'utf8'

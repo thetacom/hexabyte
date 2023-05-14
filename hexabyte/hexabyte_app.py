@@ -103,11 +103,13 @@ class HexabyteApp(App):
             for action in actions:
                 if action.TARGET == "app":
                     self.do(action)
-                elif action.TARGET == "editor":
+                elif action.TARGET == "api":
                     workbench = self.query_one("Workbench", Workbench)
                     if workbench.active_editor is None:
                         raise ValueError("No active editor")
-                    workbench.active_editor.do(action)
+                    workbench.active_editor.api.do(action)
+                    workbench.active_editor.cursor = workbench.active_editor.api.cursor.bit
+                    workbench.active_editor.refresh()
                 else:
                     raise InvalidCommandError(event.cmd, f"Unsupported target - {action.TARGET}")
             prompt.command_success()

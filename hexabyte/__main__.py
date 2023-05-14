@@ -6,6 +6,7 @@ from pathlib import Path
 from hexabyte.constants import FileMode
 from hexabyte.constants.generic import MAX_FILE_COUNT, MIN_FILE_COUNT
 from hexabyte.hexabyte_app import HexabyteApp
+from hexabyte.plugins._loader import load_plugins
 from hexabyte.utils import Config, context
 
 
@@ -39,6 +40,7 @@ def main():
             if not filename.exists():
                 raise FileNotFoundError(f"File not found: {filename}")
         context.config = Config.from_file(args.config)
+        load_plugins()
         if len(args.files) > 1:
             file_mode = FileMode.DIFF
         elif args.split:
