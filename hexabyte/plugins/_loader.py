@@ -1,12 +1,11 @@
 """Hexabyte Plugin loader Module."""
 import importlib.util
 import sys
+from types import ModuleType
 
 from hexabyte.utils.context import context
 
-from ._plugin import Plugin
-
-plugins: list[Plugin] = []
+plugins: dict[str, ModuleType] = {}
 
 
 def load_plugins() -> None:
@@ -26,6 +25,7 @@ def load_plugins() -> None:
         if spec is not None:
             module = importlib.util.module_from_spec(spec)
             sys.modules[plugin] = module
+            plugins[plugin] = module
             if spec.loader:
                 spec.loader.exec_module(module)
                 print(f"{plugin} plugin loaded")
