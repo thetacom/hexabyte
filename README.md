@@ -20,6 +20,8 @@
 
 A modern, robust, and extensible commandline hex editor.
 
+> **NOTE:** To reduce the number of dependencies of the core editor. The builtin plugins have been moved into separate packages. They are [hexabyte_extended_info](https://github.com/thetacom/hexabyte_extended_info) and [hexabyte_entropy](https://github.com/thetacom/hexabyte_entropy).
+
 ## User
 
 ### Install
@@ -48,19 +50,40 @@ options:
   -s, --split           Display a single file in two split screen editors.
 ```
 
-![hello_world ELF hex view](imgs/hello_world_hex.png)
+Help Screen
 
-![hello_world ELF utf8 view](imgs/hello_world_utf8.png)
+![Help Screen](imgs/help_screen.png)
 
-![hello_world ELF binary view](imgs/hello_world_binary.png)
+Command Prompt
 
 ![hello_world ELF command view](imgs/hello_world_cmd.png)
 
-![hello_world ELF entropy panel](imgs/hello_world_entropy.png)
+Single File - Split Screen
 
-![Mach-O Diff with entropy panel](imgs/bin_bash_diff_entropy.png)
+![Single File - Split Screen](imgs/hello_world_split.png)
 
-![Help Screen](imgs/help_screen.png)
+Single File - Hexadecimal View Mode
+
+![hello_world ELF hex view](imgs/hello_world_hex.png)
+
+UTF8 View Mode
+
+![hello_world ELF utf8 view](imgs/hello_world_utf8.png)
+
+Binary View Mode
+
+![hello_world ELF binary view](imgs/hello_world_binary.png)
+
+Two Files - Diff View
+![Two Files - Diff View](imgs/diff.png)
+
+### Plugins and Customization
+
+Hexabyte's interface is highly customizable. You can adjust the column size and column count for each view mode.
+
+![Config](imgs/config.png)
+
+Hexabyte functionality can be extended through the use of plugins.
 
 ## Developer
 
