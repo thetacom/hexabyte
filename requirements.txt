@@ -28,9 +28,9 @@ rich==13.3.5 ; python_version >= "3.10" and python_version < "4.0" \
 six==1.16.0 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
-textual==0.24.1 ; python_version >= "3.10" and python_version < "4.0" \
-    --hash=sha256:4c7e1f4ed12b9615c63fa3eb7cb9df68d29e0ae5b2352997958cd7ee5533f926 \
-    --hash=sha256:a7deb7ac5a1502424c754fe165ae13cb3890e47ddc514d3f089cb2984c336d1d
+textual==0.26.0 ; python_version >= "3.10" and python_version < "4.0" \
+    --hash=sha256:1efd04e9f61b3e95fd1c65436d3262f99e3f86cdeb524d13045bb551eb615c02 \
+    --hash=sha256:78094c83017d2836b726513abdf434cc034a0e68cc45e63b3b056c9b8b7fa673
 toml==0.10.2 ; python_version >= "3.10" and python_version < "4.0" \
     --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b \
     --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f
