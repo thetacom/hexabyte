@@ -31,6 +31,8 @@ packages = [{ include = 'hexabyte' }]
 python       = "^3.10"
 textual      = "^0.24.1"
 toml         = "^0.10.2"
+python-magic = "^0.4.27"
+hilbertcurve = "^2.0.5"
 munch        = "^2.5.0"
 
 [tool.poetry.group.dev.dependencies]

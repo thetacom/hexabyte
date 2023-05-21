@@ -1,0 +1,1 @@
+"""Entropy Plugin Widgets Package."""
