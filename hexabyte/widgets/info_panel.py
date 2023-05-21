@@ -4,7 +4,6 @@ import pwd
 import stat
 from hashlib import md5, sha1
 
-import magic
 from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Label, Static
@@ -59,7 +58,6 @@ class InfoPanel(SidebarVerticalPanel):
         yield InfoItem(name="owner")
         yield InfoItem(name="group")
         yield InfoItem(name="permissions")
-        yield InfoItem(name="type")
         yield InfoItem(name="md5")
         yield InfoItem(name="sha1")
 
@@ -98,15 +96,6 @@ class InfoPanel(SidebarVerticalPanel):
         perm_value = self.query_one("#permissions-value", Static)
         perm_value.update(stat.filemode(stats.st_mode))
 
-    def update_type(self) -> None:
-        """Update file type."""
-        if self.editor is None:
-            return
-        filepath = self.editor.api.filepath
-        type_value = self.query_one("#type-value", Static)
-        result = magic.from_file(filepath).replace(", ", "\n - ")
-        type_value.update(result)
-
     def watch_editor(self) -> None:
         """React to changed editor."""
         filename = self.query_one("#filename-value", Static)
@@ -118,5 +107,4 @@ class InfoPanel(SidebarVerticalPanel):
             path = self.query_one("#path-value", Static)
             path.update(f"{filepath.parent}")
         self.update_stats()
-        self.update_type()
         self.update_hashes()
