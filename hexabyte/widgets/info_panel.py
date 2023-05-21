@@ -8,8 +8,8 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Label, Static
 
-from hexabyte.constants.sizes import KB, MB
-from hexabyte.widgets.sidebar_panel import SidebarVerticalPanel
+from ..constants.sizes import KB, MB
+from ..widgets.sidebar_panel import SidebarVerticalPanel
 
 
 class InfoItem(Horizontal):  # pylint: disable=too-few-public-methods

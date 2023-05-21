@@ -3,7 +3,9 @@ import importlib.util
 import sys
 from types import ModuleType
 
-from hexabyte.utils.context import context
+from .context import context
+from .widgets.sidebar import sidebar_panels
+from .widgets.sidebar_panel import SidebarPanel, SidebarScrollPanel, SidebarVerticalPanel
 
 plugins: dict[str, ModuleType] = {}
 
@@ -35,3 +37,11 @@ def load_plugins() -> None:
         else:
             print(f"{plugin} plugin not found")
             sys.exit()
+
+
+def register_sidebar_panel(name: str, panel: type[SidebarPanel]) -> None:
+    """Register a new sidebar panel."""
+    sidebar_panels[name] = panel
+
+
+__all__ = ["SidebarScrollPanel", "SidebarVerticalPanel", "register_sidebar_panel"]

@@ -4,7 +4,7 @@ from textual.app import ComposeResult
 from textual.containers import Center, VerticalScroll
 from textual.widgets import Markdown
 
-from hexabyte.constants.generic import APP_NAME
+from ..constants.generic import APP_NAME
 
 
 class HelpWindow(VerticalScroll):  # pylint: disable=too-few-public-methods

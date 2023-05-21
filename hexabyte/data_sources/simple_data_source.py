@@ -1,8 +1,6 @@
 """Simple Data Source Module."""
 
-from pathlib import Path
-
-from ._data_source import DataSource
+from ._data_source import DataSource, Path
 
 
 class SimpleDataSource(DataSource):

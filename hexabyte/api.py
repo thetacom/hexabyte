@@ -3,16 +3,15 @@ from pathlib import Path
 
 from rich.style import Style
 
-from hexabyte.actions import Action
-from hexabyte.actions.action_handler import ActionHandler
-from hexabyte.actions.api import API_ACTIONS
-from hexabyte.commands import register
-from hexabyte.constants.sizes import KB, MB
-from hexabyte.data_sources import SimpleDataSource
-from hexabyte.utils import context
-from hexabyte.utils.data_types import DataSegment
-
-from .utils.cursor import Cursor
+from .actions import Action
+from .actions.action_handler import ActionHandler
+from .actions.api import API_ACTIONS
+from .commands import register
+from .constants.sizes import KB, MB
+from .context import context
+from .cursor import Cursor
+from .data_sources import SimpleDataSource
+from .data_types import DataSegment
 
 
 @register(API_ACTIONS)

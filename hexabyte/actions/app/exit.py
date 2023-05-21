@@ -4,13 +4,11 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
-from hexabyte.commands.command_parser import InvalidCommandError
-from hexabyte.utils.misc import str_to_int
-
+from ...commands import InvalidCommandError, str_to_int
 from ._app_action import AppAction
 
 if TYPE_CHECKING:
-    from hexabyte.hexabyte_app import HexabyteApp
+    from ...hexabyte_app import HexabyteApp
 
 
 class Exit(AppAction):

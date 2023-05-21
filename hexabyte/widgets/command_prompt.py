@@ -9,7 +9,7 @@ from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import Input, Label
 
-from hexabyte.commands import Command
+from ..commands import Command
 
 
 class CommandInput(Input):  # pylint: disable=too-few-public-methods

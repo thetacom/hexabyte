@@ -4,12 +4,11 @@ from __future__ import annotations
 from struct import pack, unpack
 from typing import TYPE_CHECKING
 
-from hexabyte.commands.command_parser import InvalidCommandError
-from hexabyte.constants.enums import OffsetType
-from hexabyte.constants.sizes import BIT, BYTE_BITS, BYTE_MAX, NIBBLE_BITS
-from hexabyte.utils.cursor import Cursor
-from hexabyte.utils.misc import clear_bit, set_bit, set_nibble, str_to_int
-
+from ...commands import InvalidCommandError, str_to_int
+from ...constants.enums import OffsetType
+from ...constants.sizes import BIT, BYTE_BITS, BYTE_MAX, NIBBLE_BITS
+from ...cursor import Cursor
+from ...utils.data_manipulation import clear_bit, set_bit, set_nibble
 from .._action import ActionError, UndoError
 from ._api_action import ReversibleApiAction
 

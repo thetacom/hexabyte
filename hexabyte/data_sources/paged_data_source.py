@@ -2,11 +2,8 @@
 
 Provides the interface for interacting with raw file data.
 """
-from pathlib import Path
-
-from hexabyte.constants.sizes import DEFAULT_BLOCK_SIZE
-
-from ._data_source import DataSource
+from ..constants.sizes import DEFAULT_BLOCK_SIZE
+from ._data_source import DataSource, Path
 from .data_block import DataBlock
 
 MIN_AUTO_REDUCE_THRESHHOLD = 128

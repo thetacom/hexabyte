@@ -4,10 +4,10 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
-from hexabyte.actions import Action
+from ..actions import Action
 
 if TYPE_CHECKING:
-    from hexabyte.hexabyte_app import HexabyteApp
+    from ..hexabyte_app import HexabyteApp
 
 
 class InvalidCommandError(Exception):

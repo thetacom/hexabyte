@@ -1,7 +1,7 @@
 """Unit tests for custom data types."""
 import pytest
 
-from hexabyte.utils.data_types import DataSegment
+from hexabyte.data_types import DataSegment
 
 
 def test_selection_construction():

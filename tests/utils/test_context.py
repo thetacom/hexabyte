@@ -1,7 +1,7 @@
 """Unit tests for Context module."""
 
-from hexabyte.utils.context import Context
-from hexabyte.utils.context import context as global_context
+from hexabyte.context import Context
+from hexabyte.context import context as global_context
 
 
 def test_context_contructor() -> None:

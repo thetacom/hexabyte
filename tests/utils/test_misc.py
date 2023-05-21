@@ -1,6 +1,6 @@
 """Unit tests for misc functions."""
 
-from hexabyte.utils.misc import map_range
+from hexabyte.utils import map_range
 
 
 def test_map_range():

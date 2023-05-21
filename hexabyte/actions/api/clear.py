@@ -3,8 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from hexabyte.commands.command_parser import InvalidCommandError
-
+from ...commands import InvalidCommandError
 from .._action import ActionError
 from ._api_action import ApiAction
 

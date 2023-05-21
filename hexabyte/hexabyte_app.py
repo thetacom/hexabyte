@@ -10,7 +10,7 @@ from .actions.action_handler import ActionHandler
 from .actions.app import Exit
 from .commands import Command, CommandParser, InvalidCommandError, register_actions
 from .constants.generic import APP_NAME
-from .utils import context
+from .context import context
 from .widgets.command_prompt import CommandPrompt
 from .widgets.help_screen import HelpScreen, HelpWindow
 from .widgets.workbench import Workbench
