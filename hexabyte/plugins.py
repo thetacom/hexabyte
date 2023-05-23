@@ -21,9 +21,7 @@ def load_plugins() -> None:
         if plugin in sys.modules:
             print(f"{plugin!r} already loaded")
             continue
-        spec = importlib.util.find_spec(".".join(["hexabyte.plugins", plugin]))
-        if spec is None:
-            spec = importlib.util.find_spec(plugin)
+        spec = importlib.util.find_spec(plugin)
         if spec is not None:
             module = importlib.util.module_from_spec(spec)
             sys.modules[plugin] = module
