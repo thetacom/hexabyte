@@ -1,9 +1,10 @@
 """Help Screen Widget."""
-
+import toml
 from textual.app import ComposeResult
 from textual.containers import Center, VerticalScroll
 from textual.widgets import Markdown
 
+from ..config import CONFIG_FILENAME, DEFAULT_CONFIG_PATH, DEFAULT_SETTINGS
 from ..constants.generic import APP_NAME
 
 
@@ -29,7 +30,7 @@ class HelpScreen(Center):  # pylint: disable=too-few-public-methods
     HELP_TEXT = f"""
 # {APP_NAME} Help
 
-Hexabyte can operate in three distinct modes:
+{APP_NAME} can operate in three distinct modes:
 - single file mode - Opens a single file with a single editor.
 - split screen mode - Opens a single file with a split screen view.
 - diff mode - Opens two files side by side.
@@ -96,11 +97,6 @@ Integer literals accept an optional endian parameter.
 - **select** *BYTE_OFFSET* *[LENGTH]* - Select a segment of data. Only one active selection allowed.
 - **unhighlight** *BYTE_OFFSET* *[LENGTH]* - Remove all highlights within specified range.
 
-## Command Prompt
-- **test** *success* - Flash green
-- **test** *fail* - Flash red
-- **test** *warn* - Flash orange
-
 ## Planned Commands
 
 - **copy** - Copy current selection to clipboard.
@@ -111,67 +107,13 @@ Integer literals accept an optional endian parameter.
   - **match** *b'abc'* *b'\\xff\\xff\\xff'*
   - **match** *b'abc'* *b'\\xf0\\x0f\\xf0'*
 
-## Example Configuration File
+## Configuration File
 
-Default Location: `~/.config/hexabyte/config.toml`
+Default Location: `{DEFAULT_CONFIG_PATH/CONFIG_FILENAME}`
 
+Default Settings:
 ```toml
-[general]
-max-cmd-history = 100
-max-undo = 100
-
-[normal]
-primary      = 'hex' # 'hex', 'bin', 'utf8'
-offset-style = 'hex' # 'hex', 'dec', 'off'
-
-# Column count is the number of columns per row
-# Column width represents the byte width of each column
-
-[normal.bin]
-column-count = 8
-column-size  = 1
-
-[normal.hex]
-column-count = 32
-column-size  = 1
-
-[normal.utf8]
-column-count = 1
-column-size  = 64
-
-[split]
-primary      = 'hex'  # 'hex', 'bin', 'utf8'
-secondary    = 'utf8' # 'hex', 'bin', 'utf8'
-offset-style = 'hex'  # 'hex', 'dec', 'off'
-
-[split.bin]
-column-count = 4
-column-size  = 1
-
-[split.hex]
-column-count = 4
-column-size  = 4
-
-[split.utf8]
-column-count = 8
-column-size  = 4
-
-[diff]
-primary      = 'hex' # 'hex', 'bin', 'utf8'
-secondary    = 'hex' # 'hex', 'bin', 'utf8'
-offset-style = 'hex' # 'hex', 'dec', 'off'
-
-[diff.bin]
-column-count = 4
-column-size  = 1
-
-[diff.hex]
-column-count = 4
-column-size  = 4
-
-[diff.utf8]
-column-count = 8
-column-size  = 4
+{toml.dumps(DEFAULT_SETTINGS)}
 ```
 """
 
@@ -193,7 +135,3 @@ column-size  = 4
     def compose(self) -> ComposeResult:
         """Compose help screen widgets."""
         yield HelpWindow(Markdown(self.HELP_TEXT, id=f"{self.id}-text"), id=f"{self.id}-window")
-
-    # def on_click(self) -> None:
-    #     """React to click event."""
-    #     self.display = False
