@@ -788,6 +788,24 @@ files = [
 gitdb = ">=4.0.1,<5"
 
 [[package]]
+name = "hilbertcurve"
+version = "2.0.5"
+description = "Construct Hilbert Curves."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "hilbertcurve-2.0.5-py3-none-any.whl", hash = "sha256:dbaad510237d3cd4355c189f00e8dbe66a9e66e03af37f9d3f257799292da363"},
+    {file = "hilbertcurve-2.0.5.tar.gz", hash = "sha256:6a7703d9a2f1fe748c86d86908bf183e7d139b973645e4b2526e10b34e75796d"},
+]
+
+[package.dependencies]
+numpy = "*"
+
+[package.extras]
+dev = ["pytest", "sphinx", "sphinx-autodoc-typehints", "sphinx-rtd-theme"]
+
+[[package]]
 name = "htmlmin2"
 version = "0.1.13"
 description = "An HTML Minifier"
@@ -1845,7 +1863,7 @@ setuptools = "*"
 name = "numpy"
 version = "1.24.3"
 description = "Fundamental package for array computing in Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.8"
 files = [
@@ -3248,4 +3266,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a7728eb41fe494cf614cf9b5a035ff8399e1e03689ad15ecc47c96b617305ec5"
+content-hash = "ac79cc8ca94b952c81e8bb8ce621dcc1f1d79bc782d3a401d32e888ad5c25731"
