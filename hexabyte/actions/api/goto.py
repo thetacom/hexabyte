@@ -3,11 +3,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from hexabyte.commands.command_parser import InvalidCommandError
-from hexabyte.constants.enums import OffsetType
-from hexabyte.constants.sizes import BYTE_BITS
-from hexabyte.utils.misc import str_to_int
-
+from ...commands import InvalidCommandError, str_to_int
+from ...constants.enums import OffsetType
+from ...constants.sizes import BYTE_BITS
 from .._action import ActionError, UndoError
 from ._api_action import ReversibleApiAction
 

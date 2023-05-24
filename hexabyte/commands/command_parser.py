@@ -4,10 +4,10 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
-from hexabyte.actions import Action
+from ..actions import Action
 
 if TYPE_CHECKING:
-    from hexabyte.hexabyte_app import HexabyteApp
+    from ..hexabyte_app import HexabyteApp
 
 
 class InvalidCommandError(Exception):
@@ -21,9 +21,7 @@ class InvalidCommandError(Exception):
 
     def __str__(self) -> str:
         """Return string representation of error."""
-        if self.msg:
-            return f"{self.msg} - {self.cmd}"
-        return self.cmd
+        return self.msg if self.msg else "Invalid Command"
 
 
 class CommandParser:  # pylint: disable=too-few-public-methods

@@ -3,11 +3,12 @@ import argparse
 from importlib.metadata import version
 from pathlib import Path
 
+from hexabyte.config import Config
 from hexabyte.constants import FileMode
 from hexabyte.constants.generic import MAX_FILE_COUNT, MIN_FILE_COUNT
+from hexabyte.context import context
 from hexabyte.hexabyte_app import HexabyteApp
-from hexabyte.plugins._loader import load_plugins
-from hexabyte.utils import Config, context
+from hexabyte.plugins import load_plugins
 
 
 def main():

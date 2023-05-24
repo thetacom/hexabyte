@@ -5,11 +5,11 @@ from textual.containers import Vertical
 from textual.reactive import reactive
 from textual.widgets import ContentSwitcher, Tab, Tabs
 
-from hexabyte.widgets.sidebar_panel import SidebarPanel
-
+from ..widgets.info_panel import InfoPanel
+from ..widgets.sidebar_panel import SidebarPanel
 from .editor import Editor
 
-sidebar_panels: dict[str, type[SidebarPanel]] = {}
+sidebar_panels: dict[str, type[SidebarPanel]] = {"info": InfoPanel}
 
 
 class Sidebar(Vertical):

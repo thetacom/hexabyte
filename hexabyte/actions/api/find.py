@@ -5,10 +5,8 @@ import struct
 from ast import literal_eval
 from typing import TYPE_CHECKING
 
-from hexabyte.commands.command_parser import InvalidCommandError
-from hexabyte.utils.context import context
-from hexabyte.utils.misc import int_fmt_str
-
+from ...commands import InvalidCommandError, int_fmt_str
+from ...context import context
 from .._action import ActionError
 from ._api_action import ApiAction
 

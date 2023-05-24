@@ -1,8 +1,7 @@
 """Action Handler Module."""
 from collections import deque
 
-from hexabyte.utils import context
-
+from ..context import context
 from ._action import Action, HandlerAction, ReversibleAction
 
 

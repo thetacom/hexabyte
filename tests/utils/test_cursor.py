@@ -1,6 +1,6 @@
 """Cursor unit tests."""
 
-from hexabyte.utils.cursor import Cursor
+from hexabyte.cursor import Cursor
 
 
 def test_cursor_construction() -> None:

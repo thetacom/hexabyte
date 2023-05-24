@@ -3,9 +3,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from hexabyte.commands.command_parser import InvalidCommandError
-from hexabyte.utils.misc import str_to_int
-
+from ...commands import InvalidCommandError, str_to_int
 from .._action import ActionError
 from ._api_action import ApiAction
 

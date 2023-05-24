@@ -3,7 +3,9 @@ import importlib.util
 import sys
 from types import ModuleType
 
-from hexabyte.utils.context import context
+from .context import context
+from .widgets.sidebar import sidebar_panels
+from .widgets.sidebar_panel import SidebarPanel, SidebarScrollPanel, SidebarVerticalPanel
 
 plugins: dict[str, ModuleType] = {}
 
@@ -19,9 +21,7 @@ def load_plugins() -> None:
         if plugin in sys.modules:
             print(f"{plugin!r} already loaded")
             continue
-        spec = importlib.util.find_spec(".".join(["hexabyte.plugins", plugin]))
-        if spec is None:
-            spec = importlib.util.find_spec(plugin)
+        spec = importlib.util.find_spec(plugin)
         if spec is not None:
             module = importlib.util.module_from_spec(spec)
             sys.modules[plugin] = module
@@ -35,3 +35,11 @@ def load_plugins() -> None:
         else:
             print(f"{plugin} plugin not found")
             sys.exit()
+
+
+def register_sidebar_panel(name: str, panel: type[SidebarPanel]) -> None:
+    """Register a new sidebar panel."""
+    sidebar_panels[name] = panel
+
+
+__all__ = ["SidebarScrollPanel", "SidebarVerticalPanel", "register_sidebar_panel"]

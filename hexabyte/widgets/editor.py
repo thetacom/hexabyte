@@ -10,12 +10,12 @@ from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
 
-from hexabyte.api import DataAPI
-from hexabyte.commands import Command
-from hexabyte.constants import DisplayMode
-from hexabyte.constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
-from hexabyte.utils import context
-from hexabyte.view_components import ByteView
+from ..api import DataAPI
+from ..commands import Command
+from ..constants import DisplayMode
+from ..constants.sizes import BIT, BYTE_BITS, NIBBLE_BITS
+from ..context import context
+from ..view_components import ByteView
 
 CURSOR_INCREMENTS = {
     DisplayMode.HEX: NIBBLE_BITS,

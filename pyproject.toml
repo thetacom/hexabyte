@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "hexabyte"
-version = "0.6.0rc0"
+version = "0.7.0-rc.0"
 description = "A modern, modular, and robust TUI hex editor."
-keywords = ["commandline", "hexeditor", "binary", "hexadecimal", "raw", "byteview"]
+keywords = ["commandline", "hexeditor", "binary", "hexadecimal", "raw", "byteview", "bytes"]
 repository = "https://github.com/thetacom/hexabyte"
 authors = ["Justin C <justin@thetacom.info>"]
 readme = "docs/README.md"
@@ -29,10 +29,8 @@ packages = [{ include = 'hexabyte' }]
 
 [tool.poetry.dependencies]
 python       = "^3.10"
-textual      = "^0.24.1"
+textual      = "^0.26.0"
 toml         = "^0.10.2"
-python-magic = "^0.4.27"
-hilbertcurve = "^2.0.5"
 munch        = "^2.5.0"
 
 [tool.poetry.group.dev.dependencies]
@@ -43,7 +41,6 @@ deepdiff               = "^6.3.0"
 ipython                = "^8.13.2"
 isort                  = "^5.12.0"
 httpretty              = "^1.1.4"
-livereload             = "^2.6.3"
 mkdocs                 = "^1.4.2"
 mkdocstrings           = "^0.21.2"
 mkdocs-jupyter         = "^0.24.1"
@@ -52,7 +49,6 @@ mkdocs-mermaid2-plugin = "^0.6.0"
 mkdocs-minify-plugin   = "^0.6.4"
 mkdocs-redirects       = "^1.2.0"
 matplotlib             = "^3.7.1"
-msgpack                = "^1.0.5"
 mypy                   = "^1.2.0"
 pydocstyle             = "^6.3.0"
 pylint                 = "^2.17.3"
@@ -64,10 +60,8 @@ pytest-pydocstyle      = "^2.3.2"
 pytest-sugar           = "^0.9.7"
 pre-commit             = "^3.2.2"
 ruff                   = "^0.0.263"
-tox                    = "^4.5.1"
 types-toml             = "^0.10.8.5"
 typing-extensions      = "^4.5.0"
-zipp                   = "^3.15.0"
 
 [build-system]
 requires      = ["poetry-core"]

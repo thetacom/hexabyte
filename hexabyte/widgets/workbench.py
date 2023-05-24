@@ -4,11 +4,10 @@ from textual.containers import Container, Vertical
 from textual.reactive import reactive
 from textual.widgets import Footer, Header
 
-from hexabyte.api import DataAPI
-from hexabyte.constants import FileMode
-from hexabyte.constants.generic import DIFF_FILE_COUNT
-from hexabyte.utils import context
-
+from ..api import DataAPI
+from ..constants import FileMode
+from ..constants.generic import DIFF_FILE_COUNT
+from ..context import context
 from .editor import Editor
 from .sidebar import Sidebar
 

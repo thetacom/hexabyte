@@ -10,7 +10,7 @@ from .actions.action_handler import ActionHandler
 from .actions.app import Exit
 from .commands import Command, CommandParser, InvalidCommandError, register_actions
 from .constants.generic import APP_NAME
-from .utils import context
+from .context import context
 from .widgets.command_prompt import CommandPrompt
 from .widgets.help_screen import HelpScreen, HelpWindow
 from .widgets.workbench import Workbench
@@ -112,11 +112,9 @@ class HexabyteApp(App):
                     workbench.active_editor.refresh()
                 else:
                     raise InvalidCommandError(event.cmd, f"Unsupported target - {action.TARGET}")
-            prompt.command_success()
-        except InvalidCommandError as err:
-            prompt.command_warn(str(err))
-        except ActionError as err:
-            prompt.command_error(str(err))
+            prompt.set_status("", clear=True)
+        except (ActionError, InvalidCommandError) as err:
+            prompt.set_status(str(err))
 
     def watch_show_help(self, visibility: bool) -> None:
         """Toggle help screen visibility if show_help flag changes."""

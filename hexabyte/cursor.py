@@ -1,4 +1,5 @@
-"""Data Api Cursor Module."""
+"""Data Cursor Module."""
+
 from hexabyte.constants.sizes import (
     BYTE_ALIGN_BITS,
     BYTE_BITS,
@@ -13,7 +14,7 @@ from hexabyte.constants.sizes import (
 
 
 class Cursor:
-    """The Cursor Class.
+    """The Data Cursor Class.
 
     Tracks a cursor position and dynamically converts between different alignments and resolutions.
     Supports bit, nibble, byte, word, word64, and qword64 resolutions.

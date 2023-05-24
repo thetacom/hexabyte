@@ -2,8 +2,7 @@
 from collections.abc import Callable, Iterable
 from typing import Any
 
-from hexabyte.actions import Action
-
+from ..actions import Action
 from .command_parser import CommandParser
 
 parser = CommandParser()
