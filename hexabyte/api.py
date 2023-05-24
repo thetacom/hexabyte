@@ -23,7 +23,6 @@ class DataAPI:
     Params
     ------
     filename - The filename of the file that will back the data api.
-    block_size - Specified the block size to slice original file data.
     """
 
     SOURCE_THRESHHOLD = 4 * MB  # 4MB
