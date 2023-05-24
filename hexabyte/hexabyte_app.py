@@ -25,12 +25,12 @@ class HexabyteApp(App):
     TITLE = APP_NAME.title()
     CSS_PATH = "hexabyte_app.css"
     BINDINGS = [
-        Binding("ctrl+c,ctrl+q", "app.quit", "Quit", show=False),
+        Binding("ctrl+c,ctrl+q", "exit_check", "Quit", show=False),
         Binding("ctrl+d", "toggle_dark", "Light/Dark Mode", show=False),
         Binding("ctrl+b", "toggle_sidebar", "Toggle Sidebar", show=False),
         Binding("ctrl+g", "toggle_help", "Show/Hide Help", show=True),
-        Binding(":", "cmd_mode_enter", "Command Mode", show=False),
-        Binding("escape", "cmd_mode_exit", "Exit Command Mode", show=False),
+        Binding(":", "cmd_prompt_show", "Command Mode", show=False),
+        Binding("escape", "cmd_prompt_hide", "Exit Command Mode", show=False),
     ]
 
     show_help: reactive[bool] = reactive(False)
@@ -54,14 +54,14 @@ class HexabyteApp(App):
         yield CommandPrompt(max_cmd_history=max_cmd_history, id="cmd-prompt")
         yield HelpScreen(id="help")
 
-    def action_cmd_mode_enter(self) -> None:
+    def action_cmd_prompt_show(self) -> None:
         """Enter command mode."""
         prompt = self.query_one("#cmd-prompt", CommandPrompt)
         prompt.display = True
         prompt_input = prompt.query_one("Input", Input)
         prompt_input.focus()
 
-    def action_cmd_mode_exit(self) -> None:
+    def action_cmd_prompt_hide(self) -> None:
         """Exit command mode."""
         prompt = self.query_one("#cmd-prompt", CommandPrompt)
         prompt.display = False
@@ -69,6 +69,16 @@ class HexabyteApp(App):
             self.workbench.active_editor.focus()
         else:
             self.workbench.focus()
+
+    def action_exit_check(self) -> None:
+        """Check for unsaved file modifications."""
+        for editor in self.workbench.editors:
+            if editor.api.modified:
+                prompt = self.query_one("#cmd-prompt", CommandPrompt)
+                prompt.display = True
+                prompt.set_status("Unsave Changes")
+                return
+        self.exit()
 
     def action_toggle_dark(self) -> None:
         """Toggle dark mode."""

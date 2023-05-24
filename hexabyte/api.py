@@ -56,6 +56,11 @@ class DataAPI:
         return sum(map(len, self._highlights))
 
     @property
+    def modified(self) -> bool:
+        """Return True if data contains unsave modifications."""
+        return self._source.modified
+
+    @property
     def selected_bytes(self) -> int:
         """Return the number of selected bytes."""
         if self._selection:

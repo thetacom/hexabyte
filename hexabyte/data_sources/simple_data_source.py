@@ -48,6 +48,7 @@ class SimpleDataSource(DataSource):
             dest_filepath.replace(self.filepath)
         else:
             self._filepath = dest_filepath
+        self._modified = False
 
     def write(self, offset: int, data: bytes | bytes, insert: bool = False) -> None:
         """Write the provided data starting at the specified offset.
@@ -62,3 +63,4 @@ class SimpleDataSource(DataSource):
             self._data[offset:offset] = data
         else:
             self._data[offset : offset + len(data)] = data
+        self._modified = True

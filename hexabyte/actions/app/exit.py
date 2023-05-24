@@ -4,7 +4,8 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
-from ...commands import InvalidCommandError, str_to_int
+from ...commands import InvalidCommandError
+from .._action import ActionError
 from ._app_action import AppAction
 
 if TYPE_CHECKING:
@@ -17,16 +18,16 @@ class Exit(AppAction):
     CMD = "exit"
     MIN_ARGS = 0
     MAX_ARGS = 1
-    status: int = 0
+    force = False
 
     def __init__(self, argv: tuple[str, ...]) -> None:
         """Initialize action."""
         super().__init__(argv)
-        try:
-            if self.argc == 1:
-                self.status = str_to_int(argv[0])
-        except ValueError as err:
-            raise InvalidCommandError(" ".join([self.CMD, *argv])) from err
+        if self.argc == 1:
+            if argv[0] == "force":
+                self.force = True
+            else:
+                raise InvalidCommandError(" ".join([self.CMD, *argv]))
 
     @property
     def target(self) -> HexabyteApp | None:
@@ -41,5 +42,9 @@ class Exit(AppAction):
     def do(self) -> None:
         """Perform action."""
         if self.target is None:
-            sys.exit(self.status)
-        self.target.exit()
+            sys.exit()
+        if self.force:
+            self.target.exit()
+        else:
+            self.target.action_exit_check()
+        raise ActionError("Unsaved Changes")
