@@ -21,9 +21,7 @@ class InvalidCommandError(Exception):
 
     def __str__(self) -> str:
         """Return string representation of error."""
-        if self.msg:
-            return f"{self.msg} - {self.cmd}"
-        return self.cmd
+        return self.msg if self.msg else "Invalid Command"
 
 
 class CommandParser:  # pylint: disable=too-few-public-methods

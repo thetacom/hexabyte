@@ -4,7 +4,6 @@ from typing import ClassVar
 
 from textual.app import ComposeResult
 from textual.binding import Binding, BindingType
-from textual.color import Color
 from textual.containers import Horizontal
 from textual.reactive import reactive
 from textual.widgets import Input, Label
@@ -58,6 +57,10 @@ class CommandPrompt(Horizontal):  # pylint: disable=too-few-public-methods
         dock: left;
         padding: 1;
     }
+    CommandPrompt Label#status {
+        dock: right;
+        padding: 1;
+    }
     CommandPrompt CommandInput {
         margin: 0;
     }
@@ -71,32 +74,18 @@ class CommandPrompt(Horizontal):  # pylint: disable=too-few-public-methods
         super().__init__(*args, **kwargs)
         self.max_cmd_history = max_cmd_history
 
-    def command_success(self, clear: bool = True) -> None:
-        """Flash to signify command success."""
-        box = self.query_one("CommandInput", CommandInput)
-        start_color = box.styles.background
-        box.styles.animate("background", Color(0, 192, 0), final_value=start_color, duration=0.25)  # type: ignore
+    def set_status(self, msg: str | None = None, clear: bool = False) -> None:
+        """Set the command prompt status message.
+
+        clear - Clears the command prompt contents
+        """
+        status_msg = self.query_one("#status", Label)
+        if msg:
+            status_msg.update(msg)
+        else:
+            status_msg.update("")
         if clear:
-            box.value = ""
-
-    def command_error(self, msg: str | None = None, clear: bool = False) -> None:
-        """Flash to signify command error."""
-        box = self.query_one("CommandInput", CommandInput)
-        start_color = box.styles.background
-        box.styles.animate("background", Color(192, 0, 0), final_value=start_color, duration=0.25)  # type: ignore
-        if msg:
-            box.value = msg
-        elif clear:
-            box.value = ""
-
-    def command_warn(self, msg: str | None = None, clear: bool = False) -> None:
-        """Flash to signify warning for command."""
-        box = self.query_one("CommandInput", CommandInput)
-        start_color = box.styles.background
-        box.styles.animate("background", Color(255, 165, 0), final_value=start_color, duration=0.25)  # type: ignore
-        if msg:
-            box.value = msg
-        elif clear:
+            box = self.query_one("CommandInput", CommandInput)
             box.value = ""
 
     def _update_history(self) -> None:
@@ -109,19 +98,12 @@ class CommandPrompt(Horizontal):  # pylint: disable=too-few-public-methods
         """Compose Command Prompt widgets."""
         yield Label("Command:")
         yield CommandInput(max_cmd_history=self.max_cmd_history)
+        yield Label("", id="status", shrink=True)
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle input submitted event."""
         cmd = event.value
         if self.parent is None:
-            self.command_error()
             return
-        if cmd == "test success":
-            self.command_success()
-        elif cmd == "test fail":
-            self.command_error(clear=True)
-        elif cmd == "test warn":
-            self.command_warn()
-        else:
-            self.post_message(Command(cmd))
+        self.post_message(Command(cmd))
         self._update_history()
