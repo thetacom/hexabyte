@@ -1,4 +1,5 @@
 """The Workbench Sidebar Module."""
+from typing import Union
 
 from textual.app import ComposeResult
 from textual.containers import Vertical
@@ -30,7 +31,7 @@ class Sidebar(Vertical):
         overflow-y: scroll;
     }
     """
-    active_editor: reactive[Editor | None] = reactive(None)
+    active_editor: reactive[Union[Editor, None]] = reactive(None)
 
     def compose(self) -> ComposeResult:
         """Compose sidebar tabs."""

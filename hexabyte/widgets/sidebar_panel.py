@@ -1,4 +1,6 @@
 """Sidebar Info Panel."""
+from typing import Union
+
 from textual.app import ComposeResult
 from textual.containers import VerticalScroll
 from textual.reactive import reactive
@@ -18,7 +20,7 @@ class SidebarPanel(Widget):  # pylint: disable=too-few-public-methods
     }
     """
 
-    editor: reactive[Editor | None] = reactive(None, init=False)
+    editor: reactive[Union[Editor, None]] = reactive(None, init=False)
 
 
 class SidebarVerticalPanel(VerticalScroll, SidebarPanel):  # pylint: disable=too-few-public-methods

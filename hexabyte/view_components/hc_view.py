@@ -4,6 +4,7 @@ Maps data onto a modified hilbert curve. Colorized using the `color_map_func`.
 """
 from collections.abc import Callable, Iterable
 from random import random
+from typing import Union
 
 from hilbertcurve.hilbertcurve import HilbertCurve
 from rich.color import Color as RichColor
@@ -36,12 +37,12 @@ class HCView(JupyterMixin):
 
     def __init__(
         self,
-        data: list[int | float],
+        data: list[Union[int, float]],
         *,
         hc_iterations: int = HC_ITERATIONS,
         cursor: Cursor = Cursor(),
         padding: PaddingDimensions = 0,
-        color_map_func: Callable[..., RichColor] | None = None,
+        color_map_func: Union[Callable[..., RichColor], None] = None,
     ) -> None:
         """Initialize ByteView Component."""
         self.data = data
@@ -87,7 +88,7 @@ class HCView(JupyterMixin):
         self,
         console: Console,  # pylint: disable=redefined-outer-name,unused-argument
         options: ConsoleOptions,
-    ) -> Iterable[Padding | Segments]:
+    ) -> Iterable[Union[Padding, Segments]]:
         """Generate RenderResult for ByteView Renderable."""
         segments = Segments(self._get_view(console, options))
         if self.padding:
@@ -95,7 +96,7 @@ class HCView(JupyterMixin):
         else:
             yield segments
 
-    def _get_data(self, x: int, y: int) -> int | float:
+    def _get_data(self, x: int, y: int) -> Union[int, float]:
         """Get data value based on hilbert coordinates."""
         idx = self.coord2idx(x, y)
         try:
@@ -106,7 +107,7 @@ class HCView(JupyterMixin):
     def _get_view(
         self,
         _console: Console,
-        options: ConsoleOptions | None = None,  # pylint: disable=unused-argument
+        options: Union[ConsoleOptions, None] = None,  # pylint: disable=unused-argument
     ) -> Iterable[Segment]:
         """Get Segments for the ByteView object."""
         for y in range(self.height):

@@ -1,6 +1,6 @@
 """Workbench Editor Module."""
 from itertools import cycle
-from typing import ClassVar
+from typing import ClassVar, Union
 
 from rich.highlighter import Highlighter
 from textual.binding import Binding, BindingType
@@ -88,7 +88,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
     """
 
     display_mode: reactive[DisplayMode] = reactive(DisplayMode.HEX)
-    highlighter: reactive[Highlighter | None] = reactive(None)
+    highlighter: reactive[Union[Highlighter, None]] = reactive(None)
     show_offsets: reactive[bool] = reactive(True, init=False)
     hex_offsets: reactive[bool] = reactive(True, init=False)
     cursor: reactive[int] = reactive(0)  # Cursor bit position
@@ -135,9 +135,9 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         self,
         api: DataAPI,
         start_offset: int = 0,
-        name: str | None = None,
-        id: str | None = None,  # pylint: disable=redefined-builtin
-        classes: str | None = None,
+        name: Union[str, None] = None,
+        id: Union[str, None] = None,  # pylint: disable=redefined-builtin
+        classes: Union[str, None] = None,
         disabled: bool = False,
     ) -> None:
         """Initialize `Editor` widget.

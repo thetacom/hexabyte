@@ -2,6 +2,8 @@
 
 Provides the interface for interacting with raw file data.
 """
+from typing import Union
+
 from ..constants.sizes import DEFAULT_BLOCK_SIZE
 from ._data_source import DataSource, Path
 from .data_block import DataBlock
@@ -85,7 +87,7 @@ class PagedDataSource(DataSource):
                 block.loaded = False
                 self._loaded_blocks -= 1
 
-    def read(self, offset: int = 0, length: int | None = None) -> bytearray:
+    def read(self, offset: int = 0, length: Union[int, None] = None) -> bytearray:
         """Return bytearray of specified data range."""
         if offset < 0:
             raise ValueError("Offset must be greater than 0")
@@ -112,7 +114,7 @@ class PagedDataSource(DataSource):
             block_offset += len(block)
         return data
 
-    def save(self, new_filepath: Path | None = None) -> None:
+    def save(self, new_filepath: Union[Path, None] = None) -> None:
         """Save the current data to file.
 
         Data is written to a temporary file and then renamed to the desired filename.

@@ -1,6 +1,7 @@
 """The hexabyte config module."""
 from copy import deepcopy
 from pathlib import Path
+from typing import Union
 
 import toml
 from munch import Munch
@@ -47,7 +48,7 @@ class Config:
 
     def __init__(self) -> None:
         """Initialize the application config."""
-        self.filepath: Path | None = None
+        self.filepath: Union[Path, None] = None
         self.settings: Munch = deepcopy(DEFAULT_SETTINGS)
 
     def save(self) -> None:

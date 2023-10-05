@@ -1,4 +1,6 @@
 """Workbench Class Module."""
+from typing import Union
+
 from textual.app import ComposeResult
 from textual.containers import Container, Vertical
 from textual.reactive import reactive
@@ -53,7 +55,7 @@ class Workbench(Vertical):
     """
 
     show_sidebar: reactive[bool] = reactive(True)
-    active_editor: reactive[Editor | None] = reactive(None, init=False)
+    active_editor: reactive[Union[Editor, None]] = reactive(None, init=False)
 
     def __init__(
         self,
