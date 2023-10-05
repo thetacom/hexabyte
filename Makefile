@@ -26,7 +26,9 @@ check: .venv
 	@echo "*****Pre-Commit Checks*****"
 	@pre-commit run --all-files
 
-lint: bandit black pylint mypy ruff pydocstyle pycodestyle
+lint: bandit black ruff pydocstyle pycodestyle
+
+analyze: pylint mypy
 
 bandit: .venv
 	@echo "*****Bandit*****"
