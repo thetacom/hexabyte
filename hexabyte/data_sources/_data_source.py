@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Union
 
 
 class DataSource(ABC):
@@ -38,12 +39,12 @@ class DataSource(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def find(self, sub: bytes, start: int = 0, reverse: bool = False) -> int | None:
+    def find(self, sub: bytes, start: int = 0, reverse: bool = False) -> Union[int, None]:
         """Search data for query bytes and return byte offset if found."""
         raise NotImplementedError
 
     @abstractmethod
-    def read(self, offset: int = 0, length: int | None = None) -> bytearray:
+    def read(self, offset: int = 0, length: Union[int, None] = None) -> bytearray:
         """Return a bytearray of the specified range."""
         raise NotImplementedError
 
@@ -58,7 +59,7 @@ class DataSource(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def write(self, offset: int, data: bytes | bytearray, insert: bool = False) -> None:
+    def write(self, offset: int, data: Union[bytes, bytearray], insert: bool = False) -> None:
         """Write the provided data starting at the specified offset.
 
         Params:

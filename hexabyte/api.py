@@ -1,5 +1,6 @@
 """Hexabyte Data Api Package."""
 from pathlib import Path
+from typing import Union
 
 from rich.style import Style
 
@@ -37,7 +38,7 @@ class DataAPI:
         self.action_handler = ActionHandler(self, max_undo=max_undo)
 
         self._highlights: list[DataSegment] = []
-        self._selection: DataSegment | None = None
+        self._selection: Union[DataSegment, None] = None
         self._reduced = True
         self.open(filepath)
 
@@ -78,7 +79,7 @@ class DataAPI:
         return self._highlights
 
     @property
-    def selection(self) -> DataSegment | None:
+    def selection(self) -> Union[DataSegment, None]:
         """Return selected DataSegment."""
         return self._selection
 
@@ -127,13 +128,13 @@ class DataAPI:
         #     self._source = PagedDataSource(filepath, self.BLOCK_SIZE)
         self.cursor = Cursor(max_bytes=len(self))
 
-    def read(self, length: int | None = None) -> bytearray:
+    def read(self, length: Union[int, None] = None) -> bytearray:
         """Return a bytearray of the specified range."""
         data = self._source.read(self.cursor.byte, length)
         self.cursor.byte += len(data)
         return data
 
-    def read_at(self, offset: int, length: int | None = None) -> bytearray:
+    def read_at(self, offset: int, length: Union[int, None] = None) -> bytearray:
         """Return a bytearray of the specified range and location.
 
         Does not affect cursor.
@@ -144,7 +145,7 @@ class DataAPI:
         """Replace a portion of data with a new data sequence."""
         self._source.replace(self.cursor.byte, length, data)
 
-    def save(self, new_filename: Path | None = None) -> None:
+    def save(self, new_filename: Union[Path, None] = None) -> None:
         """Save the current data to file."""
         self._source.save(new_filename)
 

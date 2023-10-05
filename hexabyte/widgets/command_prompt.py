@@ -1,6 +1,6 @@
 """Command Prompt Widget."""
 from collections import deque
-from typing import ClassVar
+from typing import ClassVar, Union
 
 from textual.app import ComposeResult
 from textual.binding import Binding, BindingType
@@ -74,7 +74,7 @@ class CommandPrompt(Horizontal):  # pylint: disable=too-few-public-methods
         super().__init__(*args, **kwargs)
         self.max_cmd_history = max_cmd_history
 
-    def set_status(self, msg: str | None = None, clear: bool = False) -> None:
+    def set_status(self, msg: Union[str, None] = None, clear: bool = False) -> None:
         """Set the command prompt status message.
 
         clear - Clears the command prompt contents

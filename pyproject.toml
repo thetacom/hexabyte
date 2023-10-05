@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hexabyte"
-version = "0.8.1-rc.0"
+version = "0.8.2"
 description = "A modern, modular, and robust TUI hex editor."
 keywords = ["commandline", "hexeditor", "binary", "hexadecimal", "raw", "byteview", "bytes"]
 repository = "https://github.com/thetacom/hexabyte"
@@ -20,7 +20,9 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Software Development",
     "Topic :: Utilities",
@@ -28,41 +30,43 @@ classifiers = [
 packages = [{ include = 'hexabyte' }]
 
 [tool.poetry.dependencies]
-python       = "^3.10"
-textual      = "^0.26.0"
-toml         = "^0.10.2"
-munch        = "^2.5.0"
+python       = "^3.9"
+textual = "^0.38.1"
+toml = "^0.10.2"
+munch = "^4.0.0"
 hilbertcurve = "^2.0.5"
 
+
 [tool.poetry.group.dev.dependencies]
-black                  = "^23.3.0"
-bandit                 = "^1.7.5"
-coverage               = "^7.2.3"
-deepdiff               = "^6.3.0"
-ipython                = "^8.13.2"
-isort                  = "^5.12.0"
-httpretty              = "^1.1.4"
-mkdocs                 = "^1.4.2"
-mkdocstrings           = "^0.21.2"
-mkdocs-jupyter         = "^0.24.1"
-mkdocs-material        = "^9.1.8"
-mkdocs-mermaid2-plugin = "^0.6.0"
-mkdocs-minify-plugin   = "^0.6.4"
-mkdocs-redirects       = "^1.2.0"
-matplotlib             = "^3.7.1"
-mypy                   = "^1.2.0"
-pydocstyle             = "^6.3.0"
-pylint                 = "^2.17.3"
-pytest                 = "^7.3.1"
-pytest-bandit          = "^0.6.1"
-pytest-cov             = "^4.0.0"
-pytest-mock            = "^3.10.0"
-pytest-pydocstyle      = "^2.3.2"
-pytest-sugar           = "^0.9.7"
-pre-commit             = "^3.2.2"
-ruff                   = "^0.0.263"
-types-toml             = "^0.10.8.5"
-typing-extensions      = "^4.5.0"
+black = "^23.9.1"
+bandit = "^1.7.5"
+coverage = "^7.3.2"
+deepdiff = "^6.6.0"
+ipython = "^8.16.1"
+isort = "^5.12.0"
+httpretty = "^1.1.4"
+mkdocs = "^1.5.3"
+mkdocstrings = "^0.23.0"
+mkdocs-jupyter = "^0.24.5"
+mkdocs-material = "^9.4.3"
+mkdocs-mermaid2-plugin = "^1.1.1"
+mkdocs-minify-plugin = "^0.7.1"
+mkdocs-redirects = "^1.2.1"
+matplotlib = "^3.8.0"
+mypy = "^1.5.1"
+pydocstyle = "^6.3.0"
+pylint = "^3.0.0"
+pytest = "^7.4.2"
+pytest-bandit = "^0.6.1"
+pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.1"
+pytest-pydocstyle = "^2.3.2"
+pytest-sugar = "^0.9.7"
+pre-commit = "^3.4.0"
+ruff = "^0.0.292"
+types-toml = "^0.10.8.7"
+typing-extensions = "^4.8.0"
+
 
 [build-system]
 requires      = ["poetry-core"]
@@ -78,13 +82,13 @@ exclude_dirs = ["docs", "tests"]
 
 [tool.black]
 line-length    = 120
-target-version = ['py310']
+target-version = ['py39']
 
 [tool.coverage.run]
 source = ['hexabyte']
 
 [tool.isort]
-py_version  = 310
+py_version  = 39
 profile     = "black"
 src_paths   = ["hexabyte", "tests"]
 line_length = 120
@@ -110,7 +114,7 @@ jobs                    = 0
 limit-inference-results = 100
 # load-plugins =
 persistent      = true
-py-version      = "3.10"
+py-version      = "3.9"
 recursive       = true
 suggestion-mode = true
 
@@ -260,7 +264,7 @@ reportGeneralTypeIssues = false
 reportMissingImports    = true
 reportMissingTypeStubs  = false
 
-pythonVersion  = "3.10"
+pythonVersion  = "3.9"
 pythonPlatform = "Linux"
 
 [tool.ruff]
@@ -275,7 +279,7 @@ line-length = 120
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
-target-version = "py310"
+target-version = "py39"
 
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
