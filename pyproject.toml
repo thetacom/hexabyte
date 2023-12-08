@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hexabyte"
-version = "0.8.3"
+version = "0.8.4"
 description = "A modern, modular, and robust TUI hex editor."
 keywords = ["commandline", "hexeditor", "binary", "hexadecimal", "raw", "byteview", "bytes"]
 repository = "https://github.com/thetacom/hexabyte"

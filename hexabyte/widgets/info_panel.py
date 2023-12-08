@@ -1,8 +1,7 @@
 """Sidebar Info Panel."""
-import grp
-import pwd
 import stat
 from hashlib import md5, sha1
+from pathlib import Path
 
 from textual.app import ComposeResult
 from textual.containers import Horizontal
@@ -78,7 +77,8 @@ class InfoPanel(SidebarVerticalPanel):
         """Update file size info."""
         if self.editor is None:
             return
-        stats = self.editor.api.filepath.stat()
+        filepath: Path = self.editor.api.filepath
+        stats = filepath.stat()
         size_value = self.query_one("#size-value", Static)
         file_size = stats.st_size
         mb_size = file_size // MB
@@ -88,10 +88,10 @@ class InfoPanel(SidebarVerticalPanel):
             kb_size = file_size // KB
             size_value.update(f"{kb_size:,} KB ({file_size:,} bytes)")
         owner_value = self.query_one("#owner-value", Static)
-        owner_value.update(pwd.getpwuid(stats.st_uid).pw_name)
+        owner_value.update(filepath.owner)
 
         group_value = self.query_one("#group-value", Static)
-        group_value.update(grp.getgrgid(stats.st_gid).gr_name)
+        group_value.update(filepath.group)
 
         perm_value = self.query_one("#permissions-value", Static)
         perm_value.update(stat.filemode(stats.st_mode))
