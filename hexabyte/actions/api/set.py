@@ -111,8 +111,11 @@ class Set(ReversibleApiAction):
         if self.target is None:
             raise ActionError("Action target not set.")
         api = self.target
+        if self.offset.byte == api.cursor.max_bytes:
+            api.cursor.max_bytes += 1
         api.seek(self.offset.byte)
-        self.previous_value = unpack("@B", api.read(1))[0]
+        current_data = api.read(1)
+        self.previous_value = unpack("@B", current_data)[0] if current_data else 0
         if self.offset_type == OffsetType.BIT:
             bit_position = self.offset.remainder_bits
             if self.value == 0:

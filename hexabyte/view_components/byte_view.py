@@ -187,6 +187,13 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
             text = self._generate_hex_text(offset, data, highlights)
         if self.view_mode is DisplayMode.UTF8:
             text = self._generate_utf8_text(offset, data, highlights)
+        if (
+            self.cursor_visible
+            and self.cursor is not None
+            and self.cursor.byte >= offset + len(data)
+            and self.cursor.byte < offset + self.line_byte_length
+        ):
+            text.append(Text(" ", self.cursor_style))
         return text
 
     def _generate_bin_text(self, offset: int, data: bytes, highlights: list[DataSegment]) -> Text:
@@ -195,6 +202,8 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
         byte_position = offset
         for col_start in range(0, self.line_byte_length, self.column_size):
             chunk = data[col_start : col_start + self.column_size]
+            if not chunk:
+                break
             for bite in chunk:
                 if bite == 0:
                     txt = Text("00000000", self.text_style)
@@ -211,7 +220,8 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
                             txt.stylize(self.highlight_style)
                 text.append(txt)
                 byte_position += 1
-            text.append(" ")
+            if self.line_byte_length != self.column_size:
+                text.append(" ")
         return text
 
     def _generate_hex_text(self, offset: int, data: bytes, highlights: list[DataSegment]) -> Text:
@@ -220,6 +230,8 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
         byte_position = offset
         for col_start in range(0, self.line_byte_length, self.column_size):
             chunk = data[col_start : col_start + self.column_size]
+            if not chunk:
+                break
             for bite in chunk:
                 if bite == 0:
                     txt = Text("00", self.text_style)
@@ -237,7 +249,8 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
                             txt.stylize(self.highlight_style)
                 text.append(txt)
                 byte_position += 1
-            text.append(" ")
+            if self.line_byte_length != self.column_size:
+                text.append(" ")
         return text
 
     def _generate_utf8_text(self, offset: int, data: bytes, highlights: list[DataSegment]) -> Text:
@@ -246,6 +259,8 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
         byte_position = offset
         for col_start in range(0, self.line_byte_length, self.column_size):
             chunk = data[col_start : col_start + self.column_size]
+            if not chunk:
+                break
             for bite in chunk:
                 if not chr(bite).isprintable():
                     txt = Text(".", self.text_style)
@@ -262,7 +277,8 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
                             txt.stylize(self.highlight_style)
                 text.append(txt)
                 byte_position += 1
-            text.append(" ")
+            if self.line_byte_length != self.column_size:
+                text.append(" ")
         return text
 
     def _get_view(
