@@ -184,7 +184,7 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
     @property
     def _cursor_at_end(self) -> bool:
         """Flag to indicate if the cursor is at the end."""
-        return self.cursor >= len(self.api) * BYTE_BITS
+        return self.cursor > self.api.cursor.max_bytes
 
     @property
     def _cursor_y(self) -> int:
@@ -288,7 +288,8 @@ class Editor(ScrollView):  # pylint: disable=too-many-public-methods
         # if text not in ByteView.VALID_CHARS[self.display_mode]:
         #     raise ValueError("Invalid Character")
         self.api.cursor.bit = self.cursor
-        current_value = self.api.read_at(self.api.cursor.byte, 1)[0]
+        current_data = self.api.read_at(self.api.cursor.byte, 1)
+        current_value = current_data[0] if current_data else 0
         if self.display_mode == DisplayMode.HEX:
             nibble = self.api.cursor.remainder_bits // NIBBLE_BITS
             cmd = f"set nibble {self.api.cursor.byte} {nibble} 0x{char}"

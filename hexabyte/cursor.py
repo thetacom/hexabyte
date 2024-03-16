@@ -24,7 +24,7 @@ class Cursor:
         """Initialize Cursor."""
         super().__init__()
         self._absolute = val
-        self._max = max_bytes * BYTE_BITS
+        self.max_bytes = max_bytes
 
     @property
     def bit(self) -> int:
@@ -76,6 +76,16 @@ class Cursor:
         Ensures cursor is dword64 aligned.
         """
         self.byte = byte_offset >> DWORD64_ALIGN_BITS << DWORD64_ALIGN_BITS
+
+    @property
+    def max_bytes(self) -> int:
+        """Return the max bytes allowed by cursor."""
+        return self._max // BYTE_BITS
+
+    @max_bytes.setter
+    def max_bytes(self, max_bytes: int) -> None:
+        """Set the max byte value for cursor."""
+        self._max = max_bytes * BYTE_BITS
 
     @property
     def nibble(self) -> int:
