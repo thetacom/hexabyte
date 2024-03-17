@@ -88,10 +88,10 @@ class InfoPanel(SidebarVerticalPanel):
             kb_size = file_size // KB
             size_value.update(f"{kb_size:,} KB ({file_size:,} bytes)")
         owner_value = self.query_one("#owner-value", Static)
-        owner_value.update(filepath.owner)
+        owner_value.update(filepath.owner())
 
         group_value = self.query_one("#group-value", Static)
-        group_value.update(filepath.group)
+        group_value.update(filepath.group())
 
         perm_value = self.query_one("#permissions-value", Static)
         perm_value.update(stat.filemode(stats.st_mode))
