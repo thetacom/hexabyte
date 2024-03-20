@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hexabyte"
-version = "0.8.6"
+version = "0.8.7"
 description = "A modern, modular, and robust TUI hex editor."
 keywords = ["commandline", "hexeditor", "binary", "hexadecimal", "raw", "byteview", "bytes"]
 repository = "https://github.com/thetacom/hexabyte"
@@ -17,6 +17,7 @@ classifiers = [
     "Natural Language :: English",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -32,11 +33,10 @@ packages = [{ include = 'hexabyte' }]
 
 [tool.poetry.dependencies]
 python       = "^3.9"
-textual = "^0.44.1"
+textual = "^0.53.1"
 toml = "^0.10.2"
 munch = "^4.0.0"
 hilbertcurve = "^2.0.5"
-
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.9.1"
