@@ -1,4 +1,5 @@
 """Haxabyte Package Main."""
+
 import argparse
 from importlib.metadata import version
 from pathlib import Path
@@ -37,9 +38,12 @@ def main():
             raise ValueError("Must specify at least one filename")
         if len(args.files) > MAX_FILE_COUNT:
             raise ValueError("Must not specify more than two filenames")
+        expanded_files = []
         for filename in args.files:
-            if not filename.exists():
-                raise FileNotFoundError(f"File not found: {filename}")
+            expanded_filename = filename.expanduser()
+            if not expanded_filename.exists():
+                raise FileNotFoundError(f"File not found: {expanded_filename}")
+            expanded_files.append(expanded_filename)
         context.config = Config.from_file(args.config)
         load_plugins()
         if len(args.files) > 1:
@@ -49,7 +53,7 @@ def main():
         else:
             file_mode = FileMode.NORMAL
         context.file_mode = file_mode
-        context.files = args.files
+        context.files = expanded_files
         app = HexabyteApp()
         app.run()
         context.config.save()
