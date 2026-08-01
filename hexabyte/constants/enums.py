@@ -1,4 +1,5 @@
 """Hexabyte Enums Module."""
+
 from enum import Enum
 
 

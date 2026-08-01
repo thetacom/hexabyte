@@ -1,4 +1,5 @@
 """Insert Action."""
+
 from __future__ import annotations
 
 from struct import pack

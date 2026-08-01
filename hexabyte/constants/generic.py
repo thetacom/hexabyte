@@ -1,4 +1,5 @@
 """Generic app constants."""
+
 from pathlib import Path
 
 # App Constants

@@ -1,4 +1,5 @@
 """Unit tests for custom data types."""
+
 import pytest
 
 from hexabyte.data_types import DataSegment

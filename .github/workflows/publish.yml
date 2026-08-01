@@ -14,15 +14,13 @@ jobs:
     permissions:
       id-token: write
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v3
+    - uses: actions/checkout@v7
+    - uses: actions/setup-python@v7
       with:
-        python-version: '3.9'
-    - uses: Gr1N/setup-poetry@v8
-    - run: poetry --version
+        python-version: '3.14'
+    - uses: astral-sh/setup-uv@v9
     - name: Build package
-      run: poetry build
+      run: uv build
     - name: Publish package distributions to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
       with:

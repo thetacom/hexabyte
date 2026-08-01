@@ -1,5 +1,4 @@
 """Simple Data Source Module."""
-from typing import Union
 
 from ._data_source import DataSource, Path
 
@@ -22,7 +21,7 @@ class SimpleDataSource(DataSource):
             return self._data.rfind(sub, 0, start)
         return self._data.find(sub, start)
 
-    def read(self, offset: int = 0, length: Union[int, None] = None) -> bytearray:
+    def read(self, offset: int = 0, length: int | None = None) -> bytearray:
         """Return a bytearray of the specified range."""
         if length is not None:
             return bytearray(self._data[offset : offset + length])
@@ -32,7 +31,7 @@ class SimpleDataSource(DataSource):
         """Replace a portion of data with a new data sequence."""
         self._data[offset : offset + length] = data
 
-    def save(self, new_filepath: Union[Path, None] = None) -> None:
+    def save(self, new_filepath: Path | None = None) -> None:
         """Save the current data to file.
 
         Data is written to a temporary file and then renamed to the desired filename.

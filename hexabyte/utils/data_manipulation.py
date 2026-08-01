@@ -1,4 +1,5 @@
 """Utility functions for manipulating low level data."""
+
 from hexabyte.constants.sizes import NIBBLE_BITS
 
 

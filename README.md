@@ -91,13 +91,14 @@ Hexabyte functionality can be extended through the use of plugins.
 ~/$ git clone https://github.com/thetacom/hexabyte
 ...
 ~/$ cd hexabyte
-hexabyte/$ poetry install
-...
+hexabyte/$ mise trust
+hexabyte/$ mise install
+hexabyte/$ uv sync --locked --all-extras
 ```
 
 ### Test
 
 ```bash
-hexabyte/$ make test
+hexabyte/$ mise run verify
 ...
 ```

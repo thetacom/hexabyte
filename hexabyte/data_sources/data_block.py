@@ -1,4 +1,5 @@
 """DataBlock module."""
+
 from dataclasses import dataclass, field
 
 

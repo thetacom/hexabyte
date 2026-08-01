@@ -1,4 +1,5 @@
 """Command Message Module."""
+
 from textual.message import Message
 
 

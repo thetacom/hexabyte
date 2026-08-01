@@ -1,8 +1,8 @@
 """ByteView Component Module."""
+
 from collections.abc import Iterable
 from math import ceil
 from string import printable
-from typing import Union
 
 from rich.console import Console, ConsoleOptions
 from rich.highlighter import Highlighter
@@ -50,7 +50,7 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
 
     def __init__(
         self,
-        data: Union[bytes, bytearray],
+        data: bytes | bytearray,
         *,
         view_mode: DisplayMode = DisplayMode.HEX,
         column_count: int = 4,
@@ -62,7 +62,7 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
         cursor: Cursor = Cursor(),
         text_style: Style = Style(),
         highlight_style: Style = Style(reverse=True),
-        highlighter: Union[Highlighter, None] = None,
+        highlighter: Highlighter | None = None,
     ) -> None:
         """Initialize ByteView Component."""
         self.data = data
@@ -157,7 +157,7 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
         self,
         console: Console,  # pylint: disable=redefined-outer-name,unused-argument
         options: ConsoleOptions,
-    ) -> Iterable[Union[Padding, Segments]]:
+    ) -> Iterable[Padding | Segments]:
         """Generate RenderResult for ByteView Renderable."""
         segments = Segments(self._get_view(console, options))
         if self.padding:
@@ -284,7 +284,7 @@ class ByteView(JupyterMixin):  # pylint: disable=too-many-instance-attributes
     def _get_view(
         self,
         _console: Console,
-        options: Union[ConsoleOptions, None] = None,  # pylint: disable=unused-argument
+        options: ConsoleOptions | None = None,  # pylint: disable=unused-argument
     ) -> Iterable[Segment]:
         """Get Segments for the ByteView object."""
         offset = self.start_offset

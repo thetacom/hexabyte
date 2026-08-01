@@ -1,4 +1,5 @@
 """Unit tests for SimpleDataSource class."""
+
 import pytest
 
 from hexabyte.data_sources import SimpleDataSource

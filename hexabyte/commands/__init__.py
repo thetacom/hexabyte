@@ -1,4 +1,5 @@
 """Hexabyte Commands Module."""
+
 from math import log2
 from sys import modules
 

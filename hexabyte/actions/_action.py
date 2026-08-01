@@ -1,7 +1,7 @@
 """Action Event Module."""
 
 from abc import ABC, abstractmethod
-from typing import Any, Union
+from typing import Any
 
 
 class ActionError(Exception):
@@ -34,7 +34,7 @@ class Action(ABC):
             raise ValueError(f"Invalid number of arguments ({argc}) - {self.MIN_ARGS} <= argc <= {self.MAX_ARGS}")
         self._argc = argc
         self._argv = argv
-        self._target: Union[Any, None] = None
+        self._target: Any | None = None
         self.applied = False
 
     @property
@@ -53,12 +53,12 @@ class Action(ABC):
         raise NotImplementedError
 
     @property
-    def target(self) -> Union[Any, None]:
+    def target(self) -> Any | None:
         """Get action target."""
         return self._target
 
     @target.setter
-    def target(self, target: Union[Any, None]) -> None:
+    def target(self, target: Any | None) -> None:
         """Set action target."""
         self._target = target
 

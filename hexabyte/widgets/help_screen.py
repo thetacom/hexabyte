@@ -1,4 +1,5 @@
 """Help Screen Widget."""
+
 import toml
 from textual.app import ComposeResult
 from textual.containers import Center, VerticalScroll
@@ -109,7 +110,7 @@ Integer literals accept an optional endian parameter.
 
 ## Configuration File
 
-Default Location: `{DEFAULT_CONFIG_PATH/CONFIG_FILENAME}`
+Default Location: `{DEFAULT_CONFIG_PATH / CONFIG_FILENAME}`
 
 Default Settings:
 ```toml

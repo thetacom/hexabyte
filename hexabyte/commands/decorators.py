@@ -1,4 +1,5 @@
 """Register actions and associated commands."""
+
 from collections.abc import Callable, Iterable
 from typing import Any
 
